@@ -554,6 +554,11 @@
           "setup": "/setup add checks"
         },
         {
+          "id": "0.3.3/quota-reset-freshness",
+          "kind": "info",
+          "text": "Quota readings now count until their pools reset, not for 8 hours; an API-billed Claude install shows no plan limits, and a pool past its reset shows its reset time."
+        },
+        {
           "id": "0.3.3/codex-hook-trust",
           "kind": "hook",
           "text": "On Codex, open /hooks in a new session after the refresh and trust the plugin's hooks again; the compaction nudge script changed."

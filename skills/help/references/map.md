@@ -142,7 +142,7 @@ Paths below are relative to the full plugin root. There are three agent definiti
 | `scripts/project_progress.py` | Reads bounded task/work-record/repository facts and manages consented per-repository settings, labels and registration. |
 | `scripts/project_store.py` | Resolves a validated repository identity (a linked worktree only when its metadata points back) and reads or writes the approved project settings file. |
 | `scripts/quota_limit_hook.py` | Records only Claude family/time on opt-in StopFailure `rate_limit`; starts no reading. |
-| `scripts/quota_probe.py` | Reads quota on demand before routing and reports cached per-install pools and advisory markers; `status` shows an install's weekly floor. |
+| `scripts/quota_probe.py` | Reads quota on demand before routing and reports cached per-install pools and advisory markers; a reading counts until its earliest pool reset, a pool past its reset shows `reset passed at <time>`, and an API-billed Claude install shows `no plan limits`; `status` shows an install's weekly floor. |
 | `scripts/record.py` | Router, keep, task and judge metadata receipts; persists current-head verification metadata. |
 | `scripts/review_config.py` | Reads canonical role/posting settings; writes nothing. |
 | `scripts/review_route.py` | Chooses review families before a run, prefers independence and discloses same-family fallbacks; `--level` applies level-bound `models` rules; treats an install's weekly pools below its recorded weekly floor as out of quota; builds an in-memory review packet. |

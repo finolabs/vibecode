@@ -40,7 +40,8 @@ Status: implemented; release prepared, not yet tagged.
 | 378 | `status`, `review-gate` and `coding-router` disclose branch-only detail into their `references/` folders, so each `SKILL.md` stays under 10,000 bytes; no rule changes. |
 | 379 | Backlog LOW and docs items (`claude/backlog-lows`): the dashboard shows a weekly pool under its install's recorded weekly floor amber, as routing counts it out (`refresh.py` `floor` and `below_floor`, `PRIVACY.md`, the dashboard spec); `merge-gate.md` and the autopilot spec name the repository scoping of merge pins and what an unwritable afk log does, with a test; `shape` in the skills architecture and the main checkout in the delegation sequence (PNGs and README alt text); the `setup` beginner line names the commands that bring skipped steps back. |
 | 380 | The compaction nudge asks the agent to hand the user a ready `/compact` line that names the saved handover; `tidy` ends the line with `handover_state.py read --session <id>` (on Codex a second line after a bare `/compact`, on Antigravity the `/new` or `/fork` text). The hook reads the same fields as before. |
-| this | The final record pass: rows 368 to 380, the second drift pass below, the live-browser run of the `ui-review-gate` snippets and the `0.3.3/light-checks` upgrade note. Tags nothing. |
+| 381 | Reset-based quota freshness and bounded unexpected-shape retries; API-billed Claude no-limits status; expired pool display (owner decisions, 19/11/2026). |
+| this | The final record pass: rows 368 to 381, the second drift pass below, the live-browser run of the `ui-review-gate` snippets and the `0.3.3/light-checks` upgrade note. Tags nothing. |
 
 The changelog's 0.3.3 section holds the user-facing wording; `update` carries the 0.3.3 upgrade notes. Pull request 358 (the tokenizer implementation) closed unmerged and is not part of 0.3.3.
 
@@ -84,9 +85,9 @@ Checked against `main` at `b03334c` (after pull request 365), surface by surface
 | `docs/specs/index.md` | The afk decider row said decision 5 was open; now parked on 19/11/2026 and left out of 0.3.3, as the spec's Status line now says. Added this record's row. |
 | `CHANGELOG.md` | Unreleased matched the merged pull requests; moved to 0.3.3 with one entry for this pull request's docs changes. |
 
-### Second pass (after pull request 380)
+### Second pass (after pull request 381)
 
-Checked against `main` at `8de36e1`, surface by surface, for every pull request merged after 366: 367 to 380 (370 closed unmerged). Pull requests 371, 373, 375, 377, 378 and 379 updated most of their own surfaces; this pass reads each surface again for all of them.
+Checked against `main` at `8de36e1`, surface by surface, for every pull request merged after 366: 367 to 380 (370 closed unmerged); checked again at `bc56b59` for 381, which updated `CLAUDE.md`, `PRIVACY.md`, the README host configuration paragraph, `/setup check` and the specs that stated the 8-hour or 24-hour rule. Pull requests 371, 373, 375, 377, 378 and 379 updated most of their own surfaces; this pass reads each surface again for all of them.
 
 | Surface | Result |
 | --- | --- |
@@ -95,19 +96,20 @@ Checked against `main` at `8de36e1`, surface by surface, for every pull request 
 | README skill table, `afk`, `review-gate`, `ui-review-gate`, `delegate`, `status`, `coding-router` rows | Current (373, 374, 375, 377, 378): one mode, goals, the UI marker and the reference splits are below the level of these rows or already named. |
 | README setup feature table, `checks` row | Drifted with 376: no light or heavy mark. Added. Other rows current. |
 | README compaction nudge paragraph and host table | Current with 380: they name what the hook reads, which did not change. |
-| README release section | Drifted: no light checks (376), UI review marker (377) or ready `/compact` line (380, with 372). Added three bullets. |
+| README release section | Drifted: no light checks (376), UI review marker (377), ready `/compact` line (380, with 372) or reset-based quota freshness (381). Added four bullets. |
 | README diagram alt text and file layout | Current: 373, 375 and 379 re-rendered their diagrams with the alt text; no hook was added after 375. |
 | `skills/help/references/skills/checks.md`, `tidy.md`, `afk.md`, `ui-review-gate.md`, `status.md`, `brb.md` | Current: updated by 376, 372 and 380, 373 and 375, 377, 379 and 375. |
-| `skills/help/references/map.md` | Drifted: the `checks` row (376) and the `tidy` row (380) did not name light checks or the `/compact` line. Updated. The `checks.py`, afk and merge-check rows were current. |
+| `skills/help/references/map.md` | Drifted: the `checks` row (376), the `tidy` row (380) and the `quota_probe.py` row (381) did not name light checks, the `/compact` line or freshness by reset, `reset passed at` and `no plan limits`. Updated. The `checks.py`, afk and merge-check rows were current. |
 | `skills/help/references/tips.md` | Current. |
-| `skills/help/references/troubleshooting.md` | Drifted with 376: nothing for a check that waits for the heavy-job lock. Added a row. afk rows current (373, 375). |
+| `skills/help/references/troubleshooting.md` | Drifted with 376 and 381: nothing for a check that waits for the heavy-job lock, or for `reset passed at` and `no plan limits` in `status`. Added two rows. afk rows current (373, 375). |
 | `skills/setup/references/check.md` | Current: 371, 373, 375 and 377 updated it; Check does not report stored check lists. |
-| `skills/update/references/upgrades.json` | Missing: 376 said its note goes in with the release entry, and none was there. Added `0.3.3/light-checks`. 372, 374 and 380 need no action from the user; the Codex hook trust note already covers the changed nudge script. |
-| `PRIVACY.md` | Current: 371, 373, 374, 375 and 379 updated it; 376 and 380 store and send nothing new. |
+| `skills/update/references/upgrades.json` | Missing: 376 said its note goes in with the release entry, and none was there. Added `0.3.3/light-checks`, and `0.3.3/quota-reset-freshness` for 381, which needs no action but changes what `status` and routing show. 372, 374 and 380 need no action from the user; the Codex hook trust note already covers the changed nudge script. |
+| `PRIVACY.md` | Current: 371, 373, 374, 375, 379 and 381 updated it; 376 and 380 store and send nothing new. |
 | `docs/how-it-compares.md` | Current (373, 375). |
-| `docs/diagrams/` | Current: afk mechanism, away decision sequence and request to merge (371, 373, 375), delegation sequence and skills architecture (379). No diagram shows the heavy-job lock or the `/compact` line. |
+| `docs/diagrams/` | Current (the task lifecycle names only "quota read on demand", which 381 did not change): afk mechanism, away decision sequence and request to merge (371, 373, 375), delegation sequence and skills architecture (379). No diagram shows the heavy-job lock or the `/compact` line. |
 | `docs/specs/ui-review-gate.md` and `index.md` | The Status line and index row said the snippets had not run in a live browser. Updated after the live run (see Known follow-ups). |
-| `CHANGELOG.md` | 376's entry sat under `Unreleased` although 0.3.3 is not tagged. Moved to 0.3.3; the docs entry names this pass. |
+| `CHANGELOG.md` | 376's entry sat under `Unreleased` although 0.3.3 is not tagged. Moved to 0.3.3 beside 381's entry; the docs entry names this pass. |
+| `skills/setup/references/check.md`, `README.md` host configuration paragraph | Current with 381: its own pull request replaced the 8-hour rule. |
 
 ## Owner decisions
 
@@ -134,6 +136,7 @@ Checked against `main` at `8de36e1`, surface by surface, for every pull request 
 - `delegate` removes finished runs' merged worktrees in the background; runs started before 0.3.3 stay (`0.3.3/worktree-clean`).
 - `/setup instructions` flags lines that stop `afk` or `delegate` (`0.3.3/instructions-conflict-scan`).
 - `/setup add quota` can record a weekly floor per install (`0.3.3/quota-weekly-floor`).
+- Quota readings count until their pools reset, an API-billed Claude install shows no plan limits, and a pool past its reset shows its reset time (`0.3.3/quota-reset-freshness`).
 - `/setup add checks` again saves test-module checks light, so they skip the heavy-job lock; a list saved before 0.3.3 stays all heavy (`0.3.3/light-checks`).
 - Codex: trust the plugin's hooks again with `/hooks` after the refresh; the compaction nudge script changed (`0.3.3/codex-hook-trust`).
 
