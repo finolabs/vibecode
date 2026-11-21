@@ -20,6 +20,7 @@ Read the shared rules in [map.md](map.md#rules). Match the user's problem to one
 | `afk.py stop` is refused | Only `/afk stop` ends the lease, with `stop --all`, because it ends it for every session; an agent whose work is done logs `idle`. |
 | Under a lease a tool call is denied with a request digest | The afk permission hook answers host prompts while you are away: the agent settles it through afk "Decide" and records `--approve-request <digest>`, or parks it. `FNL_AFK_PERMIT=off` brings the host's prompt back. |
 | `/afk start` warns that nothing blocks credential reads | Add Claude Code's deny rules for the credential floor with `/setup add afk`, or run with an approval mode that asks. |
+| `checks.py run` waits for the heavy-job lock or gives up with exit 75 | That check is saved heavy, and a list saved before 0.3.3 is all heavy. Save it again with `/setup add checks`: checks that name test modules are then saved light and run at once. |
 | `heavy_run.py` refuses a command with exit 77 | A pause marker is active. Run `/pause resume` once you are back from the restart; a marker older than 24 hours never blocks. |
 | `/restore-point` says "Not a git repository" | It works in git repositories only and creates nothing. Run `git init` yourself if you want one. |
 | A skill says a dependency is missing | It was installed on its own. Add the named skill, for example `npx skills add finolabs/vibecode --skill delegate`, or install the whole plugin. |
