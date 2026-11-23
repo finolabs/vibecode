@@ -1676,6 +1676,10 @@
      "by_advisor": {"codex gpt-6-astra": 1}, "table_p": {"n": 2, "min": 0.6, "median": 0.75, "max": 0.9},
      "parked": 1, "denied": 2, "no_precedent": 2, "reviewed": 2, "reversed": 1}
   ],
+  "relays": [
+    {"reviewer": "codex", "kind": "code", "relays": 3, "authority": {"owner-pr": 1, "standing-code": 2}},
+    {"reviewer": "codex", "kind": "security", "relays": 1, "authority": {"lease-security": 1}}
+  ],
   "kept": {
     "receipts": 3,
     "tasks": 7,

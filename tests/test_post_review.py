@@ -326,6 +326,84 @@ else:
         post.post(31, self.body, self.checkout)
         self.assertFalse(self.body.parent.exists())
 
+    def relay_receipts(self):
+        import fnl_metrics as fm
+        folder = fm.state_dir() / "markers"
+        return [json.loads(path.read_text()) for path in sorted(folder.glob("*.relay"))] if folder.is_dir() else []
+
+    def relay(self, kind="code", second="Relayed by claude; reviewer: codex; record: standing relay",
+              options=("--relay-reviewer", "codex", "--relayed-by", "claude", "--relay-authority", "standing-code")):
+        self.body.write_text(MARKER.replace("kind=code", "kind=" + kind) + "\n" + second + "\nNo findings.\n")
+        return self.main(["31", "--body-file", str(self.body), *options])
+
+    def test_relayed_post_leaves_one_receipt_per_kind_with_consent(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        run = self.body.parent.name[len("post-"):]
+        code, output, _ = self.relay()
+        self.assertEqual((code, output), (0, "posted; relay receipt recorded\n"))
+        self.assertTrue((fm.state_dir() / "markers" / (run + ".relay")).is_file())  # named by the posting run
+        self.body = post.create_run_folder()
+        options = ("--relay-reviewer", "antigravity", "--relayed-by", "codex", "--relay-authority", "lease-security")
+        with mock.patch.object(post.away_lease, "live_lease", return_value={"id": "0" * 32}):
+            self.assertEqual(self.relay("security", options=options)[0], 0)
+        self.assertEqual(sorted(self.relay_receipts(), key=lambda r: r["kind"]), [
+            dict(reviewer="codex", kind="code", by="claude", authority="standing-code"),
+            dict(reviewer="antigravity", kind="security", by="codex", authority="lease-security")])
+
+    def test_relay_outside_the_enums_or_pairs_is_refused_before_gh(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        base = ["--relay-reviewer", "codex", "--relayed-by", "claude", "--relay-authority"]
+        for kind, second, options in (
+                ("code", "Relayed", base + ["owner-said-so"]),
+                ("code", "Relayed", ["--relay-reviewer", "gpt", "--relayed-by", "claude", "--relay-authority", "owner-pr"]),
+                ("code", "Relayed", ["--relay-reviewer", "claude", "--relayed-by", "claude", "--relay-authority", "owner-pr"]),
+                ("security", "Relayed", base + ["standing-code"]),
+                ("code", "Relayed", base[:2] + ["--relay-authority", "owner-pr"]),
+                ("code", "Reviewer: codex", base + ["owner-pr"]),
+                ("ui", "Relayed", base + ["owner-pr"])):
+            with self.subTest(options=options, kind=kind):
+                self.assertEqual(self.relay(kind, second, options)[0], 2)
+        self.assertEqual(self.main(["31", *base, "owner-pr"])[0], 2)
+        self.assertEqual(self.calls(), [])
+        self.assertEqual(self.relay_receipts(), [])
+
+    def test_non_relayed_post_and_post_without_consent_leave_no_receipt(self):
+        self.assertEqual(self.relay(), (0, "posted\n", ""))  # no consent: posted, nothing recorded
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        self.body = post.create_run_folder()
+        self.body.write_text(BODY)
+        self.assertEqual(self.main(["31", "--body-file", str(self.body)])[:2], (0, "posted\n"))
+        self.assertEqual(self.relay_receipts(), [])
+
+    def test_lease_relay_needs_a_live_away_lease(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        options = ("--relay-reviewer", "antigravity", "--relayed-by", "codex", "--relay-authority", "lease-security")
+        with mock.patch.object(post.away_lease, "live_lease", return_value=None):
+            self.assertEqual(self.relay("security", options=options)[0], 2)
+        self.assertEqual(self.calls(), [])
+        self.assertEqual(self.relay_receipts(), [])
+
+    def test_failed_receipt_write_is_counted_and_never_changes_the_post(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        with mock.patch.object(post.record, "write_relay", side_effect=OSError("disk full")):
+            self.assertEqual(self.relay(), (0, "posted\n", ""))
+        self.assertEqual(len(json.loads((self.base / "comments.json").read_text())), 1)
+        self.assertFalse(self.body.parent.exists())
+        self.assertEqual(fm.errors_count(), 1)
+        self.assertEqual(self.relay_receipts(), [])
+
+    def test_failed_post_leaves_no_receipt(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        (self.base / "error").write_text("HTTP 403: Resource not accessible")
+        self.assertEqual(self.relay()[:2], (1, "cannot-post: no-permission\n"))
+        self.assertEqual(self.relay_receipts(), [])
+
     def test_symlinked_config_is_refused_before_gh(self):
         config = self.checkout / ".git/config"
         target = self.base / "external-config"

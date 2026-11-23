@@ -1,6 +1,6 @@
 # Usage metrics and the status dashboard
 
-Status: implemented; in `0.1.6`; later releases add the `kept` event (`0.1.7`) and `judge` receipts (`0.1.8`). Depth: DEEP (hooks run on every matching tool call and record behavior data).
+Status: implemented; in `0.1.6`; later releases add the `kept` event (`0.1.7`), `judge` receipts (`0.1.8`) and `relay` receipts (`0.3.3`). Depth: DEEP (hooks run on every matching tool call and record behavior data).
 
 ## Current contract and historical design
 
@@ -46,6 +46,7 @@ Each is computed by the refresh script from the event store and the ledger; the 
 | Delegation | `ledger.py summary` per agent, model and grade: first-pass acceptance, quota and error rates, rework rounds. Groups under five runs show counts without comment. Beside them, the tasks coordinators kept (`kept` events, per coordinator, reason and who settled it) and the implementation runs handed off in the period, without in-session subagents and reroutes after a failed run. Only a recorded receipt counts, so a skipped check still shows nothing. | Reroute or change budgets; a kept count growing on one reason says which rule or brief to change. |
 | Judge | Decisions per site by grader; usable answers are validated judge receipts divided by all judge receipts, and followed is `followed=yes` divided by validated judge receipts. Separately, first-pass acceptance by `route_by=judge` versus `table` from the ledger. Show only with receipts or a judge-routed ledger run; without receipts show the association alone and say none were recorded. Show n and an open ring below five runs, without judgment. Cost, latency and accuracy are not measured; association is not proof the judge was right. | Check use and fallback frequency; compare outcomes without claiming causation. |
 | Review gate | Per pull request: review verdicts in order. Share of pull requests that took at least one `REWORK`. | Briefs or acceptance criteria too thin. |
+| Relayed reviews | `relay` events per reviewer family and kind, with the count per authorizing record, in the overview tab beside the delegation tables. | A family relayed often lacks posting setup; a growing `owner-pr` count asks for a standing record or a posting fix. |
 
 ## Event store
 
@@ -65,15 +66,19 @@ Common fields: `ts` (UTC, ISO 8601), `sid` (the host's session id), `repo` (firs
 | `kept` | `tasks` (1 to 999), `reason` (one value from a fixed list), `route_by` (`table`, `judge`, `user`) | hook after `Bash`, when the command is `delegate`'s `record.py keep --tasks N --reason R [--route-by B]`, which only prints a receipt. |
 | `task` | `id` (only `^T[0-9]{1,4}$`) | hook after a `record.py task --id T012` command; the command validates the id and only prints a receipt. |
 | `judge` | `site` (`route`, `depth`, `activity`, `instruction`), `grader` (`judge`, `agent`), `result` (`validated`, `unverified`), `followed` (`yes`, `no`, `na`) | hook after a `record.py judge --site S --grader G --result R --followed F` command; the command only prints a receipt. |
+| `relay` | `reviewer` (`claude`, `codex`, `antigravity`, `zcode`), `kind` (`code`, `security`), `by` (the same families), `authority` (`standing-code`, `lease-security`, `owner-pr`) | hook after a `post_review.py` command with `--relay-reviewer`: it records each pending receipt that `post_review.py` left through `record.py` after it observed a relayed post, and deletes it (see [agent roles](agent-roles.md) part D). |
 
 Task events hold only a task id of the form `T` plus one to four ASCII digits, besides the common fields; no command text or other content is stored. They are advisory dashboard data, never input to task selection or a gate: any session can forge an event.
 
 Judge receipts hold only `site`, `grader`, `result`, and `followed` from fixed enumerations; they never hold a question, an answer, a cost, a file name or a path.
 
+Relay receipts hold only `reviewer`, `kind`, `by` and `authority` from fixed enumerations; they never hold a pull request number or URL, a marker, review text, a command, a file name or a path.
+
 Rules the writer enforces, so a hook bug cannot widen what is stored:
 
 - Fields are checked against the table; an unknown field or a value outside its enum drops the whole event.
 - For `judge`, `followed` must be `na` unless `grader=judge` and `result=validated`; every `agent` grade has `result=validated`. Both the recording path and stored-event reader reject impossible pairs. A site is never joined to a file identity. Running the receipt after each judge decision is advisory (agent judgment); no judge means no receipt.
+- For `relay`, `by` differs from `reviewer`, `standing-code` goes only with `code` and `lease-security` only with `security`; the recording path and the stored-event reader reject other pairs. A pending receipt is a file of `markers/` (`<run id>.relay`, the 32-hex id of the posting run, mode 0600, the four fields as JSON), written only with consent, claimed only by the hook of a command that names that run's body, deleted unrecorded when unreadable, and removed with the markers after seven days when no hook claims it. A relay posted without the relay options records nothing (agent judgment, advisory).
 - For `review`, only the first line of the body file is read, capped at 4 KB, regular files only (no symlink follow). Nothing from the comment body is stored except `kind` and `verdict` parsed from the marker.
 - For `commit` and `review`, the command string is tested for the trigger and discarded; it is never written or logged.
 - The writer exits 0 on every path and finishes within 2 seconds. A failure appends one byte to `errors.count` in the state directory (only while metrics are on) and writes nothing else; the dashboard shows that count.

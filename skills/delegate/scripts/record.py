@@ -5,6 +5,8 @@ When the user has turned usage metrics on, the plugin's hook reads this command
 after it runs and records only the receipt's metadata with the session.
 
 The verify command writes private local metadata, never a usage event.
+write_relay, called by post_review.py after it observed a relayed review, leaves one
+pending relay receipt for the metrics hook, only when the user consented to metrics.
 For keep, when the auto gate is enabled, this command also writes its local repository
 decision file. A failed decision write never changes the receipt or exit code.
 """
@@ -122,6 +124,27 @@ def read_verification(dispatch):
     if rec["id"] != dispatch:
         raise ValueError("receipt belongs to another dispatch")
     return rec
+
+def write_relay(run, reviewer, kind, by, authority):
+    """Leave one pending relay receipt (four enum fields) for the metrics hook; True when written.
+
+    `run` is the 32-hex id of the posting run (its body is post-<run>/body.md), so only the hook of the
+    session whose command named that body claims it. Nothing is written without metrics consent. The
+    hook turns it into one `relay` event of that session and deletes it; an unclaimed receipt goes with
+    the markers after seven days. Raises ValueError for a run id, field or pair outside the schema.
+    """
+    import fnl_metrics as fm
+    fields = {"reviewer": reviewer, "kind": kind, "by": by, "authority": authority}
+    if (not isinstance(run, str) or re.fullmatch(r"[0-9a-f]{32}", run) is None
+            or not all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
+            or not fm.valid_relay_pairs(fields)):
+        raise ValueError("invalid relay receipt")
+    if not fm.enabled():
+        return False
+    folder = fm.ensure_dir(fm.ensure_dir(fm.state_dir(), follow=True) / "markers")
+    fm.atomic_write(folder / (run + ".relay"), json.dumps(fields))
+    return True
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])

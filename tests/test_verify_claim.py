@@ -380,7 +380,8 @@ class VerificationTest(unittest.TestCase):
         metadata = self.root / 'criteria.json'
         metadata.write_text('[]')
         for path in [SCRIPTS / 'record.py', ROOT / 'skills/checks/scripts/record.py',
-                     ROOT / 'skills/delegate/scripts/record.py', ROOT / 'skills/coding-router/scripts/record.py']:
+                     ROOT / 'skills/delegate/scripts/record.py', ROOT / 'skills/coding-router/scripts/record.py',
+                     ROOT / 'skills/review-gate/scripts/record.py']:
             self.assertEqual(path.read_bytes(), (SCRIPTS / 'record.py').read_bytes())
             done = subprocess.run([sys.executable, '-I', str(path), 'verify', '--id', self.dispatch,
                                    '--head', self.head, '--tests', 'passed', '--mechanical', 'passed',

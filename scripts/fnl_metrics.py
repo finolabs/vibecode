@@ -35,6 +35,10 @@ JUDGE_SITES = ("route", "depth", "activity", "instruction")
 JUDGE_GRADERS = ("judge", "agent")
 JUDGE_RESULTS = ("validated", "unverified")
 JUDGE_FOLLOWED = ("yes", "no", "na")
+FAMILIES = ("claude", "codex", "antigravity", "zcode")  # review_config.FAMILIES
+# The record that authorized a relay (agent-roles.md part D): the standing code-review relay, a live away
+# lease's security-review relay, or the owner's yes for that one pull request.
+RELAY_AUTHORITIES = ("standing-code", "lease-security", "owner-pr")
 RETENTIONS = (30, 90, 365)
 MARKER_DAYS = 7
 NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
@@ -113,6 +117,8 @@ SCHEMA = {
     "router": {"depth": lambda v: v in DEPTHS, "trigger": lambda v: v in TRIGGERS},
     "judge": {"site": lambda v: v in JUDGE_SITES, "grader": lambda v: v in JUDGE_GRADERS,
               "result": lambda v: v in JUDGE_RESULTS, "followed": lambda v: v in JUDGE_FOLLOWED},
+    "relay": {"reviewer": lambda v: v in FAMILIES, "kind": lambda v: v in KINDS,
+              "by": lambda v: v in FAMILIES, "authority": lambda v: v in RELAY_AUTHORITIES},
     "kept": {"tasks": _tasks, "reason": lambda v: v in KEPT_REASONS, "route_by": lambda v: v in ROUTE_BY},
 }
 
@@ -122,6 +128,13 @@ def valid_judge_pairs(fields):
     return ((fields["grader"] != "agent" or fields["result"] == "validated")
             and (fields["followed"] == "na" or
                  fields["grader"] == "judge" and fields["result"] == "validated"))
+
+
+def valid_relay_pairs(fields):
+    """A relay is posted by another family, and each standing record covers one review kind."""
+    return (fields["reviewer"] != fields["by"]
+            and (fields["authority"] != "standing-code" or fields["kind"] == "code")
+            and (fields["authority"] != "lease-security" or fields["kind"] == "security"))
 
 
 def state_dir():
@@ -274,6 +287,8 @@ def build_event(event, sid, repo, fields):
             raise ValueError("bad value for " + key)
     if event == "judge" and not valid_judge_pairs(fields):
         raise ValueError("invalid judge field pair")
+    if event == "relay" and not valid_relay_pairs(fields):
+        raise ValueError("invalid relay field pair")
     return {"ts": now().isoformat(timespec="milliseconds"), "sid": sid, "repo": repo, "event": event, **fields}
 
 
@@ -290,7 +305,8 @@ def valid_event(item):
     except ValueError:
         return False
     return (all(check(item[key]) for key, check in schema.items())
-            and (item["event"] != "judge" or valid_judge_pairs(item)))
+            and (item["event"] != "judge" or valid_judge_pairs(item))
+            and (item["event"] != "relay" or valid_relay_pairs(item)))
 
 
 def bump_errors(error=None):

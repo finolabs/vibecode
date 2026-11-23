@@ -358,6 +358,54 @@ class HookTest(unittest.TestCase):
                        "tool_input": {"command": command}}, env={**self.env, "FNL_METRICS": "off"})
         self.assertEqual(len(self.events()), 3)
 
+    def pending_relay(self, run="0" * 32, **fields):
+        folder = self.dir / "markers"
+        folder.mkdir(parents=True, exist_ok=True)
+        receipt = dict(reviewer="codex", kind="code", by="claude", authority="standing-code", **fields)
+        (folder / (run + ".relay")).write_text(json.dumps(receipt))
+        return folder / (run + ".relay")
+
+    def relay_command(self, run="0" * 32, authority="standing-code"):
+        return ("python3 -I skills/review-gate/scripts/post_review.py 31 --body-file "
+                "/data/state/review-posting/post-%s/body.md --relay-reviewer codex --relayed-by claude "
+                "--relay-authority %s" % (run, authority))
+
+    def test_relayed_post_claims_only_its_own_run_receipt_once(self):
+        path = self.pending_relay()
+        self.post("Bash", {"command": self.relay_command()})  # no consent: nothing read, nothing recorded
+        self.assertTrue(path.exists())
+        self.consent()
+        self.post("Bash", {"command": "python3 -I scripts/post_review.py 31 --body-file "
+                                      "/data/state/review-posting/post-%s/body.md" % ("0" * 32)})
+        self.assertTrue(path.exists())  # a post that was not relayed never claims a receipt
+        other = self.pending_relay("1" * 32)  # another session's run: never claimed by this command
+        security = self.pending_relay("2" * 32)
+        security.write_text(json.dumps(dict(reviewer="antigravity", kind="security", by="codex", authority="lease-security")))
+        self.post("Bash", {"command": self.relay_command()})
+        self.post("Bash", {"command": self.relay_command()})
+        self.post("Bash", {"command": self.relay_command("2" * 32, "lease-security")})
+        relays = [{k: e[k] for k in ("sid", "reviewer", "kind", "by", "authority")} for e in self.events()]
+        self.assertEqual(relays, [dict(sid="s1", reviewer="codex", kind="code", by="claude", authority="standing-code"),
+                                  dict(sid="s1", reviewer="antigravity", kind="security", by="codex", authority="lease-security")])
+        self.assertFalse(path.exists() or security.exists())
+        self.assertTrue(other.exists())
+
+    def test_pending_relay_receipt_outside_the_schema_or_unreadable_is_dropped(self):
+        self.consent()
+        cases = [json.dumps(dict(reviewer="codex", kind="code", by="claude", authority="standing-code", pr=31)),
+                 json.dumps(dict(reviewer="codex", kind="security", by="claude", authority="standing-code")),
+                 json.dumps(dict(reviewer="codex", kind="code", by="codex", authority="owner-pr")),
+                 json.dumps(dict(reviewer="codex", kind="ui", by="claude", authority="owner-pr")),
+                 "{not json", b"\xff\xfe"]
+        for case in cases:
+            path = self.pending_relay()
+            path.write_bytes(case if isinstance(case, bytes) else case.encode())
+            self.post("Bash", {"command": self.relay_command()})
+            self.assertFalse(path.exists(), case)  # removed, so it never blocks a later receipt
+        self.pending_relay()
+        self.post("Bash", {"command": self.relay_command()})
+        self.assertEqual([e["event"] for e in self.events()], ["relay"])
+
     def test_low_dollar_in_unrelated_command_keeps_judge_receipt(self):
         self.consent()
         command = "python3 -I record.py judge --site route --grader judge --result validated --followed yes"
