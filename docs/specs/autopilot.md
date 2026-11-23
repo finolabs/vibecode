@@ -8,7 +8,7 @@
 
 > 0.3.3 (owner decisions, 19/11/2026): [afk-one-mode.md](afk-one-mode.md) removes `strict`, the Merge answer and the work-tree, worktree and merge rules described here; where they disagree, it wins.
 
-Status: accepted; owner decisions recorded on 2026-11-06 and 2026-11-09; release 0.2.1 takes the first slice named under the 2026-11-09 decisions, the rest stays design only. Nothing was built in 0.2.0. Implementation and unresolved host decisions still need owner approval; open questions are listed under "Open".
+Status: implemented; first slice only, remainder retired (owner decision, 23/11/2026); owner decisions recorded on 2026-11-06 and 2026-11-09; the first slice shipped in 0.2.1 under its older fnl-prefixed autopilot name and was renamed `afk` in 0.2.5. The dashboard tab, live loop, scheduled-task driver, notice hook and host backstop are retired and will not be built: the dashboard tab and its live refresh loop have no replacement, `/goal` and `/loop` replace the scheduled-task driver, the session-start away line replaces the notice hook, and blocking is the host's job ([afk-one-mode.md](afk-one-mode.md)), which replaces the backstop. The text below records the design of its time.
 
 Idea: owner, 2026-11-06. An agent that, only when the user asks, coordinates the repository's work while the
 user is away: it watches progress, picks the next work, delegates it, reviews it, and keeps going instead of
