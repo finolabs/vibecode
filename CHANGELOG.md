@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Changed
+
+- The README shows how the plugin differs from the hosts' own agents: a six-row table (what it is, who picks the agent, what proof is required, who reviews, what may merge, what survives the session) and a light and dark diagram, sourced in `docs/diagrams/host-vs-vibecode-*.html`, of the host splitting work inside one task while the plugin routes the task, requires proof, gates review and leaves the merge to you. `docs/how-it-compares.md` gains the proof and review rows and its host facts were checked again on 2026-11-23: Claude Code routines are now scheduled tasks (also triggered by an API call or a GitHub event), Claude Code's `/goal` ends when a separate evaluator judges the condition met while Antigravity's agent declares completion, Codex automations run locally from the desktop app or in the cloud from the web, Antigravity `/schedule` belongs to its conversation and `/automation` denies approval prompts, and an agent team's task list outlives the session.
+
 ## [0.3.3] - 2026-11-19
 
 ### Added

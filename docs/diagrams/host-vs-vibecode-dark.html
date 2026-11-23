@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Host Versus Vibecode</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#050510;color:#FFFFFF;font-family:'Space Grotesk', system-ui, sans-serif;padding:3rem 2rem}
+.frame{max-width:1280px;margin:0 auto}
+.eyebrow{font-family:'JetBrains Mono', ui-monospace, monospace;font-size:.66rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#BCBCD0;margin-bottom:.5rem}
+h1{font-family:'Anton', Impact, sans-serif;font-size:1.75rem;font-weight:400;text-transform:uppercase;letter-spacing:-.01em;margin-bottom:.75rem}
+.sub{color:#BCBCD0;font-size:.95rem;margin-bottom:1.5rem;max-width:72ch}
+svg{width:100%;min-width:900px;display:block}
+@media(max-width:1000px){.frame{overflow-x:auto}}
+</style></head><body><div class="frame">
+<p class="eyebrow">Architecture · finolabs-vibecode</p>
+<h1>The host splits the task; finolabs-vibecode governs it</h1>
+<p class="sub">The hosts' subagents, agent teams, /swarm, loops, goals and scheduled runs split and continue the work inside one task. finolabs-vibecode works around the task: it routes it, picks the agent, requires proof, gates the review and leaves the merge to you and merge_check.py.</p>
+<svg viewBox="0 0 1280 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="host-vs-vibecode-dark-title host-vs-vibecode-dark-desc">
+<title id="host-vs-vibecode-dark-title">The host splits the task; finolabs-vibecode governs it</title>
+<desc id="host-vs-vibecode-dark-desc">Diagram of where finolabs-vibecode and the host&#x27;s own agent features meet: around the task, finolabs-vibecode takes your request, coding-router routes it by depth and gates, and delegate picks the agent across vendors; inside the task, the host agent splits the work among its subagents, agent team or /swarm, and /loop, /goal and scheduled runs keep an agent taking turns within the host&#x27;s permissions; the diff comes back to checks, which rerun the tests and write a receipt, a review gate of another model family posts code and security reviews, and the merge waits for your go and merge_check.py.</desc>
+<defs><marker id="host-vs-vibecode-dark-default" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#BCBCD0"/></marker></defs>
+<rect width="100%" height="100%" fill="#050510"/>
+<text x="40" y="72" fill="#FFFFFF" font-size="12" font-weight="500" font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="0.14em">FINOLABS-VIBECODE · AROUND THE TASK</text>
+<text x="1240" y="72" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="end">which agent, what proof, who reviews, what merges</text>
+<rect x="40" y="272" width="1200" height="176" rx="8" fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="1" stroke-dasharray="4,4"/>
+<text x="56" y="300" fill="#FFFFFF" font-size="12" font-weight="500" font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="0.14em">HOST · INSIDE ONE TASK</text>
+<text x="1224" y="300" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="end">Claude Code, Codex, Antigravity</text>
+<path d="M200,164 H240" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<path d="M400,164 H440" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<path d="M840,164 H880" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<path d="M1040,164 H1080" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<path d="M520,216 V320" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<path d="M600,372 H680" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<path d="M760,320 V216" fill="none" stroke="#BCBCD0" stroke-width="1.2" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<rect class="lm" x="532" y="228" width="56" height="16" rx="2" fill="#050510"/><text x="536" y="240" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">BRIEF</text>
+<rect class="lm" x="772" y="228" width="48" height="16" rx="2" fill="#050510"/><text x="776" y="240" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">DIFF</text>
+<rect class="lm" x="612" y="348" width="56" height="16" rx="2" fill="#050510"/><text x="640" y="360" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">SPLIT</text>
+<g class="node">
+<rect x="40" y="112" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="40" y="112" width="160" height="104" rx="8" fill="rgba(188,188,208,0.10)" stroke="#8B8BA6" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="120" y="152" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">Your request</text>
+<text x="120" y="176" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">one sentence</text>
+<text x="120" y="196" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">in your words</text>
+</g>
+<g class="node">
+<rect x="240" y="112" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="240" y="112" width="160" height="104" rx="8" fill="#16162A" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="320" y="152" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">coding-router</text>
+<text x="320" y="176" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">routes the task</text>
+<text x="320" y="196" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">depth and gates</text>
+</g>
+<g class="node">
+<rect x="440" y="112" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="440" y="112" width="160" height="104" rx="8" fill="#16162A" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="520" y="152" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">delegate</text>
+<text x="520" y="176" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">picks the agent</text>
+<text x="520" y="196" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">across vendors</text>
+</g>
+<g class="node">
+<rect x="680" y="112" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="680" y="112" width="160" height="104" rx="8" fill="#16162A" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="760" y="152" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">checks</text>
+<text x="760" y="176" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">reruns the tests</text>
+<text x="760" y="196" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">writes a receipt</text>
+</g>
+<g class="node">
+<rect x="880" y="112" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="880" y="112" width="160" height="104" rx="8" fill="#16162A" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="960" y="152" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">Review gate</text>
+<text x="960" y="176" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">another family</text>
+<text x="960" y="196" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">code + security</text>
+</g>
+<g class="node">
+<rect x="1080" y="112" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="1080" y="112" width="160" height="104" rx="8" fill="rgba(151,80,196,0.18)" stroke="#E5D2F4" stroke-width="1.2"/>
+<text x="1160" y="152" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">Merge</text>
+<text x="1160" y="176" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">your go and</text>
+<text x="1160" y="196" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">merge_check.py</text>
+</g>
+<g class="node">
+<rect x="440" y="320" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="440" y="320" width="160" height="104" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.30)" stroke-width="1"/>
+<text x="520" y="360" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">Host agent</text>
+<text x="520" y="384" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">takes the brief</text>
+<text x="520" y="404" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">in its own branch</text>
+</g>
+<g class="node">
+<rect x="680" y="320" width="160" height="104" rx="8" fill="#050510"/>
+<rect x="680" y="320" width="160" height="104" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.30)" stroke-width="1"/>
+<text x="760" y="360" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">Subagents</text>
+<text x="760" y="384" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">agent teams, /swarm</text>
+<text x="760" y="404" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">split the task</text>
+</g>
+<g class="node">
+<rect x="920" y="320" width="280" height="104" rx="8" fill="#050510"/>
+<rect x="920" y="320" width="280" height="104" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.30)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="1060" y="360" fill="#FFFFFF" font-size="16" font-weight="600" font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">/loop, /goal, schedules</text>
+<text x="1060" y="384" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">keep an agent taking turns</text>
+<text x="1060" y="404" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle">within host permissions</text>
+</g>
+<text x="40" y="496" fill="#BCBCD0" font-size="16" font-family="'Space Grotesk', system-ui, sans-serif" font-style="italic">Inside the task, the host decides how work is split. Around it, finolabs-vibecode decides what reaches main.</text>
+<line x1="40" y1="528" x2="1240" y2="528" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+<text x="40" y="560" fill="#BCBCD0" font-size="12" font-weight="500" font-family="'JetBrains Mono', ui-monospace, monospace" letter-spacing="0.14em">LEGEND</text>
+<rect x="140" y="548" width="32" height="16" rx="4" fill="rgba(188,188,208,0.10)" stroke="#8B8BA6" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="184" y="560" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace">from you</text>
+<rect x="300" y="548" width="32" height="16" rx="4" fill="#16162A" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>
+<text x="344" y="560" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace">plugin step</text>
+<rect x="488" y="548" width="32" height="16" rx="4" fill="rgba(151,80,196,0.18)" stroke="#E5D2F4" stroke-width="1"/>
+<text x="532" y="560" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace">your approval</text>
+<rect x="688" y="548" width="32" height="16" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.30)" stroke-width="1"/>
+<text x="732" y="560" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace">host feature</text>
+<path d="M880,556 H912" stroke="#BCBCD0" stroke-width="1.2" fill="none" marker-end="url(#host-vs-vibecode-dark-default)"/>
+<text x="924" y="560" fill="#BCBCD0" font-size="12" font-family="'JetBrains Mono', ui-monospace, monospace">next step</text>
+</svg>
+</div></body></html>

@@ -32,6 +32,28 @@ Depth routing, cross-agent delegation and review gates for Claude Code, Codex an
 
 Built with itself: from 2 to 13 November 2026, 263 pull requests merged in this repository, 255 of them with a posted code and security review, and 104 were sent back for rework at least once before they merged.
 
+## How it differs from the hosts' own agents
+
+Subagents, Claude Code agent teams, Antigravity `/swarm`, `/loop`, `/goal` and scheduled runs split and continue the work inside one task. finolabs-vibecode works around the task, across all three hosts. They work together: a delegated agent may still use its host's subagents.
+
+| | Host features | finolabs-vibecode |
+| --- | --- | --- |
+| What it is | Helpers inside one host: split one task among agents, or keep an agent taking turns. | A practice around each task: routing, delegation, proof, review and merge gates, on Claude Code, Codex and Antigravity. |
+| Who picks the agent | The host or your prompt, among that vendor's models. | Your assignment matrix and each family's remaining quota, across vendors (`delegate`). |
+| What proof is required | Whatever the prompt asks for. | Targeted tests rerun and a receipt bound to the checkout's head (`checks`). |
+| Who reviews | Whatever the prompt sets up, within one vendor (`/swarm` includes a verifier). | A fresh-context reviewer from another model family when one is available, posting code and security reviews pinned to the commit. |
+| What may merge | Nothing merge-specific: permissions, hooks and sandboxes bound what an agent may run. | Only what both reviews approved at that commit, after `merge_check.py` passes and you say merge. |
+| What survives the session | Little: an agent team's config ends with the session; results return to the caller. | A dispatch ledger, verification receipts, review markers on the pull request and a local dashboard. |
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/host-vs-vibecode-dark.png">
+    <img src="assets/host-vs-vibecode-light.png" alt="Two bands. Around the task, finolabs-vibecode takes your request, coding-router routes it by depth and gates, and delegate picks the agent across vendors and sends a brief. Inside the task, the host agent splits the work among subagents, an agent team or /swarm, while /loop, /goal and scheduled runs keep an agent taking turns within the host's permissions. The diff comes back to checks, which rerun the tests and write a receipt; a review gate of another model family posts code and security reviews; the merge waits for your go and merge_check.py." width="920">
+  </picture>
+</p>
+
+Host by host, with links to each host's documentation and how `afk` relates to loops, goals and scheduled runs: [How it compares](docs/how-it-compares.md).
+
 ## Install at a glance
 
 Run the commands for your host, then open a new chat. See [Install](#install) for trust, verification and single-skill options.
@@ -401,7 +423,7 @@ evals/                            trigger, behavior and parity cases for `claude
 scripts/                          repository/shared helpers and checks: routing, reviews, receipts, judge, context, hygiene, slots, quota, metrics and setup; shared helpers have byte-identical copies in consuming skills
 skills/*/scripts/                 self-contained copies plus skill-only helpers; the full inventory is in help/references/map.md
 docs/specs/                       design specs (index.md) and one-file work records; work-tracking.md defines their contract
-docs/diagrams/                    HTML sources of the architecture, task-lifecycle, request-to-merge, delegation sequence, away decision sequence, afk mechanism, session health and settings scopes diagrams
+docs/diagrams/                    HTML sources of the architecture, task-lifecycle, request-to-merge, host versus vibecode, delegation sequence, away decision sequence, afk mechanism, session health and settings scopes diagrams
 docs/how-it-compares.md           how the plugin relates to the hosts' own subagents, agent teams, /loop, /goal and scheduled runs
 tests/                            unit tests for the repository scripts, the ledger, the metrics hook and the dashboard page (the page script runs in node when it is installed)
 CHANGELOG.md                      Keep a Changelog
@@ -577,7 +599,7 @@ The [afk mechanism](docs/diagrams/afk-mechanism-light.html) ([dark](docs/diagram
   </picture>
 </p>
 
-The sources of all eight diagrams are in [`docs/diagrams/`](docs/diagrams/).
+The sources of all nine diagrams are in [`docs/diagrams/`](docs/diagrams/).
 
 ### Bricks, not a framework
 
