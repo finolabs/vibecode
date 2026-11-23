@@ -31,9 +31,11 @@ import secrets
 import stat
 import subprocess
 import sys
+import time
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import away_lease
 import data_root as dr
 import fnl_metrics as fm
 import git_metadata as metadata
@@ -277,6 +279,10 @@ def check_relay(body, relay):
     if (not all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
             or not fm.valid_relay_pairs(fields) or not re.search(r"\brelay(?:ed)?\b", second, re.I)):
         raise ValueError("invalid relay")
+    # The one record this script can check: a lease relay needs a live away lease. The standing record and
+    # the owner's yes are labels the coordinator declares, not proof (agent-roles.md part D).
+    if authority == "lease-security" and away_lease.live_lease(time.time()) is None:
+        raise ValueError("no live away lease")
     return fields
 
 
@@ -306,9 +312,10 @@ def post(pr, path, checkout, relay=None):
         os.rmdir(relative.parts[0], dir_fd=parent)
     if relayed:
         try:
-            return record.write_relay(**relayed)
-        except Exception:
-            return False  # a receipt never changes an observed post
+            return record.write_relay(relative.parts[0][len("post-"):], **relayed)
+        except Exception as error:
+            fm.bump_errors(error)  # counted like a hook failure; a receipt never changes an observed post
+            return False
     return False
 
 

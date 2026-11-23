@@ -125,23 +125,24 @@ def read_verification(dispatch):
         raise ValueError("receipt belongs to another dispatch")
     return rec
 
-def write_relay(reviewer, kind, by, authority):
+def write_relay(run, reviewer, kind, by, authority):
     """Leave one pending relay receipt (four enum fields) for the metrics hook; True when written.
 
-    Nothing is written without metrics consent. The hook turns it into one `relay` event of the
-    session that ran post_review.py and deletes it; an unclaimed receipt goes with the markers
-    after seven days. Raises ValueError for a field or pair outside the schema.
+    `run` is the 32-hex id of the posting run (its body is post-<run>/body.md), so only the hook of the
+    session whose command named that body claims it. Nothing is written without metrics consent. The
+    hook turns it into one `relay` event of that session and deletes it; an unclaimed receipt goes with
+    the markers after seven days. Raises ValueError for a run id, field or pair outside the schema.
     """
-    import secrets
     import fnl_metrics as fm
     fields = {"reviewer": reviewer, "kind": kind, "by": by, "authority": authority}
-    if (not all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
+    if (not isinstance(run, str) or re.fullmatch(r"[0-9a-f]{32}", run) is None
+            or not all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
             or not fm.valid_relay_pairs(fields)):
         raise ValueError("invalid relay receipt")
     if not fm.enabled():
         return False
     folder = fm.ensure_dir(fm.ensure_dir(fm.state_dir(), follow=True) / "markers")
-    fm.atomic_write(folder / (secrets.token_hex(16) + ".relay"), json.dumps(fields))
+    fm.atomic_write(folder / (run + ".relay"), json.dumps(fields))
     return True
 
 

@@ -436,6 +436,12 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(set(re.findall(r"`([^`]+)` \(", row.split("|")[2])), expected)
         self.assertEqual(set(m.SCHEMA["judge"]), expected)
 
+    def test_relay_families_equal_the_review_families(self):
+        spec = importlib.util.spec_from_file_location("review_config_for_families", ROOT / "scripts/review_config.py")
+        config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(config)
+        self.assertEqual(m.FAMILIES, config.FAMILIES)
+
     def test_relay_privacy_and_spec_pin_the_exact_field_list_and_pairs(self):
         expected = {"reviewer", "kind", "by", "authority"}
         for path in ("PRIVACY.md", "docs/specs/usage-metrics.md"):

@@ -339,11 +339,14 @@ else:
     def test_relayed_post_leaves_one_receipt_per_kind_with_consent(self):
         import fnl_metrics as fm
         fm.write_consent(30)
+        run = self.body.parent.name[len("post-"):]
         code, output, _ = self.relay()
         self.assertEqual((code, output), (0, "posted; relay receipt recorded\n"))
+        self.assertTrue((fm.state_dir() / "markers" / (run + ".relay")).is_file())  # named by the posting run
         self.body = post.create_run_folder()
         options = ("--relay-reviewer", "antigravity", "--relayed-by", "codex", "--relay-authority", "lease-security")
-        self.assertEqual(self.relay("security", options=options)[0], 0)
+        with mock.patch.object(post.away_lease, "live_lease", return_value={"id": "0" * 32}):
+            self.assertEqual(self.relay("security", options=options)[0], 0)
         self.assertEqual(sorted(self.relay_receipts(), key=lambda r: r["kind"]), [
             dict(reviewer="codex", kind="code", by="claude", authority="standing-code"),
             dict(reviewer="antigravity", kind="security", by="codex", authority="lease-security")])
@@ -373,6 +376,25 @@ else:
         self.body = post.create_run_folder()
         self.body.write_text(BODY)
         self.assertEqual(self.main(["31", "--body-file", str(self.body)])[:2], (0, "posted\n"))
+        self.assertEqual(self.relay_receipts(), [])
+
+    def test_lease_relay_needs_a_live_away_lease(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        options = ("--relay-reviewer", "antigravity", "--relayed-by", "codex", "--relay-authority", "lease-security")
+        with mock.patch.object(post.away_lease, "live_lease", return_value=None):
+            self.assertEqual(self.relay("security", options=options)[0], 2)
+        self.assertEqual(self.calls(), [])
+        self.assertEqual(self.relay_receipts(), [])
+
+    def test_failed_receipt_write_is_counted_and_never_changes_the_post(self):
+        import fnl_metrics as fm
+        fm.write_consent(30)
+        with mock.patch.object(post.record, "write_relay", side_effect=OSError("disk full")):
+            self.assertEqual(self.relay(), (0, "posted\n", ""))
+        self.assertEqual(len(json.loads((self.base / "comments.json").read_text())), 1)
+        self.assertFalse(self.body.parent.exists())
+        self.assertEqual(fm.errors_count(), 1)
         self.assertEqual(self.relay_receipts(), [])
 
     def test_failed_post_leaves_no_receipt(self):

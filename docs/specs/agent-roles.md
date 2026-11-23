@@ -147,17 +147,22 @@ Enforcers: the script for the choice; `review-gate` text and agent judgment (adv
   one pull request. Each receipt names the record that authorized it. The coordinator posts a relay through
   `post_review.py PR --body-file FILE --relay-reviewer FAMILY --relayed-by FAMILY --relay-authority RECORD` (all
   three or none). Before any `gh` call the wrapper refuses a value outside these lists, a reviewer of the relaying
-  family, a record that does not cover the marker's kind, a `ui` marker and a body whose second line does not say
-  it was relayed. Only after it observed the post does it leave one pending receipt through `record.py`
-  (`write_relay`), and only with metrics consent; a failed receipt never changes the result. The metrics hook,
-  seeing a relayed `post_review.py` command, records each pending receipt as one `relay` event of that session and
-  deletes it; an unclaimed receipt is removed with the markers after seven days. A receipt holds exactly:
+  family, a record that does not cover the marker's kind, a `ui` marker, a body whose second line does not say
+  it was relayed, and `lease-security` without a live away lease. Only after it observed the post does it leave one
+  pending receipt through `record.py` (`write_relay`), named by the posting run's id and only with metrics consent;
+  a failed receipt is counted as a writer error and never changes the result. The metrics hook, seeing a relayed
+  `post_review.py` command, claims only the receipts of the runs whose body paths that command names, records each
+  as one `relay` event of that session and deletes it, and deletes an unreadable one without recording it; an
+  unclaimed receipt is removed with the markers after seven days. A receipt holds exactly:
   - `reviewer`: the reviewer's family, one of `claude`, `codex`, `antigravity`, `zcode`;
   - `kind`: `code` or `security`, taken from the marker;
   - `by`: the relaying coordinator's family, from the same list and never the reviewer's;
   - `authority`: `standing-code` (the standing relay; `code` only), `lease-security` (a live away lease; `security`
     only) or `owner-pr` (the owner's yes for that pull request; either kind).
-  Never a pull request number or URL, a marker, text of the review, a command, a path or a name. The `status`
+  Never a pull request number or URL, a marker, text of the review, a command, a path or a name. `authority` is
+  a label the coordinator declares: the wrapper checks only that a `lease-security` relay runs under a live away
+  lease; that the committed standing record or the owner's yes exists is not checked, so a count is not proof of
+  authorization. The `status`
   dashboard counts relays per reviewer family and kind, with the records behind them, in the overview tab beside the
   delegation tables. Enforcer: `post_review.py` and the metrics schema for the fields; agent judgment (advisory) for
   passing the relay options on every relay.

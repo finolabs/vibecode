@@ -49,8 +49,8 @@ EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "apply_patch"}  # apply_patch is 
 AGY_SHELL = {"run_command"}
 AGY_EDIT = {"write_file", "write_to_file", "replace_file_content", "multi_replace_file_content"}
 HEAD_BYTES = 4096
-RELAY_FILE = re.compile(r"^[0-9a-f]{32}\.relay\Z")
-RELAYS_PER_COMMAND = 16
+RELAY_RUN = re.compile(r"post-([0-9a-f]{32})[/\\]body\.md")
+RELAYS_PER_COMMAND = 4
 MAX_COMMAND = 8192  # longer command text is not tested at all: a trigger is never that long
 ROUTER_SKILL = "coding-router"
 # A typed skill or slash command: "/name" or "/plugin:name" at the very start of the prompt, then whitespace or the end.
@@ -194,15 +194,23 @@ def reviews_from(command, cwd):
     return found
 
 
-def claim_relays(sid, cwd):
-    """Record one `relay` event per pending receipt post_review.py left, deleting each before it is recorded."""
+def claim_relays(sid, cwd, command):
+    """Record the pending receipt of each posting run this command named, deleting it before it is recorded.
+
+    Only the runs named by the command's body paths are claimed, so a receipt lands on the session that posted it.
+    A receipt that cannot be read or parsed is deleted too and records nothing."""
     folder = fm.state_dir() / "markers"
-    paths = sorted(p for p in fm._regular_files(folder) if RELAY_FILE.match(p.name))[:RELAYS_PER_COMMAND]
-    for path in paths:
+    for run in list(dict.fromkeys(RELAY_RUN.findall(command)))[:RELAYS_PER_COMMAND]:
+        path = folder / (run + ".relay")
+        if not os.path.lexists(path):
+            continue
         try:
             fields = json.loads(fm.read_small(path))
-            path.unlink()  # claimed: another hook never records it twice
         except (OSError, ValueError):
+            fields = None
+        try:
+            path.unlink()  # claimed: another hook never records it twice
+        except OSError:
             continue
         if (isinstance(fields, dict) and set(fields) == set(fm.SCHEMA["relay"])
                 and all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
@@ -340,7 +348,7 @@ def post_tool_use(sid, cwd, tool, data, host="claude"):
         for kind, verdict, pr in reviews_from(command, cwd) if "comment" in command else ():
             fm.record("review", sid, cwd, kind=kind, verdict=verdict, pr=pr)
         if "post_review.py" in command and "--relay-" in command:
-            claim_relays(sid, cwd)
+            claim_relays(sid, cwd, command)
         if "record.py" in command and ROUTER.search(command):
             depth, trigger = DEPTH.search(command), TRIGGER.search(command)
             if depth and trigger and depth.group(1) in fm.DEPTHS and trigger.group(1) in fm.TRIGGERS:
