@@ -118,6 +118,10 @@ class StopHookTest(unittest.TestCase):
         self.assertIn('afk "Decide"', answer["reason"])
         self.assertIn("--kind idle", answer["reason"])
         self.assertNotIn("--kind parked", answer["reason"])  # a park closes an item, not the turn
+        # The plain form the afk permission hook allows (live smoke test, 24/11/2026); the reason stays fixed: no path.
+        self.assertIn("python3 -I <this install's absolute afk.py path> log --kind idle", answer["reason"])
+        self.assertIn("no shell variable", answer["reason"])
+        self.assertNotIn("/", answer["reason"].replace("afk.py path", ""))
 
     def test_a_pending_turn_is_sent_back_once_then_the_next_stop_passes(self):
         self.lease()

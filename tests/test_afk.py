@@ -1012,5 +1012,81 @@ class GoalTest(AfkBase):
         self.assertIn('goal', self.load().LEASE_COMMANDS)
 
 
+
+class PlainLeaseCommandTest(AfkBase):
+    """Lease commands the agent learns pass the afk permission hook's plain form (live smoke test, 24/11/2026)."""
+
+    def permit(self):
+        spec = importlib.util.spec_from_file_location('permit_tested', ROOT / 'scripts/afk_permit_hook.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def allowed(self, command):
+        """own_lease_command under a PATH that resolves a bare python3 to this interpreter."""
+        bin_folder = self.home / 'bin'
+        bin_folder.mkdir(exist_ok=True)
+        if not (bin_folder / 'python3').exists():
+            (bin_folder / 'python3').symlink_to(sys.executable)
+        with patch.dict(os.environ, {'PATH': str(bin_folder)}):
+            return self.permit().own_lease_command(command, str(self.cwd), SCRIPT)
+
+    def printed(self, output):
+        ends = [line for line in output.splitlines() if line.startswith('End a turn: `')]
+        forms = [line for line in output.splitlines() if line.startswith('Lease commands: ')]
+        self.assertEqual((len(ends), len(forms)), (1, 1), output)
+        form = re.search(r'`(python3 -I \S+) <command> \[args\]`', forms[0])
+        self.assertIsNotNone(form, forms[0])
+        self.assertEqual(form.group(1), f'python3 -I {SCRIPT.resolve()}')
+        return ends[0][len('End a turn: `'):-1], form.group(1)
+
+    def test_start_prints_the_plain_idle_command_the_permission_hook_allows(self):
+        self.setup_config()
+        status, output = self.invoke('start')
+        self.assertEqual(status, 0, output)
+        idle, prefix = self.printed(output)
+        command = idle.replace('<Session id>', 'd0e23482-623e-480c-bb6b-d06834da84cf')
+        self.assertTrue(self.allowed(command), command)
+        for name in ('effective', 'log --kind parked --item 1 --note waiting-for-review', 'goal --items-file x.json'):
+            self.assertTrue(self.allowed(f'{prefix} {name}'), name)
+        # The live failure: a shell variable form of the same command is not the plain form.
+        self.assertFalse(self.allowed(f'S={SCRIPT}; python3 -I $S log --kind idle --session s1'))
+        # A session that joins the live lease gets the same lines.
+        status, joined = self.invoke('start')
+        self.assertEqual(status, 0, joined)
+        self.assertEqual(self.printed(joined), (idle, prefix))
+
+    def test_the_documented_lease_commands_are_in_the_plain_form(self):
+        found = 0
+        for name in ('lease-rules.md', 'stops.md', 'decide.md'):
+            text = (ROOT / 'skills/afk/references' / name).read_text()
+            for command in re.findall(r'`(python3 -I <script> [^`]+)`', text):
+                if 'argv-json' in command:
+                    continue  # needs quotes: the start summary's allow rules cover it
+                plain = re.sub(r' \[[^\]]*\]', '', command).replace('<script>', str(SCRIPT)).replace('<command>', 'effective')
+                plain = re.sub(r'<[^>]+>', 'x', plain)
+                with self.subTest(document=name, command=command):
+                    self.assertTrue(self.allowed(plain), plain)
+                    found += 1
+        self.assertGreaterEqual(found, 4)
+
+    def test_an_old_lease_tells_the_user_to_stop_it_first(self):
+        self.start()
+        ap = self.load()
+        self.change_lease(lambda value: value.update(counters={}))  # as 0.3.2 wrote it
+        for command in ('start', 'effective'):
+            with self.subTest(command=command):
+                self.assertEqual(self.invoke(command), (3, 'afk refused: ' + ap.OLD_LEASE + '\n'))
+        self.assertIn('/afk stop', ap.OLD_LEASE)
+        status, output = self.invoke('stop', '--all')
+        self.assertEqual(status, 0, output)
+        status, output = self.invoke('start')
+        self.assertEqual(status, 0, output)
+        # An unsafe lease file stays the generic refusal: it names nothing about its content.
+        (self.state / 'lease.json').chmod(0o644)
+        self.assertEqual(self.invoke('effective'),
+                         (3, 'afk refused: setup or private state is missing, invalid, unsafe or already active\n'))
+
+
 if __name__ == '__main__':
     unittest.main()

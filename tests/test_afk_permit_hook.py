@@ -106,6 +106,8 @@ class PermitHookTest(unittest.TestCase):
         self.assertTrue(decision["message"].startswith(DENY_START))
         value = self.digest_of(decision)
         self.assertNotIn("notes.txt", decision["message"])
+        # Fixed text that names the plain form of a lease command, never a path.
+        self.assertIn("python3 -I <this install's absolute afk.py path> <command> [args]", decision["message"])
         expected = hashlib.sha256(json.dumps(
             {"cwd": os.path.realpath(self.work), "input": {"command": "cat notes.txt | wc -l"}, "tool": "Bash"},
             sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
@@ -142,6 +144,7 @@ class PermitHookTest(unittest.TestCase):
         first = self.run_hook()
         second = self.run_hook()
         self.assertTrue(second["message"].startswith(PARK_START))
+        self.assertIn("no shell variable, ;, quote or other shell syntax", second["message"])
         self.assertIn("log --kind parked", second["message"])
         self.assertEqual(self.digest_of(first), self.digest_of(second))
 
@@ -151,7 +154,8 @@ class PermitHookTest(unittest.TestCase):
                         f"python3 {AFK} effective", f"{sys.executable} -I {AFK} check --paths src/a.py",
                         f"python3 -I {AFK} log --kind decision --approve-request {'a' * 64} --topic run-it",
                         f"python3 -I {AFK} goal --items-file .finolabs/briefs/items.json",
-                        f"python3 -I {AFK} stop --all"):
+                        f"python3 -I {AFK} stop --all", f"python3 -I {AFK} log --kind idle --session s1",
+                        f"python3 -I {AFK} log --help"):
             with self.subTest(command=command):
                 self.assertEqual(self.run_hook(self.event(command)), {"behavior": "allow"})
         for command in (f"python3 -I {AFK} start", f"python3 -I {AFK} log --note 'x'", f"python3 -I {AFK} log; ls",
@@ -159,7 +163,8 @@ class PermitHookTest(unittest.TestCase):
                         f"python3 -c {AFK} log", f"X=1 python3 -I {AFK} log", f"python3 -I /tmp/afk.py log",
                         f"python3 -I {AFK} log --note a*",
                         f"python3 -I {AFK} goal --items-file .finolabs/briefs/items.json; ls",
-                        f"python3 -I {AFK} goal --items-file $(echo x)"):
+                        f"python3 -I {AFK} goal --items-file $(echo x)",
+                        f"S={AFK}; python3 -I $S log --kind idle --session s1"):
             with self.subTest(command=command):
                 self.assertEqual(self.run_hook(self.event(command))["behavior"], "deny")
         sandbox = self.event(f"python3 -I {AFK} effective", dangerouslyDisableSandbox=True)
