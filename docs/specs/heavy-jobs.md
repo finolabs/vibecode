@@ -1,6 +1,6 @@
 # Heavy-job guard and test scope (release 0.2.1)
 
-Status: draft; `heavy_run.py` is implemented; the gate, its installer and the setup question are not. Owner decisions settled 2026-11-08; the CLAUDE.md exception for the gate lands with this spec before any code.
+Status: implemented; `heavy_run.py` shipped first, and the gate (`scripts/heavy_gate_hook.py`), its installer (`skills/setup/scripts/heavy_gate_setup.py`) and the setup question follow part D. Owner decisions settled 2026-11-08; the CLAUDE.md exception for the gate lands with this spec before any code.
 
 ## Why
 
@@ -30,6 +30,9 @@ Two gaps caused it:
   lands before that rule is merged. It never covers Codex or Antigravity.
 - **Default thresholds (owner, 2026-11-08):** one-minute load average below 12 and at least 3 GB of free plus inactive
   memory; wait cap 40 minutes.
+- **Default load limit (owner, 2026-11-23, replacing the 12 of 2026-11-08):** 25, matching the owner's user-scope rule
+  of 2026-11-13. The comparison is unchanged: a start waits while the one-minute load average is at or above `Load
+  limit`.
 - **Memory gates (2026-11-11, brief from the owner's coordinator after a read-only review; starting heuristics, not
   measured safe limits):** the load gate passed while the machine paged hard (about 52 MB/s of swap-out at a load below
   12). On macOS a start also needs the kernel's pressure state (`kern.memorystatus_vm_pressure_level`) normal at every
@@ -87,7 +90,9 @@ mechanism, its relocation behavior and the tests for both.
 
 `## Heavy jobs` in the canonical host config lists patterns, the load limit, the memory minimum and the wait cap. A
 missing section uses the defaults settled above and this built-in default list. A pattern is a command-token sequence
-matched after splitting the command with `shlex` and skipping leading `NAME=value` words:
+matched after splitting the command with `shlex` and skipping leading `NAME=value` words. The owner writes one
+pattern per line as `- Heavy command: <words>` (for example `- Heavy command: pnpm test:e2e`); a command is heavy when
+its words start with those words, the first compared by its base name. Any such line replaces the built-in list:
 
 - `docker` with `run`, `build`, `compose` or `buildx`; `docker-compose`.
 - `playwright test`, also behind `npx` or `pnpm exec`.
@@ -117,6 +122,10 @@ A `PreToolUse` hook on the `Bash` tool, in its own group in the user's Claude Co
   prefix is also recognised and skipped. The gate recognises a wrapped command by this grammar: after `shlex` splitting,
   an optional `run_env.py --` prefix, then an optional `python3`/`python` word with `-I`, then a word whose basename is
   `heavy_run.py`, then `run`.
+- The command is split into simple commands at `;`, `&`, `&&`, `|`, `||` and newlines, and each is matched on its own,
+  so `cd app && docker compose up` is denied and `heavy_run.py run -- docker compose up` is not. A command holding a
+  here-document, a subshell, command or process substitution, a comment (`#`), a backslash or an unclosed quote is not
+  classified and is allowed; a separator inside quotes does not split.
 - It denies one Bash call only when the command matches a heavy pattern (the section's list, else the built-in default
   list in part B) and is not wrapped in that form. The denial is one fixed message that names the script. Anything it
   cannot classify with certainty is allowed.
