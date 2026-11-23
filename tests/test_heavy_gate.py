@@ -105,6 +105,14 @@ class GateTest(unittest.TestCase):
         self.assertEqual(self.bash('docker compose up'), b'')
         self.assertEqual(self.bash('python3 -I /abs/heavy_run.py run -- pnpm test:e2e'), b'')
 
+    def test_allows_when_a_configured_pattern_cannot_be_read(self):
+        for lines in ('- Heavy command: "unclosed\n', '- Heavy command:\n',
+                      '- Heavy command: pnpm test:e2e\n- Heavy command: "unclosed\n'):
+            with self.subTest(lines=lines):
+                self.host('## Heavy jobs\n- Heavy-job gate: on\n' + lines)
+                self.assertEqual(self.bash('docker compose up'), b'')
+                self.assertEqual(self.bash('pnpm test:e2e'), b'')
+
     def test_allows_when_off_missing_or_unreadable(self):
         cases = {'gate off': '## Heavy jobs\n- Heavy-job gate: off\n',
                  'no gate line': '## Heavy jobs\n- Load limit: 25\n',

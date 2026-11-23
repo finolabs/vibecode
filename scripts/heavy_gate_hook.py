@@ -48,9 +48,11 @@ def gate_on():
             try:
                 words = shlex.split(entry[len('Heavy command:'):])
             except ValueError:
-                continue
-            if words:
-                patterns.append(words)
+                words = []
+            if not words:
+                # A pattern the user wrote but the gate cannot read: the list is uncertain, so the gate allows.
+                return False, []
+            patterns.append(words)
     return on, patterns
 
 
