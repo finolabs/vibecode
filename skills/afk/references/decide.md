@@ -54,7 +54,9 @@ The answer of a rung is the decision, not advice: apply it, and do not re-ask, o
 
 Every attempt is one call; the first prints the decision id (`q<date>-<time>-<4 hex>`), and every later attempt on the same question passes it as `--decision <id>`. The schema is closed and a field outside a row's list is refused (script):
 
-`python3 -I <script> log --kind decision [--decision <id>] --rung <rule|table|advisor|host|park> --settled <yes|no|unavailable> --precedents <0-8> --topic '<short label>' --project '<label>' [fields]`
+`python3 -I <script> log --kind decision [--decision <id>] --rung <rule|table|advisor|host|park> --settled <yes|no|unavailable> --precedents <0-8> --topic <short-label> --project <label> [fields]`
+
+Write the topic and project as words joined by hyphens, so the command needs no quotes: on Claude Code the afk permission hook allows a lease command without a prompt only in the plain form of [stops.md](stops.md) "Start lines" (hook).
 
 - `rule yes`: `--by rule --option <n> --of <k>`; `rule no`: `--by rule`.
 - `table yes`: `--by <jev|host-small> --of <k> --probability <the top probability>`; `table unavailable`: `--by <jev|host-small>`. A table never takes `--option`: it decides nothing.

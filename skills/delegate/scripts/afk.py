@@ -125,6 +125,9 @@ MAX_QUEUE = 120  # items of every state in one queue
 QUEUE = re.compile(r'queue-[0-9a-f]{64}\.json')
 STOP_REFUSED = ('afk.py stop needs --all and is the user\'s: an agent whose work is done logs '
                 '`afk.py log --kind idle`; only the user\'s /afk stop ends the lease.')
+OLD_LEASE = ('the recorded lease is invalid or was written before 0.3.3; end it with /afk stop first, then start '
+             'afk again')
+PLAIN_CHARS = re.compile(r'[A-Za-z0-9._,:=/@+%-]+')  # the characters the afk permission hook allows in a command
 
 def now():
     return time.time()
@@ -218,7 +221,7 @@ def start(folder, args):
             raise ValueError('Lease hours must be 1..24 and cannot exceed setup')
         hours = int(args.hours)
     current = now()
-    previous = read_lease(folder)
+    previous = lease_or_refuse(folder)
     read_private(folder, 'stop')
     if previous and previous['expiry'] > current:
         # One lease covers the machine: a second session joins it instead of starting, extending or failing.
@@ -226,6 +229,7 @@ def start(folder, args):
         until = datetime.fromtimestamp(previous['expiry'], timezone.utc).isoformat(timespec='minutes')
         print(f'afk already live until {until}; this lease covers every session on this machine. '
               'Nothing was changed: work under it (check before each action, Decide for every question).')
+        print(plain_notice(), end='')
         print(afk_overlay.lines(os.getcwd()), end='')
         return
     lease = dict(id=uuid.uuid4().hex, start=current, expiry=current + hours * 3600, settings_hash=digest(applied))
@@ -249,6 +253,7 @@ def start(folder, args):
     for line in here['Retired']:
         print(line)
     print(native_notice(os.getcwd()), end='')
+    print(plain_notice(), end='')
     print(afk_overlay.lines(os.getcwd()), end='')
 
 
@@ -283,6 +288,18 @@ def claude_permissions(path):
                 mode if isinstance(mode, str) else None)
     except (OSError, ValueError, AttributeError, UnicodeError):
         return [], None
+
+
+def plain_notice():
+    """The exact form the afk permission hook allows for a lease command, with this install's absolute afk.py path, and
+    the copyable idle command that ends a turn. Nothing when the path holds a character that form excludes."""
+    script = str(Path(__file__).resolve())
+    if not PLAIN_CHARS.fullmatch(script):
+        return ''
+    return (f'Lease commands: run each one alone, exactly as `python3 -I {script} <command> [args]`, with plain '
+            'arguments (a label or note in words joined by hyphens): no shell variable, `;`, `&&`, pipe, quote, `$` or '
+            'other shell syntax, which the afk permission hook denies.\n'
+            f'End a turn: `python3 -I {script} log --kind idle --session <Session id>`\n')
 
 
 def native_notice(cwd):
@@ -503,6 +520,17 @@ def idle_fields(folder, current):
 
 ENDED = {'no-lease', 'expired', 'stopped', 'setup-changed'}
 ENDED_LINE = 'The away lease has ended: stop any loop or wakeup you started for it, then report to the user.'
+
+
+def lease_or_refuse(folder):
+    """read_lease, but a lease file that is safe to read and holds no valid lease (one written before 0.3.3 among
+    them) refuses with OLD_LEASE, so the user learns to end it first; an unsafe file stays the generic refusal."""
+    if read_private(folder, 'lease.json') is None:
+        return None
+    try:
+        return read_lease(folder)
+    except ValueError:
+        raise Refusal(OLD_LEASE) from None
 
 
 def lease_guard(folder, current):
@@ -1404,6 +1432,7 @@ def repository_rules(result):
 
 def show_effective(folder):
     """Read-only: the guards `check` would apply in this working directory now. Reserves nothing; prints no path."""
+    lease_or_refuse(folder)
     code, _, applied = lease_guard(folder, now())
     result = effective(applied if applied is not None else settings(), os.getcwd())
     context = result[CONTEXT]

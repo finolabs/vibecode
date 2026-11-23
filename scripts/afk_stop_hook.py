@@ -25,7 +25,9 @@ LOG_LIMIT = 8 * 1024 * 1024
 REASON = ('The user is away under an afk lease: do not end the turn waiting for them. Settle any pending question or '
           'approval through afk "Decide" and continue with the next open item of this repository\'s afk queue. A park '
           'closes an item, not the turn. To end the turn, first record afk.py log --kind idle --session <this Session '
-          'id>, which is accepted only when every item is done or parked.')
+          'id>, which is accepted only when every item is done or parked. Run it alone as python3 -I <this install\'s '
+          'absolute afk.py path> log --kind idle --session <id>, with no shell variable, ;, quote or other shell '
+          'syntax: the afk permission hook allows only that plain form.')
 
 
 def session_hash(session):

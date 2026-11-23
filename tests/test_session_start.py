@@ -563,7 +563,8 @@ class StateBlockTest(SyntheticStateTest):
         self.assertIn("Quota (cached): claude-code limited, codex out 3%", self.state())
 
     AWAY = ('Away mandate active: never ask or wait for the user; afk "Decide" settles it. Before other work, load the '
-            'afk lease rules and run afk.py goal for this repository.\n')
+            'afk lease rules and run afk.py goal for this repository. Run afk.py lease commands alone as python3 -I '
+            '<its absolute path> <command> [args]: no shell variable, ;, quote or other shell syntax.\n')
 
     def write_lease(self, start, expiry):
         self.write("state/autopilot/lease.json", json.dumps({
@@ -577,7 +578,7 @@ class StateBlockTest(SyntheticStateTest):
         state = self.state()
         self.assertTrue(state.endswith(self.AWAY), state)
         self.assertEqual(state.count("Away mandate"), 1)
-        self.assertLessEqual(len(self.AWAY), 200)
+        self.assertLessEqual(len(self.AWAY), 320)
         # docs/specs/afk-goals.md E: a session that joins a live lease gets the goal step.
         self.assertIn('Before other work, load the afk lease rules and run afk.py goal for this repository.', state)
         for source in ("startup", "resume", "clear", "compact"):

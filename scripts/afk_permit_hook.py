@@ -14,11 +14,14 @@ import sys
 
 INPUT_LIMIT = 1024 * 1024
 LEASE_COMMANDS = {'stop', 'log', 'goal', 'review', 'effective', 'rules', 'check', 'packet-check'}
+# Lease commands pass without a prompt only in this plain form (own_lease_command); the messages say so.
+PLAIN = ('An afk.py lease command runs without a prompt only alone and plain: python3 -I <this install\'s absolute '
+         'afk.py path> <command> [args], with no shell variable, ;, quote or other shell syntax. ')
 DENY = ('The user is away under an afk lease: settle this request through afk "Decide" with two options (1 run it, '
         '2 park it); to run it, record the deciding attempt with --approve-request and the digest below, then retry '
-        'the same request once. Request digest: ')
+        'the same request once. ' + PLAIN + 'Request digest: ')
 PARK = ('The user is away under an afk lease and this request was denied before with no approval recorded since: park '
-        'it with afk.py log --kind parked and move on to other work. Request digest: ')
+        'it with afk.py log --kind parked and move on to other work. ' + PLAIN + 'Request digest: ')
 
 
 def request_digest(tool, tool_input, cwd):
