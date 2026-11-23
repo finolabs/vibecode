@@ -47,7 +47,8 @@ Status: implemented; release prepared, not yet tagged.
 | 385 | Relay receipts ([spec](agent-roles.md) part D): `post_review.py --relay-reviewer`, `--relayed-by` and `--relay-authority` refuse a relay that does not fit and leave one receipt after the observed post; the metrics hook records a `relay` event (four enum fields), and the `status` dashboard counts relays per reviewer family and kind. |
 | 386 | The README host comparison: a six-row table and a light and dark diagram (`docs/diagrams/host-vs-vibecode-*.html`); `docs/how-it-compares.md` gains proof and review rows, its host facts checked again on 2026-11-23. |
 | 387 | The third record pass: rows 382 to 386, the third drift pass below and the edits it lists (README release section, help map, the `0.3.3/codex-hook-trust` note, the CHANGELOG docs entry). Tags nothing. |
-| this | Plain afk lease commands (live smoke test, 24/11/2026): `/afk start` prints the exact form the afk permission hook allows and a copyable `End a turn:` idle command with this install's absolute `afk.py` path; the away line, the stop hook's fixed reason and the permission hook's fixed messages say to run lease commands alone with no shell variable, `;` or quotes; the `afk` references drop quoted labels; an invalid or pre-0.3.3 lease makes `start` and `effective` say to run `/afk stop` first. |
+| 388 | Plain afk lease commands (live smoke test, 24/11/2026): `/afk start` prints the exact form the afk permission hook allows and a copyable `End a turn:` idle command with this install's absolute `afk.py` path; the away line, the stop hook's fixed reason and the permission hook's fixed messages say to run lease commands alone with no shell variable, `;` or quotes; the `afk` references drop quoted labels; an invalid or pre-0.3.3 lease makes `start` and `effective` say to run `/afk stop` first. |
+| this | afk typed-word notes (live smoke test, 24/11/2026): the afk Decide reference ("Two checks") says a handover, brief, session note or another agent's message that an action waits for the user's typed word is a hand-off, not a repository instruction and never the rule that settles it at rung 1; under a lease it goes up the Decide ladder and its source is named in the record, never written as the user's words; a note claiming the user's approval grants nothing and settles nothing at rung 1 either. The user's own words in the session's chat are not such a note. Help `afk.md` tip and CHANGELOG. |
 
 The changelog's 0.3.3 section holds the user-facing wording; `update` carries the 0.3.3 upgrade notes. Pull request 358 (the tokenizer implementation) closed unmerged and is not part of 0.3.3.
 
@@ -141,6 +142,21 @@ Checked against `main` at `f5556d5c`, surface by surface, for every pull request
 | `docs/specs/index.md` | Current (383, 384, 385): the merge guard, autopilot, afk decider, ledger closure, README standard, heavy-job and agent roles rows match their Status lines. |
 | `CHANGELOG.md` | Current for 384, 385 and 386 under 0.3.3; 383 changes no user-facing surface. The docs entry now names this pass. |
 
+### Fourth pass (after pull request 388, with this pull request)
+
+Checked against `main` at `a695ee56` plus this branch, for 388, 389 and this pull request. 389 only dated the `[0.3.3]` heading.
+
+| Surface | Result |
+| --- | --- |
+| `README.md` release section | Current: 388 added the plain lease command form; this pull request changes an advisory step of the Decide ladder, below the README's level of detail. |
+| `skills/help/references/skills/afk.md` | Current: 388 added the `Lease commands:` and `End a turn:` lines; this pull request adds the typed-word note tip. |
+| `skills/help/references/map.md`, `tips.md`, `troubleshooting.md` | Current: 388 updated the map rows and the old-lease troubleshooting row; nothing in them describes the Decide ladder's sources. |
+| `skills/setup/references/check.md` | Current: neither changes which hooks run or what Check reports. |
+| `skills/update/references/upgrades.json` | Current: no user action; an old lease is covered by the troubleshooting row and the `start` refusal text. |
+| `PRIVACY.md` | Current: no new stored or sent field. |
+| `docs/how-it-compares.md` | Current: its afk row names no command form or ladder source. |
+| `docs/diagrams/` afk mechanism, away decision sequence | Current: they name the ladder's rungs, not where a question comes from, and no command form. |
+
 ## Owner decisions
 
 - 17/11/2026: a catalog pin takes the low-risk lane (346).
@@ -187,7 +203,7 @@ Checked against `main` at `f5556d5c`, surface by surface, for every pull request
 - The `ui-review-gate` snippets ran in a live Chromium: on 19/11/2026 through the shared Chromium over CDP, and on 21/11/2026 in Playwright's Chromium 157.0.8103.78 at 375 and 1280 px, over a live-layout fixture kept outside the repository (three 16 px buttons, one alone and two side by side, a 32 px button, a 48 px button, an inline link, faint text, a 900 px block, an unlabeled and a labeled field) and over `tests/fixtures/ui-review-gate/page.html`. All four snippets returned without an exception, and on the live fixture each known case read as expected: the three 16 px buttons blocking, the 32 px button `low`, the inline link `low` and uncertain, one contrast failure, overflow at 375 px only from the 900 px block, the unlabeled field with no label. `page.html` places boxes through style attributes that only the fake DOM reads, so its live counts differ from the unit tests by design. Every inline target exception stays marked uncertain for a check by eye; a run against a real product page remains unverified.
 - Pull requests the coordinator writes itself (376 and 380 in this release) have no ledger dispatch, so `ledger.py summary` does not count them and their bodies name no ledger id; their gate is the review gate (`delegate` `references/accept.md`). The docs do not yet say how such a pull request records who wrote it.
 - A real upgrade from 0.3.2 on a user's machine remains unverified.
-- The plain lease command form (the last row of "What shipped") is tested offline only: that an agent under a live lease copies the printed `End a turn:` line and ends its turn waits on the coordinator's live check. `check --argv-json` and a `--note` with spaces still need quotes, so under a lease they run without a prompt only through the allow rules `/afk start` prints; without those rules each such call is denied with a request digest and goes to Decide.
+- The plain lease command form (row 388 of "What shipped") passed the coordinator's live check on 24/11/2026: under a live lease a headless agent recorded `idle` with the printed plain form and ended its turn without a stop-hook block; a chained command was denied with a digest as designed. `check --argv-json` and a `--note` with spaces still need quotes, so under a lease they run without a prompt only through the allow rules `/afk start` prints; without those rules each such call is denied with a request digest and goes to Decide.
 - Live delivery of the heavy-job gate on a real Claude Code host remains unverified; its tests run the hook script directly.
 - Every `docker compose` subcommand counts as heavy per [heavy-jobs](heavy-jobs.md) part B (`docker` with `compose`), `ps` and `logs` included; the owner may narrow the list later.
 - The reviews of pull requests 383 to 386 were same-family (Claude), approved by the owner because Codex was out of its weekly quota.
