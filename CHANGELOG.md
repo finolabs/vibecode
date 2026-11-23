@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- Relay receipts ([spec](docs/specs/agent-roles.md) part D, owner decision 23/11/2026: count every relay). `post_review.py` takes `--relay-reviewer`, `--relayed-by` and `--relay-authority` (`standing-code`, `lease-security`, `owner-pr`), refuses a relay that does not fit the marker's kind, a same-family relay or a body whose second line does not say it was relayed, and after the observed post leaves one receipt through `record.py` with metrics consent. The metrics hook records it as a `relay` event (four enum fields, nothing else), and the `status` dashboard counts relays per reviewer family and kind in the overview tab. `record.py` and `fnl_metrics.py` are now also copied into `review-gate`.
+
 ## [0.3.3] - 2026-11-19
 
 ### Added
