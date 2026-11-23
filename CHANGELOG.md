@@ -4,6 +4,14 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- Opt-in heavy-job gate on Claude Code ([spec](docs/specs/heavy-jobs.md) part D, the fifth scoped exception in `CLAUDE.md`): `scripts/heavy_gate_hook.py`, a `PreToolUse` hook for `Bash` in its own group of the user's Claude Code settings, refuses a command listed as heavy (`- Heavy command:` lines under `## Heavy jobs`, else the built-in list) that is not wrapped in the `heavy_run.py` launch form, with one fixed message; it allows on every error and on anything it cannot classify, and never stores or sends the command. `skills/setup/scripts/heavy_gate_setup.py` previews, applies and removes it with a backup, and `setup add delegation` asks for it with its own question and records `Heavy-job gate: on|off`. `FNL_HEAVY_GATE=off` turns it off.
+
+### Changed
+
+- Default heavy-job load limit is 25, replacing 12 (owner decision, 23/11/2026): `heavy_run.py` waits while the one-minute load average is at or above `Load limit`.
+
 ## [0.3.3] - 2026-11-19
 
 ### Added
