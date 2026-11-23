@@ -1,6 +1,6 @@
 # Release 0.3.3: scope
 
-Status: implemented; release prepared, not yet tagged.
+Status: released; tagged v0.3.3 on 2026-11-24; a real upgrade from 0.3.2 on a user's machine and the Codex hook trust renewal remain unverified.
 
 ## What shipped
 
