@@ -1061,6 +1061,23 @@ class RefreshTest(unittest.TestCase):
             {"coordinator": "codex", "reason": "needs-context", "route_by": "table", "receipts": 2, "tasks": 5},
             {"coordinator": "unknown", "reason": "user-choice", "route_by": "user", "receipts": 1, "tasks": 2}])
 
+    def test_relays_are_counted_per_reviewer_family_and_kind(self):
+        self.refresh("run")
+        self.assertIsNone(self.data()["relays"])
+        self.consent()
+        relay = lambda reviewer, kind, authority, by="claude": dict(reviewer=reviewer, kind=kind, by=by, authority=authority)
+        self.write_events([self.event(9, "r", X, "relay", **relay("codex", "code", "standing-code")),
+                           self.event(8, "r", X, "relay", **relay("codex", "code", "owner-pr")),
+                           self.event(7, "r", X, "relay", **relay("codex", "code", "standing-code")),
+                           self.event(6, "r", X, "relay", **relay("codex", "security", "lease-security")),
+                           self.event(5, "r", X, "relay", **relay("antigravity", "code", "standing-code", "codex")),
+                           self.event(4, "r", X, "relay", **relay("codex", "security", "standing-code"))])  # invalid pair
+        self.refresh("run")
+        self.assertEqual(self.data()["relays"], [
+            {"reviewer": "antigravity", "kind": "code", "relays": 1, "authority": {"standing-code": 1}},
+            {"reviewer": "codex", "kind": "code", "relays": 3, "authority": {"owner-pr": 1, "standing-code": 2}},
+            {"reviewer": "codex", "kind": "security", "relays": 1, "authority": {"lease-security": 1}}])
+
     def test_the_hand_off_count_leaves_out_subagents_and_reroutes_after_a_failure(self):
         self.consent()
         base = ["start", "--project", "demo", "--task", "t", "--kind", "implement", "--grade", "easy", "--model", "m", "--budget", "20"]

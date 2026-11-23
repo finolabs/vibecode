@@ -1087,6 +1087,7 @@
   if (D.kept) delegationTables.push(tableOf("kept and handed off", ["tasks kept", "receipts", "implementation runs handed off"],
     [[D.kept.tasks, D.kept.receipts, num(D.kept.handed_off)]]));
   if (D.kept && D.kept.rows.length) delegationTables.push(tableOf("kept by the coordinator", ["coordinator / reason / settled by", "receipts", "tasks"], D.kept.rows.map(function (x) { return [x.coordinator + " / " + x.reason + " / " + x.route_by, x.receipts, x.tasks]; })));
+  if (D.relays) delegationTables.push(tableOf("relayed reviews", ["reviewer / kind", "relays", "authorized by"], D.relays.map(function (x) { return [x.reviewer + " / " + x.kind, x.relays, Object.keys(x.authority).map(function (k) { return k + " " + x.authority[k]; }).join(", ")]; })));
   if (D.judge) {
     if (!D.judge.receipts) delegationTables.push(tableOf("Judge · receipts", ["note"], [[D.judge.note]]));
     delegationTables.push(tableOf("Judge · limits", ["note"], [["Not measured: cost, latency and accuracy. The outcome is an association, not proof the judge was right."]]));
