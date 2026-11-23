@@ -30,6 +30,9 @@ Two gaps caused it:
   lands before that rule is merged. It never covers Codex or Antigravity.
 - **Default thresholds (owner, 2026-11-08):** one-minute load average below 12 and at least 3 GB of free plus inactive
   memory; wait cap 40 minutes.
+- **Default load limit (owner, 2026-11-23, replacing the 12 of 2026-11-08):** 25, matching the owner's user-scope rule
+  of 2026-11-13. The comparison is unchanged: a start waits while the one-minute load average is at or above `Load
+  limit`.
 - **Memory gates (2026-11-11, brief from the owner's coordinator after a read-only review; starting heuristics, not
   measured safe limits):** the load gate passed while the machine paged hard (about 52 MB/s of swap-out at a load below
   12). On macOS a start also needs the kernel's pressure state (`kern.memorystatus_vm_pressure_level`) normal at every

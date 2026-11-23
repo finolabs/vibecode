@@ -76,7 +76,7 @@ The parallel run limit, ledger name, task file and display label live in each re
 
 ## Heavy jobs
 
-- Load limit: 12
+- Load limit: 25
 - Memory minimum GB: 4
 - Memory window seconds: 60
 - Swap-out limit MB per second: 5
