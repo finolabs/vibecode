@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Changed
+
+- afk lease rules: a handover, brief or earlier agent note that says an action waits for the user's typed word no longer holds under a live lease; it is settled through afk "Decide" like any other hand-off, and its source is named in the record, never as the user's words (`skills/afk/references/decide.md`).
+
 ## [0.3.3] - 2026-11-24
 
 ### Added
