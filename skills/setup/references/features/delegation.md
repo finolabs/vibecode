@@ -2,7 +2,7 @@
 
 Needs: the agent scan (`scan.md`), asked as its own consent; declining it ends this feature. Skip when the `delegate` skill is not installed. Approval questions use neutral Yes and No with none preselected, as `interview.md` says; a default or timeout is not consent.
 
-Every question follows [interview.md](../interview.md): native question tool, neutral approvals, explicit yes; fallback only as stated there (advisory, agent judgment).
+Every question follows [interview.md](../interview.md) (advisory, agent judgment).
 
 Reuse this run's scan answer if given; otherwise run the scan procedure with the running host passed explicitly, including its model confirmation, preview and clear yes before its section-only write. If it is unavailable, leave the inventory unverified and point to `/setup scan`; never guess which families exist.
 
@@ -14,6 +14,8 @@ No: Leave the file unchanged; ask later.
 Undo: Restore the previous sections or edit them through setup.
 Choices: "Yes, save the helper settings" / "No, leave the file unchanged".
 Create the remaining config from `delegate`'s `references/host-template.md`, preserving the scan section byte for byte, and fill: how this computer invokes the present agents, which agents may coordinate and which delegates each can reach, the heavy-job limits (load, free memory, wait cap and maximum run time), and the durable folder for briefs and logs. Leave unknown commands as questions in the file rather than guesses.
+
+On Claude Code, also offer the [heavy-job gate](../heavy-gate.md).
 Ask as free text, inside the repository being set up: "How many agent runs may work at the same time in this repository?"
 Recommend a small number such as 3 to start; accept an integer from 1 to 32; without an answer the repository keeps the default of 3. Explain that runs of the same family share quota pools, that the limit counts only this repository and that other repositories keep their own.
 Then ask as optional free text: "Any per-family caps for claude, codex or antigravity in this repository? Leave blank for the total limit only."

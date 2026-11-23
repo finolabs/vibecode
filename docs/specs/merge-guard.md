@@ -1,6 +1,6 @@
 # Merge guard through host permission rules
 
-Status: deferred; the release 0.2.0 record moves the backlog target to 0.2.1 with autopilot; no permission-rule writer is built in 0.2.0. The accepted design remains below; implementation and unresolved host decisions still need owner approval.
+Status: deferred; retired (owner decision, 23/11/2026); no writer is built. Blocking merges, releases and force-pushes is the host's own permission rules, auto mode and sandbox (owner decision, 18/11/2026, [afk-decider.md](afk-decider.md)), and an `ask` rule on merge would add one prompt or recorded approval per merge for the decider that merges under a live lease ([afk-one-mode.md](afk-one-mode.md)). The text below records the design.
 
 Originally deferred to 0.2.0 (owner, 2026-11-06), now a 0.2.1 backlog target: the hosts already ask before a merge in their default modes, and the owner
 authorizes merges in chat; the remaining gap is unattended runs, which autopilot settles (`autopilot.md`).
