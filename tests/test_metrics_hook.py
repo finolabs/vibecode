@@ -358,6 +358,45 @@ class HookTest(unittest.TestCase):
                        "tool_input": {"command": command}}, env={**self.env, "FNL_METRICS": "off"})
         self.assertEqual(len(self.events()), 3)
 
+    def pending_relay(self, name="0" * 32, **fields):
+        folder = self.dir / "markers"
+        folder.mkdir(parents=True, exist_ok=True)
+        receipt = dict(reviewer="codex", kind="code", by="claude", authority="standing-code", **fields)
+        (folder / (name + ".relay")).write_text(json.dumps(receipt))
+        return folder / (name + ".relay")
+
+    def test_relayed_post_claims_pending_relay_receipts_once(self):
+        command = ("python3 -I skills/review-gate/scripts/post_review.py 31 --body-file /x/body.md "
+                   "--relay-reviewer codex --relayed-by claude --relay-authority standing-code")
+        path = self.pending_relay()
+        self.post("Bash", {"command": command})  # no consent: nothing read, nothing recorded
+        self.assertTrue(path.exists())
+        self.consent()
+        self.post("Bash", {"command": "python3 -I scripts/post_review.py 31 --body-file /x/body.md"})
+        self.assertTrue(path.exists())  # a post that was not relayed never claims a receipt
+        self.pending_relay("1" * 32)
+        security = self.pending_relay("2" * 32)
+        security.write_text(json.dumps(dict(reviewer="antigravity", kind="security", by="codex", authority="lease-security")))
+        self.post("Bash", {"command": command})
+        self.post("Bash", {"command": command})
+        relays = [{k: e[k] for k in ("reviewer", "kind", "by", "authority")} for e in self.events()]
+        self.assertEqual(relays, [dict(reviewer="codex", kind="code", by="claude", authority="standing-code")] * 2
+                         + [dict(reviewer="antigravity", kind="security", by="codex", authority="lease-security")])
+        self.assertEqual(list((self.dir / "markers").glob("*.relay")), [])
+
+    def test_pending_relay_receipt_outside_the_schema_is_dropped(self):
+        self.consent()
+        command = ("python3 -I scripts/post_review.py 31 --body-file /x/body.md "
+                   "--relay-reviewer codex --relayed-by claude --relay-authority owner-pr")
+        self.pending_relay("1" * 32, pr=31)
+        bad = self.pending_relay("2" * 32)
+        for receipt in (dict(reviewer="codex", kind="security", by="claude", authority="standing-code"),
+                        dict(reviewer="codex", kind="code", by="codex", authority="owner-pr"),
+                        dict(reviewer="codex", kind="ui", by="claude", authority="owner-pr")):
+            bad.write_text(json.dumps(receipt))
+            self.post("Bash", {"command": command})
+        self.assertEqual(self.events(), [])
+
     def test_low_dollar_in_unrelated_command_keeps_judge_receipt(self):
         self.consent()
         command = "python3 -I record.py judge --site route --grader judge --result validated --followed yes"

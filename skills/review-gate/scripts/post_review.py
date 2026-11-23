@@ -3,8 +3,10 @@
 
 Usage: post_review.py PR creates a private run folder and an empty body.md and
 prints its absolute filename. Fill that file, then run post_review.py PR
---body-file FILE. PR is the only positional argument and --body-file the only
-option. No repository argument, browser, editing or generic gh command is allowed.
+--body-file FILE. PR is the only positional argument. A relayed review adds
+--relay-reviewer FAMILY --relayed-by FAMILY --relay-authority RECORD, all three or
+none; its second line must say it was relayed. No repository argument, browser,
+editing or generic gh command is allowed.
 The repository comes only from the checkout's origin remote.
 
 Content beyond the first line is not inspected. A comment in a public repository
@@ -15,7 +17,9 @@ the user's approved host setup. Preparing a file is not permission to post.
 Exit 0: prepared or posted and observed; 1: cannot-post; 2: invalid/unsafe input.
 A failed or unobserved post is never retried automatically. The coordinator calls
 posting_verified before setup records posting=yes; this script writes no host
-settings, event, relay count or verification receipt.
+settings, event or verification receipt. After an observed relayed post it leaves
+one relay receipt through record.py (four enum fields, only with metrics consent);
+a failed receipt never changes the result.
 """
 import argparse
 import configparser
@@ -31,7 +35,9 @@ import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import data_root as dr
+import fnl_metrics as fm
 import git_metadata as metadata
+import record
 
 CAP = 64 * 1024
 MARKER = re.compile(r"<!-- fnl-review kind=(code|security|ui) head=([0-9a-f]{40}) verdict=(APPROVE|REWORK)( lane=yes)? -->")
@@ -261,10 +267,24 @@ def view(executable, pr, repo):
         raise CannotPost("other") from None
 
 
-def post(pr, path, checkout):
+def check_relay(body, relay):
+    """The relay receipt's fields, refused when they or the record do not fit this body's review kind; None when not relayed."""
+    if relay is None:
+        return None
+    reviewer, by, authority = relay
+    fields = {"reviewer": reviewer, "kind": MARKER.fullmatch(marker_line(body))[1], "by": by, "authority": authority}
+    second = (body.split("\n") + ["", ""])[1]
+    if (not all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
+            or not fm.valid_relay_pairs(fields) or not re.search(r"\brelay(?:ed)?\b", second, re.I)):
+        raise ValueError("invalid relay")
+    return fields
+
+
+def post(pr, path, checkout, relay=None):
     repo = checkout_remote(checkout)
     body = read_body(path)
     marker = marker_line(body)
+    relayed = check_relay(body, relay)
     executable = trusted_gh()
     before = view(executable, pr, repo)
     if MARKER.fullmatch(marker)[2] != before["headRefOid"]:
@@ -284,6 +304,12 @@ def post(pr, path, checkout):
         with dr.descend(parent, relative.parts[0], private=True) as folder:
             os.unlink("body.md", dir_fd=folder)
         os.rmdir(relative.parts[0], dir_fd=parent)
+    if relayed:
+        try:
+            return record.write_relay(**relayed)
+        except Exception:
+            return False  # a receipt never changes an observed post
+    return False
 
 
 def positive_pr(value):
@@ -296,14 +322,20 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False, add_help=False)
     parser.add_argument("pr", type=positive_pr)
     parser.add_argument("--body-file")
+    parser.add_argument("--relay-reviewer")
+    parser.add_argument("--relayed-by")
+    parser.add_argument("--relay-authority")
     args = parser.parse_args(argv)
+    relay = (args.relay_reviewer, args.relayed_by, args.relay_authority)
+    if any(relay) and (not all(relay) or args.body_file is None):
+        parser.error("a relay needs --body-file and all three relay options")
     try:
         if args.body_file is None:
             checkout_remote(Path.cwd())
             print(create_run_folder())
         else:
-            post(args.pr, args.body_file, Path.cwd())
-            print("posted")
+            receipt = post(args.pr, args.body_file, Path.cwd(), relay if all(relay) else None)
+            print("posted" + ("; relay receipt recorded" if receipt else ""))
         return 0
     except CannotPost as error:
         print("cannot-post: " + error.reason)
