@@ -43,7 +43,7 @@ Subagents, Claude Code agent teams, Antigravity `/swarm`, `/loop`, `/goal` and s
 | What proof is required | Whatever the prompt asks for. | Targeted tests rerun and a receipt bound to the checkout's head (`checks`). |
 | Who reviews | Whatever the prompt sets up, within one vendor (`/swarm` includes a verifier). | A fresh-context reviewer from another model family when one is available, posting code and security reviews pinned to the commit. |
 | What may merge | Nothing merge-specific: permissions, hooks and sandboxes bound what an agent may run. | Only what both reviews approved at that commit, after `merge_check.py` passes and you say merge. |
-| What survives the session | Little: an agent team's config ends with the session; results return to the caller. | A dispatch ledger, verification receipts, review markers on the pull request and a local dashboard. |
+| What survives the session | Little: results return to the caller; an agent team's config ends with the session (its task list stays on disk), and a Claude Code subagent's optional `memory` persists. | A dispatch ledger, verification receipts, review markers on the pull request and a local dashboard. |
 
 <p align="center">
   <picture>
