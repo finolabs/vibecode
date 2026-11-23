@@ -142,6 +142,21 @@ Checked against `main` at `f5556d5c`, surface by surface, for every pull request
 | `docs/specs/index.md` | Current (383, 384, 385): the merge guard, autopilot, afk decider, ledger closure, README standard, heavy-job and agent roles rows match their Status lines. |
 | `CHANGELOG.md` | Current for 384, 385 and 386 under 0.3.3; 383 changes no user-facing surface. The docs entry now names this pass. |
 
+### Fourth pass (after pull request 388, with this pull request)
+
+Checked against `main` at `a695ee56` plus this branch, for 388, 389 and this pull request. 389 only dated the `[0.3.3]` heading.
+
+| Surface | Result |
+| --- | --- |
+| `README.md` release section | Current: 388 added the plain lease command form; this pull request changes an advisory step of the Decide ladder, below the README's level of detail. |
+| `skills/help/references/skills/afk.md` | Current: 388 added the `Lease commands:` and `End a turn:` lines; this pull request adds the typed-word note tip. |
+| `skills/help/references/map.md`, `tips.md`, `troubleshooting.md` | Current: 388 updated the map rows and the old-lease troubleshooting row; nothing in them describes the Decide ladder's sources. |
+| `skills/setup/references/check.md` | Current: neither changes which hooks run or what Check reports. |
+| `skills/update/references/upgrades.json` | Current: no user action; an old lease is covered by the troubleshooting row and the `start` refusal text. |
+| `PRIVACY.md` | Current: no new stored or sent field. |
+| `docs/how-it-compares.md` | Current: its afk row names no command form or ladder source. |
+| `docs/diagrams/` afk mechanism, away decision sequence | Current: they name the ladder's rungs, not where a question comes from, and no command form. |
+
 ## Owner decisions
 
 - 17/11/2026: a catalog pin takes the low-risk lane (346).
