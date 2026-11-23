@@ -60,7 +60,6 @@ Enforcer: the hook prints; recording the outcome stays agent judgment (advisory)
 
 ## What stays unverified
 
-- The tests were not run on the branch that added them; since 0.2.5 they run with the full suite in CI.
 - Delivery of the hook's stdout into the model context on a live Claude Code session, and whether the reminder changes coordinator behavior, are unverified.
 - The `ended` line covers only runs started through `delegate_env.py` with `FNL_DISPATCH_ID` set; in-session subagents and app sessions never get one.
 - Records closed by the 2026-11-12 cross-project `stale --close` stay as recorded; this change prevents a repeat and does not correct them.
