@@ -1,6 +1,6 @@
 # Ledger closure: stop delegate ledger records from staying open
 
-Status: accepted; owner decision 2026-11-12 ("all four in 0.2.5"); code and tests written on branch `ledger-closure`, tests not yet run, live-host hook delivery unverified.
+Status: implemented; all four parts shipped in 0.2.5 (pull request 257); live-host delivery of the open-dispatch nudge remains unverified.
 
 ## Why
 
