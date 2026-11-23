@@ -136,14 +136,14 @@ Paths below are relative to the full plugin root. There are three agent definiti
 | `scripts/nav_state.py` | Collects bounded current anchors/metadata, screens payloads and checks report references; it does not prove drift. |
 | `scripts/open_dispatch_nudge.py` | Claude Code prompt reminder: one fixed line, at most every 30 minutes per session, counting this session's dispatches with no ledger outcome that ended or passed their budget; reads only the ledger and its own mark, never denies, `FNL_DISPATCH_NUDGE=off` disables it. |
 | `scripts/parallel_slots.py` | Reads user-set total/per-family capacity; advisory snapshots, not reservations or a ledger-start gate. |
-| `scripts/post_review.py` | Posts a bounded marker-checked private draft to the checkout's repository only when authorized. |
+| `scripts/post_review.py` | Posts a bounded marker-checked private draft to the checkout's repository only when authorized; a relayed review adds `--relay-reviewer`, `--relayed-by` and `--relay-authority` and, after the observed post, leaves one relay receipt with metrics consent. |
 | `scripts/precompact.py` | Prints constant summary instructions (what the summary must keep); Claude stdout feeds summary instructions, Codex plain stdout does not reach the model. |
 | `scripts/proof_nudge.py` | Claude Code `Stop` reminder: when this session committed the current head and no `checks` or `verify_claim.py` receipt names it, one fixed line asks for the targeted tests (or `checks`) before reporting done, once per head per session; reads only git refs, the HEAD reflog and receipt heads, never blocks, `FNL_PROOF_NUDGE=off` disables it. |
 | `scripts/project_progress.py` | Reads bounded task/work-record/repository facts and manages consented per-repository settings, labels and registration. |
 | `scripts/project_store.py` | Resolves a validated repository identity (a linked worktree only when its metadata points back) and reads or writes the approved project settings file. |
 | `scripts/quota_limit_hook.py` | Records only Claude family/time on opt-in StopFailure `rate_limit`; starts no reading. |
 | `scripts/quota_probe.py` | Reads quota on demand before routing and reports cached per-install pools and advisory markers; a reading counts until its earliest pool reset, a pool past its reset shows `reset passed at <time>`, and an API-billed Claude install shows `no plan limits`; `status` shows an install's weekly floor. |
-| `scripts/record.py` | Router, keep, task and judge metadata receipts; persists current-head verification metadata. |
+| `scripts/record.py` | Router, keep, task, judge and relay metadata receipts; persists current-head verification metadata. |
 | `scripts/review_config.py` | Reads canonical role/posting settings; writes nothing. |
 | `scripts/review_route.py` | Chooses review families before a run, prefers independence and discloses same-family fallbacks; `--level` applies level-bound `models` rules; treats an install's weekly pools below its recorded weekly floor as out of quota; builds an in-memory review packet. |
 | `scripts/route_task.py` | Prints matrix tier, effort, budget and family order for a kind/grade; the coordinator chooses the model. |

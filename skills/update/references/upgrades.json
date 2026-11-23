@@ -567,7 +567,7 @@
         {
           "id": "0.3.3/codex-hook-trust",
           "kind": "hook",
-          "text": "On Codex, open /hooks in a new session after the refresh and trust the plugin's hooks again; the compaction nudge script changed."
+          "text": "On Codex, open /hooks in a new session after the refresh and trust the plugin's hooks again; the compaction nudge, metrics and session-start scripts changed."
         }
       ]
     }

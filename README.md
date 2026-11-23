@@ -466,6 +466,8 @@ Release 0.3.3 ([release record](docs/specs/release-0.3.3.md)):
 - **Worktrees clean themselves up.** `delegate` removes finished runs' merged, clean, pushed worktrees in the background; `ledger.py clean-worktrees` runs it by hand, and `FNL_WORKTREE_CLEAN=manual` or `off` stops it.
 - **UI review gate.** A new skill, `ui-review-gate`, reviews what a change does to the interface beside the code and security reviews: responsive, accessibility (WCAG 2.2 AA), forms and design audit modes, read-only measurement snippets run in the browser your host already exposes, report-only by default and advisory.
 - **Opt-in heavy-job gate on Claude Code.** `/setup add delegation` can turn it on after its own question and a shown preview: a Bash command listed as heavy (`docker compose up`, `playwright test` and the rest of the built-in list, or your `- Heavy command:` lines) is refused unless it runs through `heavy_run.py`. It reads the command in memory only and allows on any error; `FNL_HEAVY_GATE=off` turns it off. The default load limit is now 25.
+- **Relay receipts.** A review relayed through `post_review.py`'s relay options (`--relay-reviewer`, `--relayed-by`, `--relay-authority`) leaves one receipt after the observed post, metadata only and with metrics consent, and `/status` counts relays per reviewer family and kind.
+- **How it differs from the hosts' own agents.** A README table and diagram set the plugin beside subagents, agent teams, `/swarm`, `/loop`, `/goal` and scheduled runs; [How it compares](docs/how-it-compares.md) had its host facts checked again on 2026-11-23.
 - **Light checks skip the heavy-job lock.** A stored check that names test modules (`python3 -m unittest tests.test_x`) is saved light and runs at once; containers, databases, browsers and builds still queue for the lock. A list saved before 0.3.3 stays all heavy until you save it again with `/setup add checks`.
 - **UI review marker, opt-in per repository.** `/setup` can add a UI line to a repository's `## Agent skills` block; its pull requests then carry `ui=yes` or `ui=no`, and `merge_check.py` waits for a posted `kind=ui` review on a `ui=yes` head.
 - **A ready `/compact` line.** At the compaction nudge the agent hands you a `/compact` line that ends with the command that reads the saved handover back, so you only paste and run it; `tidy` turns a session's remote access off before archiving it.
@@ -473,7 +475,7 @@ Release 0.3.3 ([release record](docs/specs/release-0.3.3.md)):
 - **Weekly quota floor.** `/setup add quota` can record a floor per install, such as `claude/work=15`, so routing stops handing it work before its week runs out.
 - **Spec Kit workflow runs and session titles.** `coding-router` covers `specify workflow` runs under the same depth gate, with gate verdicts left to you; the agent names every session in its first turn, and sessions it starts, in the title format.
 - **Releases pin every host catalog.** Each release moves the catalog `ref` to the new tag for Claude Code and Codex alike, and a catalog pin takes the low-risk review lane.
-- **Codex:** trust the plugin's hooks again with `/hooks` after the update; the compaction nudge script changed.
+- **Codex:** trust the plugin's hooks again with `/hooks` after the update; the compaction nudge, metrics and session-start scripts changed.
 
 Release 0.3.2 ([release record](docs/specs/release-0.3.2.md)):
 
