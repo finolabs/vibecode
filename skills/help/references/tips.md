@@ -10,5 +10,6 @@ Read the shared rules in [map.md](map.md#rules). Give the tips that fit the user
 - **Shape before you build.** Say "let's brainstorm" or "let's discuss" and `shape` interviews you; nothing is acted on until you confirm.
 - **Ask for proof, not a summary.** "Did the tests pass?" makes the agent run `checks` and report what ran, what skipped and what was filtered out.
 - **Ask for a UI review with evidence.** "Review the UI of this page" runs `ui-review-gate`: measured contrast, target sizes and overflow at four widths, plus one keyboard pass by hand, reported before anything is changed.
+- **Let Claude Code stop unqueued heavy jobs.** `/setup add delegation` can turn on the heavy-job gate: a command like `docker compose up` must then run through `heavy_run.py`, one heavy job at a time on the machine.
 - **Drain before a restart.** `/pause restart` (or `/gtg`) lets running work finish and writes handovers; `/pause resume` afterwards.
 - **Wrap up instead of losing context.** Ask to save progress or hand over; `tidy` writes the handover and the next session continues from it.

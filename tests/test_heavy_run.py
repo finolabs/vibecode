@@ -94,7 +94,7 @@ class HeavyRunTest(unittest.TestCase):
         self.assertEqual(heavy.lock_state(), 'held')
 
     def test_load_and_memory_gate_the_start(self):
-        for attribute, value in (('load', 20.0), ('free', 0.5)):
+        for attribute, value in (('load', 30.0), ('free', 0.5)):
             setattr(self, attribute, value)
             code, _, err = self.run_cli('run', '--wait-seconds', '0.1', '--', sys.executable, '-c', 'pass')
             self.assertEqual(code, 75, attribute)

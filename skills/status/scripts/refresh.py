@@ -113,6 +113,16 @@ def kept_metrics(events, by_sid, handed_off):
     return {"receipts": sum(r["receipts"] for r in rows), "tasks": sum(r["tasks"] for r in rows), "handed_off": handed_off, "rows": rows}
 
 
+def relay_metrics(events):
+    """Relayed reviews per reviewer family and kind, with the records that authorized them; None when none."""
+    groups = defaultdict(Counter)
+    for e in events:
+        if e["event"] == "relay":
+            groups[(e["reviewer"], e["kind"])][e["authority"]] += 1
+    return [{"reviewer": r, "kind": k, "relays": sum(c.values()), "authority": dict(sorted(c.items()))}
+            for (r, k), c in sorted(groups.items())] or None
+
+
 def judge_metrics(events, route_rows, has_judge_route, ledger_note):
     """Closed receipt counts and a separate ledger association; never join a site to a file or run."""
     receipts = [e for e in events if e["event"] == "judge"]
@@ -641,6 +651,7 @@ def build(days=WEEKS * 7, cwd=None):
                           "first_pass": fp_week if first_pass is not None else None}},
         "router": {"covered": covered, "missed": missed, "excluded": excluded, "unclassified": unclassified, "eligible": eligible} if eligible else None,
         "use": use or None, "load": load, "depth": depth_rows or None, "delegation": delegation or None, "away": away or None, "kept": kept_metrics(events, by_sid, handed_off),
+        "relays": relay_metrics(events),
         "accepted_unverified": [{"agent": agent, "count": count} for agent, count in sorted(unverified.items())],
         "judge": judge_metrics(events, route_rows, has_judge_route, ledger_note),
         "reviews": reviews or None, "review_stats": review_stats if groups else None, "activity": activity if events else None,

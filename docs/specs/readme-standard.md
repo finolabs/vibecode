@@ -1,5 +1,5 @@
 # README standard and release checklist
-Status: in progress; standard, checklist, script and release wiring written; pull request open for review
+Status: implemented; standard, checklist, `readme_check.py` and release wiring shipped in 0.2.6 (pull request 268).
 
 ## Goal and acceptance
 

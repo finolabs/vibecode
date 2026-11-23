@@ -8,7 +8,8 @@ fixed router reminder on Claude Code at a session's first edit with no router re
 exits 0, so it can never fail or block the session. It reads command text only to test for a
 trigger and discards it, and reads a submitted prompt only for a leading slash name of one of the
 plugin's skills (or its older `fnl-` name) and discards it; the only file it opens is a review body named in a `gh pr comment` command, and only
-the first line of that file is read.
+the first line of that file is read, besides the pending relay receipts (four enum fields) that post_review.py left
+through record.py, read and deleted after a relayed post_review.py command.
 """
 
 import json
@@ -48,6 +49,8 @@ EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "apply_patch"}  # apply_patch is 
 AGY_SHELL = {"run_command"}
 AGY_EDIT = {"write_file", "write_to_file", "replace_file_content", "multi_replace_file_content"}
 HEAD_BYTES = 4096
+RELAY_RUN = re.compile(r"post-([0-9a-f]{32})[/\\]body\.md")
+RELAYS_PER_COMMAND = 4
 MAX_COMMAND = 8192  # longer command text is not tested at all: a trigger is never that long
 ROUTER_SKILL = "coding-router"
 # A typed skill or slash command: "/name" or "/plugin:name" at the very start of the prompt, then whitespace or the end.
@@ -191,6 +194,30 @@ def reviews_from(command, cwd):
     return found
 
 
+def claim_relays(sid, cwd, command):
+    """Record the pending receipt of each posting run this command named, deleting it before it is recorded.
+
+    Only the runs named by the command's body paths are claimed, so a receipt lands on the session that posted it.
+    A receipt that cannot be read or parsed is deleted too and records nothing."""
+    folder = fm.state_dir() / "markers"
+    for run in list(dict.fromkeys(RELAY_RUN.findall(command)))[:RELAYS_PER_COMMAND]:
+        path = folder / (run + ".relay")
+        if not os.path.lexists(path):
+            continue
+        try:
+            fields = json.loads(fm.read_small(path))
+        except (OSError, ValueError):
+            fields = None
+        try:
+            path.unlink()  # claimed: another hook never records it twice
+        except OSError:
+            continue
+        if (isinstance(fields, dict) and set(fields) == set(fm.SCHEMA["relay"])
+                and all(check(fields[key]) for key, check in fm.SCHEMA["relay"].items())
+                and fm.valid_relay_pairs(fields)):
+            fm.record("relay", sid, cwd, **fields)
+
+
 def refresh_dashboard(seconds=REFRESH_SECONDS, extra=(), cwd=None):
     """Rebuild the dashboard data. A slow or missing refresh is not an error."""
     if not REFRESH.is_file():
@@ -320,6 +347,8 @@ def post_tool_use(sid, cwd, tool, data, host="claude"):
             fm.record("commit", sid, cwd)
         for kind, verdict, pr in reviews_from(command, cwd) if "comment" in command else ():
             fm.record("review", sid, cwd, kind=kind, verdict=verdict, pr=pr)
+        if "post_review.py" in command and "--relay-" in command:
+            claim_relays(sid, cwd, command)
         if "record.py" in command and ROUTER.search(command):
             depth, trigger = DEPTH.search(command), TRIGGER.search(command)
             if depth and trigger and depth.group(1) in fm.DEPTHS and trigger.group(1) in fm.TRIGGERS:

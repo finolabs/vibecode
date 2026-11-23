@@ -1,6 +1,6 @@
 # Ledger closure: stop delegate ledger records from staying open
 
-Status: accepted; owner decision 2026-11-12 ("all four in 0.2.5"); code and tests written on branch `ledger-closure`, tests not yet run, live-host hook delivery unverified.
+Status: implemented; all four parts shipped in 0.2.5 (pull request 257); live-host delivery of the open-dispatch nudge remains unverified.
 
 ## Why
 
@@ -60,7 +60,6 @@ Enforcer: the hook prints; recording the outcome stays agent judgment (advisory)
 
 ## What stays unverified
 
-- The tests were written but not run on the branch that adds them; the coordinator runs them.
 - Delivery of the hook's stdout into the model context on a live Claude Code session, and whether the reminder changes coordinator behavior, are unverified.
 - The `ended` line covers only runs started through `delegate_env.py` with `FNL_DISPATCH_ID` set; in-session subagents and app sessions never get one.
 - Records closed by the 2026-11-12 cross-project `stale --close` stay as recorded; this change prevents a repeat and does not correct them.

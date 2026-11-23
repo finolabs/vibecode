@@ -17,7 +17,7 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parent.parent
 CORE = ROOT / "scripts/fnl_metrics.py"
 COPIES = [ROOT / "skills/coding-router/scripts/fnl_metrics.py", ROOT / "skills/status/scripts/fnl_metrics.py",
-          ROOT / "skills/update/scripts/fnl_metrics.py"]
+          ROOT / "skills/update/scripts/fnl_metrics.py", ROOT / "skills/review-gate/scripts/fnl_metrics.py"]
 
 spec = importlib.util.spec_from_file_location("fnl_metrics", CORE)
 m = importlib.util.module_from_spec(spec)
@@ -435,6 +435,29 @@ class MetricsTest(unittest.TestCase):
         row = next(line for line in spec.splitlines() if line.startswith("| `judge` |"))
         self.assertEqual(set(re.findall(r"`([^`]+)` \(", row.split("|")[2])), expected)
         self.assertEqual(set(m.SCHEMA["judge"]), expected)
+
+    def test_relay_families_equal_the_review_families(self):
+        spec = importlib.util.spec_from_file_location("review_config_for_families", ROOT / "scripts/review_config.py")
+        config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(config)
+        self.assertEqual(m.FAMILIES, config.FAMILIES)
+
+    def test_relay_privacy_and_spec_pin_the_exact_field_list_and_pairs(self):
+        expected = {"reviewer", "kind", "by", "authority"}
+        for path in ("PRIVACY.md", "docs/specs/usage-metrics.md"):
+            fields = re.search(r"Relay receipts hold only (.*?);", (ROOT / path).read_text()).group(1)
+            self.assertEqual(set(re.findall(r"`([^`]+)`", fields)), expected)
+        row = next(line for line in (ROOT / "docs/specs/usage-metrics.md").read_text().splitlines()
+                   if line.startswith("| `relay` |"))
+        self.assertEqual(set(re.findall(r"`([^`]+)` \(", row.split("|")[2])), expected)
+        self.assertEqual(set(m.SCHEMA["relay"]), expected)
+        good = dict(reviewer="codex", kind="code", by="claude", authority="standing-code")
+        self.assertEqual(m.build_event("relay", "s1", "0" * 8, good)["authority"], "standing-code")
+        for bad in (dict(good, by="codex"), dict(good, kind="security"), dict(good, authority="lease-security"),
+                    dict(good, authority="owner"), dict(good, reviewer="gpt"), dict(good, pr=31)):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                m.build_event("relay", "s1", "0" * 8, bad)
+        self.assertTrue(m.build_event("relay", "s1", "0" * 8, dict(good, kind="security", authority="owner-pr")))
 
     def test_metrics_copy_list_covers_all_copies_and_ci(self):
         self.assertEqual(set(COPIES), set(ROOT.glob("skills/*/scripts/fnl_metrics.py")))

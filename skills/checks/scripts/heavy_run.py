@@ -49,7 +49,7 @@ PID_LIMIT = 2 ** 31
 PS_LIMIT = 256 * 1024
 PGREP_PIDS = 200
 EXE = re.compile(r'[A-Za-z0-9._+-]{1,40}')
-DEFAULTS = {'load': 12.0, 'memory_gb': 4.0, 'wait_minutes': 40.0, 'max_minutes': 90.0, 'memory_window_seconds': 60.0,
+DEFAULTS = {'load': 25.0, 'memory_gb': 4.0, 'wait_minutes': 40.0, 'max_minutes': 90.0, 'memory_window_seconds': 60.0,
             'swapout_mb_per_second': 5.0}
 BOUNDS = {'load': (1.0, 256.0), 'memory_gb': (0.0, 64.0), 'wait_minutes': (1.0, 720.0), 'max_minutes': (1.0, 720.0),
           'memory_window_seconds': (1.0, 900.0), 'swapout_mb_per_second': (0.0, 10000.0)}
