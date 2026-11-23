@@ -41,7 +41,12 @@ Status: implemented; release prepared, not yet tagged.
 | 379 | Backlog LOW and docs items (`claude/backlog-lows`): the dashboard shows a weekly pool under its install's recorded weekly floor amber, as routing counts it out (`refresh.py` `floor` and `below_floor`, `PRIVACY.md`, the dashboard spec); `merge-gate.md` and the autopilot spec name the repository scoping of merge pins and what an unwritable afk log does, with a test; `shape` in the skills architecture and the main checkout in the delegation sequence (PNGs and README alt text); the `setup` beginner line names the commands that bring skipped steps back. |
 | 380 | The compaction nudge asks the agent to hand the user a ready `/compact` line that names the saved handover; `tidy` ends the line with `handover_state.py read --session <id>` (on Codex a second line after a bare `/compact`, on Antigravity the `/new` or `/fork` text). The hook reads the same fields as before. |
 | 381 | Reset-based quota freshness and bounded unexpected-shape retries; API-billed Claude no-limits status; expired pool display (owner decisions, 19/11/2026). |
-| this | The final record pass: rows 368 to 381, the second drift pass below and the edits it lists (README, help map, troubleshooting, the `0.3.3/light-checks` and `0.3.3/quota-reset-freshness` upgrade notes, the CHANGELOG move), and the live-browser run of the `ui-review-gate` snippets. Tags nothing. |
+| 382 | The second record pass: rows 368 to 381, the second drift pass below and the edits it lists (README, help map, troubleshooting, the `0.3.3/light-checks` and `0.3.3/quota-reset-freshness` upgrade notes, the CHANGELOG move), and the live-browser run of the `ui-review-gate` snippets. |
+| 383 | Spec status lines for the backlog (owner decisions, 23/11/2026): ledger closure, the README standard and the afk decider recorded as implemented, decision 5 closed; the merge guard `deferred; retired`; autopilot `implemented; first slice only`, remainder retired. No code. |
+| 384 | The opt-in heavy-job gate on Claude Code ([spec](heavy-jobs.md) part D, the fifth scoped exception): `scripts/heavy_gate_hook.py`, a `PreToolUse` Bash group in the user's own settings, refuses a heavy command not run through `heavy_run.py`; `heavy_gate_setup.py` previews, applies and removes it; `setup add delegation` asks for it with its own question. The default load limit is 25, not 12. |
+| 385 | Relay receipts ([spec](agent-roles.md) part D): `post_review.py --relay-reviewer`, `--relayed-by` and `--relay-authority` refuse a relay that does not fit and leave one receipt after the observed post; the metrics hook records a `relay` event (four enum fields), and the `status` dashboard counts relays per reviewer family and kind. |
+| 386 | The README host comparison: a six-row table and a light and dark diagram (`docs/diagrams/host-vs-vibecode-*.html`); `docs/how-it-compares.md` gains proof and review rows, its host facts checked again on 2026-11-23. |
+| this | The third record pass: rows 382 to 386, the third drift pass below and the edits it lists (README release section, help map, the `0.3.3/codex-hook-trust` note, the CHANGELOG docs entry). Tags nothing. |
 
 The changelog's 0.3.3 section holds the user-facing wording; `update` carries the 0.3.3 upgrade notes. Pull request 358 (the tokenizer implementation) closed unmerged and is not part of 0.3.3.
 
@@ -111,6 +116,30 @@ Checked against `main` at `8de36e1`, surface by surface, for every pull request 
 | `CHANGELOG.md` | 376's entry sat under `Unreleased` although 0.3.3 is not tagged. Moved to 0.3.3 beside 381's entry; the docs entry names this pass. |
 | `skills/setup/references/check.md`, `README.md` host configuration paragraph | Current with 381: its own pull request replaced the 8-hour rule. |
 
+### Third pass (after pull request 386)
+
+Checked against `main` at `f5556d5c`, surface by surface, for every pull request merged after 381: 382 to 386. 382 is the second record pass itself; 383 changed only spec status lines and the index; 384, 385 and 386 updated most of their own surfaces. `CLAUDE.md` was read, not edited: 384 relied on the fifth scoped exception already recorded there.
+
+| Surface | Result |
+| --- | --- |
+| README skill table, `checks`, `delegate`, `setup` rows | Current (384): the heavy-job lock is named in `checks` and `delegate`; the gate is a `setup add delegation` question, below the level of the `setup` row. |
+| README skill table, `review-gate`, `status` rows, and the roles and posting paragraph | Current (385): the paragraph names relay receipts and the `/status` relay count; the rows stay at their level. |
+| README setup feature table, `delegation` row | Current (384): names the heavy-job gate question. |
+| README host comparison section, diagram alt text and file layout | Current (384, 386): the new section and its alt text came with 386; the layout names the host versus vibecode diagram and says the heavy-job gate lives in the user's settings, not `hooks.json`. |
+| README release section | Drifted: no relay receipts (385) or host comparison (386), and the Codex line named only the compaction nudge, though `scripts/metrics_hook.py` (385) and `scripts/session_start.py`, which the Codex manifest also runs, changed since v0.3.2. Added two bullets and named the three scripts. The heavy-job gate bullet came with 384. |
+| `skills/help/references/skills/setup.md`, `delegate.md`, `checks.md` | Current (384): the gate question, the load limit 25 and light checks. |
+| `skills/help/references/skills/review-gate.md`, `status.md` | Current (385): the relay options and the relay count. |
+| `skills/help/references/map.md` | Drifted with 385: the `post_review.py` row had no relay options and the `record.py` row no relay receipt. Updated. The heavy-job rows (`heavy_run.py` default 25, `heavy_gate_hook.py`, `heavy_gate_setup.py`) and the relay sentence in the capacity paragraph were current. |
+| `skills/help/references/tips.md` | Current (384): the heavy-job gate tip. |
+| `skills/help/references/troubleshooting.md` | Current (384): the gate's refusal and a gate that stopped after an update. No relay row is needed: a refused relay prints its own reason. |
+| `skills/setup/references/check.md` | Current (384): Check reports the `Heavy-job gate:` line and says the settings group is not verified. 385 adds no hook. |
+| `skills/update/references/upgrades.json` | `0.3.3/heavy-job-gate` (384) was present. Drifted: `0.3.3/codex-hook-trust` named only the compaction nudge script; it now names the metrics and session-start scripts too. Relay receipts need no action from the user, so no note was added. |
+| `PRIVACY.md` | Current: "Heavy-job gate" (384) and the relay receipt in the metrics section (385). |
+| `docs/how-it-compares.md` | Current (384, 386): 384 changed one word of the `afk` row; 386 added the proof and review rows and re-checked the host facts. The page names no individual hook, so the heavy-job gate and relay receipts sit below its level. |
+| `docs/diagrams/` | Current: 386 added `host-vs-vibecode-*` with its PNGs; no other diagram shows the heavy-job gate or relays. |
+| `docs/specs/index.md` | Current (383, 384, 385): the merge guard, autopilot, afk decider, ledger closure, README standard, heavy-job and agent roles rows match their Status lines. |
+| `CHANGELOG.md` | Current for 384, 385 and 386 under 0.3.3; 383 changes no user-facing surface. The docs entry now names this pass. |
+
 ## Owner decisions
 
 - 17/11/2026: a catalog pin takes the low-risk lane (346).
@@ -127,6 +156,13 @@ Checked against `main` at `8de36e1`, surface by surface, for every pull request 
   6. `setup` offers native deny rules for the credential floor; `afk start` warns when the host has none.
 - 18/11/2026: the UI review gate is advisory in 0.3.3 (no `merge_check.py` change), runs read-only measurement snippets, adds axe-core only when the repository declares it or the user agrees, blocks below 24 px target size, reports only by default, and targets 0.3.3 (spec decisions 4 to 7).
 - 19/11/2026: routing stops using an install below a weekly floor, starting with the `claudework` install at 85% of its week used (365).
+- 23/11/2026: finish the whole backlog in 0.3.3, then run the drift review and the full test suite before the tag.
+- 23/11/2026: the default heavy-job load limit is 25, not 12 (384).
+- 23/11/2026: relay receipts count every relay (385).
+- 23/11/2026: the merge guard is retired; blocking a merge is the host's own permission rules (383).
+- 23/11/2026: the rest of the autopilot spec beyond its first slice is retired (383).
+- 23/11/2026: afk decider decision 5 is closed, superseded by afk one mode (383).
+- 23/11/2026: same-family reviews count for pull requests 383 to 386, because Codex was out of its weekly quota until 24/11/2026.
 
 ## The upgrade
 
@@ -138,17 +174,21 @@ Checked against `main` at `8de36e1`, surface by surface, for every pull request 
 - `/setup add quota` can record a weekly floor per install (`0.3.3/quota-weekly-floor`).
 - Quota readings count until their pools reset, an API-billed Claude install shows no plan limits, and a pool past its reset shows its reset time (`0.3.3/quota-reset-freshness`).
 - Saving the check list again with `/setup add checks` marks test-module checks light, so they skip the heavy-job lock; a list saved before 0.3.3 stays all heavy (`0.3.3/light-checks`).
-- Codex: trust the plugin's hooks again with `/hooks` after the refresh; the compaction nudge script changed (`0.3.3/codex-hook-trust`).
+- Claude Code: `/setup add delegation` can turn on the heavy-job gate, which refuses a heavy command not run through `heavy_run.py`; heavy jobs now wait at a load of 25 (`0.3.3/heavy-job-gate`).
+- Codex: trust the plugin's hooks again with `/hooks` after the refresh; the compaction nudge, metrics and session-start scripts changed (`0.3.3/codex-hook-trust`).
 
 ## Known follow-ups
 
-- afk decider decision 5 (drop `check`'s syntax allowlist and general argv classification) is superseded: `strict` is removed in this release (afk one mode, pull request 373), and pull request 370 closed unmerged.
+- afk decider decision 5 (drop `check`'s syntax allowlist and general argv classification) is superseded and closed (owner decision, 23/11/2026; pull request 383): `strict` is removed in this release (afk one mode, pull request 373), and pull request 370 closed unmerged.
 - Live delivery of the afk stop and permission hooks on a user's machine remains unverified; the `Stop` and `PermissionRequest` schemas were checked against Claude Code 2.1.327 only.
 - The new hooks load only in Claude Code sessions started after the update; a session open during the update keeps the old hook set.
-- Codex: `.codex-plugin/hooks.json` did not change since v0.3.2, but `scripts/compact_nudge.py` did, so Codex asks to trust the hooks again; Codex and Antigravity have no stop or permission hook, so "Decide" stays advisory there.
+- Codex: `.codex-plugin/hooks.json` did not change since v0.3.2, but `scripts/compact_nudge.py`, `scripts/metrics_hook.py` and `scripts/session_start.py` did, so Codex asks to trust the hooks again; Codex and Antigravity have no stop or permission hook, so "Decide" stays advisory there.
 - The `ui-review-gate` snippets ran in a live Chromium: on 19/11/2026 through the shared Chromium over CDP, and on 21/11/2026 in Playwright's Chromium 157.0.8103.78 at 375 and 1280 px, over a live-layout fixture kept outside the repository (three 16 px buttons, one alone and two side by side, a 32 px button, a 48 px button, an inline link, faint text, a 900 px block, an unlabeled and a labeled field) and over `tests/fixtures/ui-review-gate/page.html`. All four snippets returned without an exception, and on the live fixture each known case read as expected: the three 16 px buttons blocking, the 32 px button `low`, the inline link `low` and uncertain, one contrast failure, overflow at 375 px only from the 900 px block, the unlabeled field with no label. `page.html` places boxes through style attributes that only the fake DOM reads, so its live counts differ from the unit tests by design. Every inline target exception stays marked uncertain for a check by eye; a run against a real product page remains unverified.
 - Pull requests the coordinator writes itself (376 and 380 in this release) have no ledger dispatch, so `ledger.py summary` does not count them and their bodies name no ledger id; their gate is the review gate (`delegate` `references/accept.md`). The docs do not yet say how such a pull request records who wrote it.
 - A real upgrade from 0.3.2 on a user's machine remains unverified.
+- Live delivery of the heavy-job gate on a real Claude Code host remains unverified; its tests run the hook script directly.
+- Every `docker compose` subcommand counts as heavy per [heavy-jobs](heavy-jobs.md) part B (`docker` with `compose`), `ps` and `logs` included; the owner may narrow the list later.
+- The reviews of pull requests 383 to 386 were same-family (Claude), approved by the owner because Codex was out of its weekly quota.
 - The `finolabs/plugins` catalog pins move only with the owner's go after the tag.
 - Backlog LOW and docs items checked on `claude/backlog-lows` and closed without a change there:
   - K1 (`readme_check.py`, an unanchored link outside the repository): already fails as `outside the repository` on main (commit f77bd256, with a test).
