@@ -124,7 +124,8 @@ A `PreToolUse` hook on the `Bash` tool, in its own group in the user's Claude Co
   `heavy_run.py`, then `run`.
 - The command is split into simple commands at `;`, `&`, `&&`, `|`, `||` and newlines, and each is matched on its own,
   so `cd app && docker compose up` is denied and `heavy_run.py run -- docker compose up` is not. A command holding a
-  here-document, a subshell, command substitution or a quote `shlex` cannot close is not classified and is allowed.
+  here-document, a subshell, command or process substitution, a comment (`#`), a backslash or an unclosed quote is not
+  classified and is allowed; a separator inside quotes does not split.
 - It denies one Bash call only when the command matches a heavy pattern (the section's list, else the built-in default
   list in part B) and is not wrapped in that form. The denial is one fixed message that names the script. Anything it
   cannot classify with certainty is allowed.

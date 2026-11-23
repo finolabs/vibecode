@@ -16,7 +16,6 @@ MESSAGE = (b'{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDeci
            b'(python3 -I <delegate skill folder>/scripts/heavy_run.py run --label <label> -- <command>) so heavy jobs '
            b'run one at a time on this machine."}}\n')
 INPUT_LIMIT = 64 * 1024
-PUNCTUATION = set(';&|()<>\n')
 ASSIGNMENT = r'[A-Za-z_][A-Za-z0-9_]*='
 PYTHON = {'python', 'python3'}
 INTERPRETER_FLAGS = {'-I', '-B', '-E', '-s', '-S', '-u', '-IB', '-BI'}
@@ -55,34 +54,47 @@ def gate_on():
     return on, patterns
 
 
+def segments(command):
+    """The command split at unquoted `;`, `&`, `&&`, `|`, `||` and newlines; Uncertain when that is not plain.
+
+    A comment, a backslash, a subshell, a here-document, command or process substitution, or an unclosed quote makes
+    the split uncertain. `&` or `|` next to `>` or `<` belongs to a redirection (`2>&1`, `&>`, `>|`), not a separator."""
+    if any(mark in command for mark in ('#', '\\', '`', '$(', '<(', '>(', '<<')):
+        raise Uncertain()
+    parts, current, quote = [], [], None
+    for index, char in enumerate(command):
+        if quote:
+            current.append(char)
+            if char == quote:
+                quote = None
+            continue
+        if char in ('"', "'"):
+            quote = char
+        elif char in '()':
+            raise Uncertain()
+        elif char in ';\n' or (char in '&|' and not (command[index - 1:index] in ('>', '<')
+                                                         or command[index + 1:index + 2] in ('>', '<'))):
+            parts.append(''.join(current))
+            current = []
+            continue
+        current.append(char)
+    if quote:
+        raise Uncertain()
+    parts.append(''.join(current))
+    return [part for part in parts if part.strip()]
+
+
 def simple_commands(command):
     """The simple commands of a shell command line, each a list of words; Uncertain when not plainly parseable."""
     import shlex
-    if '`' in command or '$(' in command or '<(' in command or '>(' in command:
-        raise Uncertain()
-    lexer = shlex.shlex(command, posix=True, punctuation_chars=''.join(sorted(PUNCTUATION)))
-    lexer.whitespace = ' \t\r'
-    lexer.whitespace_split = True
-    lexer.commenters = ''
-    try:
-        tokens = list(lexer)
-    except ValueError:
-        raise Uncertain() from None
-    current, result = [], []
-    for token in tokens:
-        if set(token) <= PUNCTUATION:
-            if '(' in token or ')' in token or token.startswith('<<'):
-                raise Uncertain()
-            if '<' not in token and '>' not in token:
-                if current:  # `;`, `&`, `&&`, `|`, `||`, newlines and their runs end a simple command
-                    result.append(current)
-                current = []
-                continue
-            if ';' in token or '\n' in token or '&&' in token or '||' in token:
-                raise Uncertain()
-        current.append(token)  # a word, or a redirection kept as a word
-    if current:
-        result.append(current)
+    result = []
+    for part in segments(command):
+        try:
+            words = shlex.split(part)
+        except ValueError:
+            raise Uncertain() from None
+        if words:
+            result.append(words)
     return result
 
 
@@ -138,16 +150,14 @@ def default_heavy(words):
         return args[:1] == ['test']
     if name == 'go':
         return args[:1] == ['test'] and any('contract' in arg or 'integration' in arg for arg in args[1:])
-    if name in PYTHON or (name.startswith('python3.') and name[8:].isdigit()):
-        index = 0
-        while index < len(args) and args[index] in INTERPRETER_FLAGS:
-            index += 1
-        if args[index:index + 2] != ['-m', 'unittest']:
+    if name in PYTHON:
+        # Spec part B: `python3 -m unittest` or `python -m unittest` with no module name, `discover`, or more than two.
+        if args[:2] != ['-m', 'unittest']:
             return False
-        rest, modules, index = args[index + 2:], [], 0
+        rest, modules, index = args[2:], [], 0
         while index < len(rest):
             word = rest[index]
-            if word in ('-k', '-p', '-s', '-t'):
+            if word in ('-k', '--durations', '-p', '-s', '-t'):
                 index += 2
                 continue
             if not word.startswith('-'):

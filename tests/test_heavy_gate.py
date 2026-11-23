@@ -45,7 +45,12 @@ ALLOWED = [WRAPPED,
            'npx eslint .', 'git commit -m "docker compose up"', 'echo docker compose up',
            # Not classified with certainty: allowed.
            'cat <<EOF\ndocker compose up\nEOF', 'echo $(docker compose up)', '(docker compose up)',
-           'env docker compose up', 'docker compose up "unclosed']
+           'env docker compose up', 'docker compose up "unclosed',
+           # Comments, quoted and escaped separators are not operators (review of PR 384).
+           '# start the db; docker compose up -d later', 'echo "&&" docker compose up', 'echo \\; docker build .',
+           "echo 'a;b' docker compose up", 'docker compose up # comment',
+           # Spec part B lists only `python3 -m unittest` and `python -m unittest`.
+           'python3 -m unittest --durations 5 tests.a tests.b', 'python3.12 -m unittest', 'python3 -I -m unittest']
 
 
 class GateTest(unittest.TestCase):
@@ -146,6 +151,10 @@ class GateTest(unittest.TestCase):
         self.assertEqual(sorted(p for p in self.home.rglob('*')), before)
 
 
+def setup_hook_message():
+    return hook.MESSAGE
+
+
 class SetupTest(unittest.TestCase):
     def setUp(self):
         temp = tempfile.TemporaryDirectory()
@@ -167,6 +176,7 @@ class SetupTest(unittest.TestCase):
         script = self.plugin / 'scripts' / setup.HOOK
         script.write_bytes((ROOT / 'scripts' / setup.HOOK).read_bytes())
         script.chmod(0o644)
+        (self.plugin / 'scripts/data_root.py').write_bytes((ROOT / 'scripts/data_root.py').read_bytes())
         patch = mock.patch.object(setup, '__file__', str(self.plugin / 'skills/setup/scripts/heavy_gate_setup.py'))
         patch.start()
         self.addCleanup(patch.stop)
@@ -235,6 +245,53 @@ class SetupTest(unittest.TestCase):
         done = subprocess.run(['/bin/sh', '-c', command], input=b'{}', capture_output=True, timeout=10,
                               env={'PATH': '/usr/bin:/bin'})
         self.assertEqual((done.returncode, done.stdout), (0, b''))
+
+    def test_installed_hook_command_denies_through_the_shell(self):
+        import subprocess
+        _, value = self.preview('--on')
+        self.assertEqual(self.apply(value)[0], 0)
+        command = self.groups()[1]['hooks'][0]['command']
+        payload = json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'docker compose up'}}).encode()
+        # `sh -c` with a bare `python3 -I`: the fixture points that interpreter at the temporary account.
+        done = subprocess.run(['sh', '-c', command], input=payload, capture_output=True, timeout=30,
+                              env={'PATH': os.path.dirname(sys.executable) + ':/usr/bin:/bin'})
+        self.assertEqual(done.returncode, 0)
+        self.assertEqual(done.stdout, setup_hook_message())
+        allowed = json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'ls'}}).encode()
+        done = subprocess.run(['sh', '-c', command], input=allowed, capture_output=True, timeout=30,
+                              env={'PATH': os.path.dirname(sys.executable) + ':/usr/bin:/bin'})
+        self.assertEqual((done.returncode, done.stdout), (0, b''))
+
+    def test_each_named_config_folder_gets_the_group(self):
+        second = self.home / 'work-claude'
+        second.mkdir(mode=0o700)
+        _, value = self.preview('--on', '--folder', str(self.claude), '--folder', str(second))
+        self.assertEqual(self.apply(value)[0], 0)
+        self.assertEqual(len(self.groups()), 2)
+        other = json.loads((second / 'settings.json').read_text())['hooks']['PreToolUse']
+        self.assertEqual(len(other), 1)
+        self.assertIn(setup.HOOK, other[0]['hooks'][0]['command'])
+        for folders in ([str(self.claude)] * 2, [str(self.claude)] * 5):
+            with self.subTest(count=len(folders)):
+                argv = ['heavy_gate_setup.py', 'preview', '--on']
+                for folder in folders:
+                    argv += ['--folder', folder]
+                with mock.patch.object(sys, 'argv', argv), contextlib.redirect_stdout(io.StringIO()), \
+                        contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(setup.main(), 1)
+
+    def test_both_answers_previewed_then_either_applied(self):
+        on_text, on = self.preview('--on')
+        off_text, off = self.preview('--remove')
+        self.assertNotEqual(on, off)
+        self.assertIn('Answer: yes', on_text)
+        self.assertIn('Answer: no', off_text)
+        self.assertEqual(self.apply(off)[0], 0)
+        self.assertIn('- Heavy-job gate: off\n', self.host.read_text())
+        self.assertEqual(self.groups(), [self.other])
+        # Applying one answer drops both stored plans.
+        self.assertEqual(self.apply(on)[0], 1)
+        self.assertEqual(list((self.root / 'state/heavy-gate-setup').glob('preview*.json')), [])
 
     def test_missing_section_and_settings_are_created(self):
         self.host.write_text('# Host\n')

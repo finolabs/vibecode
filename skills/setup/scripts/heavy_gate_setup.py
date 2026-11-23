@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Preview, apply or remove the opt-in heavy-job gate on Claude Code (docs/specs/heavy-jobs.md part D).
 
-`preview --on` or `preview --remove` shows the change and stores a plan with a digest; nothing is written (the dry
-run). `apply --digest <hex> --yes` writes it: `Heavy-job gate: on|off` under `## Heavy jobs` in the canonical host
-config, and the gate's own `PreToolUse` group for `Bash` in the user's Claude Code settings (added for on, removed
-for off), keeping a backup of a settings file it changes. Every other key and hook group stays as it was.
+`preview --on` or `preview --remove` (each optionally with `--folder <Claude config folder>`, up to four) shows the
+change and stores a plan with a digest; nothing else is written (the dry run). Both plans may be stored at once, so
+both answers can be shown before one question. `apply --digest <hex> --yes` writes the chosen one and drops both:
+`Heavy-job gate: on|off` under `## Heavy jobs` in the canonical host config, and the gate's own `PreToolUse` group
+for `Bash` in each named Claude Code settings file (added for on, removed for off), keeping a backup of a settings
+file it changes. Every other key and hook group stays as it was.
 """
 from contextlib import ExitStack
 import difflib
@@ -140,8 +142,17 @@ def host_change(raw, on):
     return result.encode()
 
 
-def settings_path(folder):
-    return common.checked_path(str(Path(folder or dr.account_home() / '.claude') / 'settings.json'), 'claude')
+def settings_paths(folders):
+    """One to four `settings.json` paths: each config folder named (for `CLAUDE_CONFIG_DIR` installs), else `~/.claude`."""
+    folders = folders or [str(dr.account_home() / '.claude')]
+    if not 1 <= len(folders) <= 4:
+        raise Refusal('one to four config folders required')
+    return [common.checked_path(str(Path(folder) / 'settings.json'), 'claude') for folder in folders]
+
+
+def plan_name(on):
+    # One stored plan per answer, so both can be shown before the one question and either applied after it.
+    return 'preview-on.json' if on else 'preview-off.json'
 
 
 def read_host():
@@ -159,27 +170,35 @@ def checked_root():
     return root
 
 
-def preview(on, folder=None):
+def preview(on, folders=None):
     root = checked_root()
     command = hook_command() if on else None  # removal needs no script, so a missing copy cannot block it
-    path = settings_path(folder)
-    with dr.relocated_folder(path.parent) as target:
-        raw, mode = common.read_target(target, path.name)
-        backup = common.backup_name(target, path.name)
+    targets, displays, identities = [], [], set()
+    for path in settings_paths(folders):
+        with dr.relocated_folder(path.parent) as target:
+            info = os.fstat(target)
+            if (info.st_dev, info.st_ino) in identities:
+                raise Refusal('duplicate config folder')
+            identities.add((info.st_dev, info.st_ino))
+            raw, mode = common.read_target(target, path.name)
+            backup = common.backup_name(target, path.name)
+        changed = settings_change(raw, command) != raw
+        targets.append({'path': str(path), 'sha256': common.content_hash(raw), 'mode': mode, 'backup': backup})
+        displays.append((path, raw, changed, backup))
     old_host, host_mode = read_host()
     new_host = host_change(old_host, on)
-    new_settings = settings_change(raw, command)
-    plan = {'on': on, 'created': time.time(), 'root': str(root), 'path': str(path), 'sha256': common.content_hash(raw),
-            'mode': mode, 'backup': backup, 'host_sha256': common.content_hash(old_host), 'host_mode': host_mode,
-            'command': command}
+    plan = {'on': on, 'created': time.time(), 'root': str(root), 'targets': targets,
+            'host_sha256': common.content_hash(old_host), 'host_mode': host_mode, 'command': command}
     value = common.digest(plan)
     with dr.data_folder(STATE, create=True, private=True) as state:
-        dr.atomic_write(state, 'preview.json', json.dumps({'plan': plan, 'digest': value}).encode())
+        dr.atomic_write(state, plan_name(on), json.dumps({'plan': plan, 'digest': value}).encode())
+    print('Answer: ' + ('yes, turn the gate on' if on else 'no, leave the gate off'))
     # Show only the gate's own group: other settings may hold secrets.
-    print('Target: ' + str(path) + '\nExists: ' + ('yes' if raw is not None else 'no'))
-    print('PreToolUse group (Bash): ' + ('add ' + json.dumps(group(command), ensure_ascii=True) if on else 'remove'))
-    print('Change: ' + ('none' if new_settings == raw else 'yes'))
-    print('Backup: ' + str(path.parent / backup) + (' (not needed)' if raw is None or new_settings == raw else ''))
+    for path, raw, changed, backup in displays:
+        print('Target: ' + str(path) + '\nExists: ' + ('yes' if raw is not None else 'no'))
+        print('PreToolUse group (Bash): ' + ('add ' + json.dumps(group(command), ensure_ascii=True) if on else 'remove'))
+        print('Change: ' + ('yes' if changed else 'none'))
+        print('Backup: ' + str(path.parent / backup) + ('' if raw is not None and changed else ' (not needed)'))
     print('Target: ' + str(root / 'host.md'))
     if new_host == old_host:
         print('No difference.')
@@ -187,10 +206,27 @@ def preview(on, folder=None):
         print(''.join(difflib.unified_diff((old_host or b'').decode().splitlines(keepends=True),
                                            new_host.decode().splitlines(keepends=True),
                                            fromfile='before', tofile='after', n=0)), end='\n')
-    print('With the gate on, Claude Code refuses a Bash call whose command is listed as heavy and not run through '
-          'heavy_run.py. It reads the command in memory only, never stores or sends it, and allows on any error. '
-          'FNL_HEAVY_GATE=off turns it off for a session; Codex and Antigravity are not covered.')
+    if on:
+        print('With the gate on, Claude Code refuses a Bash call whose command is listed as heavy and not run through '
+              'heavy_run.py. It reads the command in memory only, never stores or sends it, and allows on any error. '
+              'FNL_HEAVY_GATE=off turns it off for a session; Codex and Antigravity are not covered.')
     print('Digest: ' + value)
+
+
+def read_plan(state, value):
+    for name in (plan_name(True), plan_name(False)):
+        try:
+            raw = dr.read_file(state, name, common.LIMIT)
+        except FileNotFoundError:
+            continue
+        if stat.S_IMODE(os.stat(name, dir_fd=state, follow_symlinks=False).st_mode) != 0o600:
+            raise Refusal('preview must be private (0600)')
+        saved = json.loads(raw, object_pairs_hook=common.json_object, parse_float=common.json_float,
+                           parse_constant=common.json_constant)
+        if (isinstance(saved, dict) and set(saved) == {'plan', 'digest'}
+                and saved['digest'] == value and common.digest(saved['plan']) == value):
+            return name, saved['plan']
+    raise Refusal('digest mismatch; preview again')
 
 
 def apply(value, yes):
@@ -200,48 +236,61 @@ def apply(value, yes):
     with ExitStack() as stack:
         state = stack.enter_context(dr.data_folder(STATE, private=True))
         fcntl.flock(state, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        saved = json.loads(common.read_plan(state), object_pairs_hook=common.json_object,
-                           parse_float=common.json_float, parse_constant=common.json_constant)
-        if (not isinstance(saved, dict) or set(saved) != {'plan', 'digest'}
-                or saved['digest'] != value or common.digest(saved['plan']) != value):
-            raise Refusal('digest mismatch; preview again')
-        plan = saved['plan']
-        if (not isinstance(plan, dict) or set(plan) != {'on', 'created', 'root', 'path', 'sha256', 'mode', 'backup',
-                                                         'host_sha256', 'host_mode', 'command'}
-                or type(plan['on']) is not bool):
+        name, plan = read_plan(state, value)
+        if (not isinstance(plan, dict) or set(plan) != {'on', 'created', 'root', 'targets', 'host_sha256', 'host_mode',
+                                                         'command'}
+                or type(plan['on']) is not bool or name != plan_name(plan['on'])):
             raise Refusal('invalid plan')
         if plan['root'] != str(checked_root()) or plan['command'] != (hook_command() if plan['on'] else None):
             raise Refusal('root or command changed; preview again')
         if type(plan['created']) not in (int, float) or not 0 <= time.time() - plan['created'] <= 3600:
             raise Refusal('preview expired; preview again')
-        path = common.checked_path(plan['path'], 'claude')
-        if (not isinstance(plan['backup'], str)
-                or not re.fullmatch(r'settings\.json\.bak-\d{8}(?:-[1-9][0-9]*)?', plan['backup'])):
-            raise Refusal('invalid backup name')
-        target = stack.enter_context(dr.relocated_folder(path.parent))
+        targets = plan['targets']
+        if not isinstance(targets, list) or not 1 <= len(targets) <= 4:
+            raise Refusal('invalid targets')
+        ready, identities = [], set()
+        for target in targets:
+            if not isinstance(target, dict) or set(target) != {'path', 'sha256', 'mode', 'backup'}:
+                raise Refusal('invalid target')
+            path = common.checked_path(target['path'], 'claude')
+            if (not isinstance(target['backup'], str)
+                    or not re.fullmatch(r'settings\.json\.bak-\d{8}(?:-[1-9][0-9]*)?', target['backup'])):
+                raise Refusal('invalid backup name')
+            folder = stack.enter_context(dr.relocated_folder(path.parent))
+            info = os.fstat(folder)
+            if (info.st_dev, info.st_ino) in identities:
+                raise Refusal('duplicate config folder')
+            identities.add((info.st_dev, info.st_ino))
+            raw, mode = common.read_target(folder, path.name)
+            if common.content_hash(raw) != target['sha256'] or mode != target['mode']:
+                raise Refusal('target changed; preview again')
+            ready.append((folder, path, target['backup'], raw, mode, settings_change(raw, plan['command'])))
         host_folder = stack.enter_context(dr.root_folder(create=True))
         fcntl.flock(host_folder, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        raw, mode = common.read_target(target, path.name)
         old_host, host_mode = common.read_target(host_folder, 'host.md')
-        if (common.content_hash(raw) != plan['sha256'] or mode != plan['mode']
-                or common.content_hash(old_host) != plan['host_sha256'] or host_mode != plan['host_mode']):
+        if common.content_hash(old_host) != plan['host_sha256'] or host_mode != plan['host_mode']:
             raise Refusal('target changed; preview again')
         new_host = host_change(old_host, plan['on'])
-        new_settings = settings_change(raw, plan['command'])
-        if raw is not None and new_settings != raw:
-            # Exclusive creation refuses an existing backup before anything changes.
-            fd = os.open(plan['backup'], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=target)
-            with os.fdopen(fd, 'wb') as stream:
-                stream.write(raw)
-                stream.flush()
-                os.fsync(stream.fileno())
+        for folder, path, backup, raw, mode, result in ready:
+            if raw is not None and result != raw:
+                # Exclusive creation refuses an existing backup before anything changes.
+                fd = os.open(backup, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=folder)
+                with os.fdopen(fd, 'wb') as stream:
+                    stream.write(raw)
+                    stream.flush()
+                    os.fsync(stream.fileno())
         # host.md first: a failed settings write then leaves the gate recorded but not installed, which allows.
         if new_host != old_host:
             common.write_target(host_folder, 'host.md', new_host, host_mode)
-        if new_settings != raw:
-            common.write_target(target, path.name, new_settings, mode if raw is not None else 0o600)
-            print('Updated: ' + str(path))
-        os.unlink('preview.json', dir_fd=state)
+        for folder, path, backup, raw, mode, result in ready:
+            if result != raw:
+                common.write_target(folder, path.name, result, mode if raw is not None else 0o600)
+                print('Updated: ' + str(path))
+        for stored in (plan_name(True), plan_name(False)):
+            try:
+                os.unlink(stored, dir_fd=state)
+            except FileNotFoundError:
+                pass
         os.fsync(state)
     print('Heavy-job gate ' + ('on.' if plan['on'] else 'off.'))
 
@@ -251,7 +300,7 @@ def main():
         parser = common.Parser(description=__doc__)
         commands = parser.add_subparsers(dest='action', required=True)
         pre = commands.add_parser('preview')
-        pre.add_argument('--folder')
+        pre.add_argument('--folder', action='append', default=[])
         choice = pre.add_mutually_exclusive_group(required=True)
         choice.add_argument('--on', action='store_true')
         choice.add_argument('--remove', action='store_true')
