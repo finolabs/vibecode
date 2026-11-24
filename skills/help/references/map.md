@@ -116,6 +116,7 @@ Paths below are relative to the full plugin root. There are three agent definiti
 | `scripts/brief_check.py` | Lints brief headings, the environment rule and secret patterns without quoting matches; standalone copy in `handoff`. |
 | `scripts/build-parity-plugins.sh` | Builds local evaluation plugins from this checkout and a supplied upstream skill checkout. |
 | `scripts/check-references.py` | Checks local links, headings, names, inventories, ledger flags and shared mode copies. |
+| `scripts/ci_shard.py` | Runs one CI shard of the script suite: discovers `tests/` as `unittest discover` does, splits the modules by test count, runs its share; the shards together are the full suite. |
 | `scripts/compact_nudge.py` | Claude Code and Codex (`--host codex`) `UserPromptSubmit` nudge: reads only the latest turn's token counts, its model id (held in memory only, to find a per-model threshold) and compaction settings, and at 80% and 90% of the threshold prints one line to run `tidy`; never blocks, always exits 0. |
 | `scripts/compact_setup.py` | Previews/applies an approved documented native compaction threshold, at user scope or (`--project`, Claude Code) in a repository's untracked `.claude/settings.local.json`; on Claude Code `--model <id>` saves it for one model only, and `--clear-model-overrides` removes per-model values in the same write. |
 | `scripts/compact_stop_hook.py` | Opt-in Antigravity transcript-size stop; no content read, live delivery unverified. |

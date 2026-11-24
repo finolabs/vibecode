@@ -48,6 +48,9 @@ def main(argv):
     discovered = unittest.defaultTestLoader.discover("tests")
     suites = [(module_name(suite), suite) for suite in discovered if module_name(suite)]
     mine = partition(suites, count)[index - 1]
+    if not mine:
+        print(f"shard {index} of {count}: no test modules; refusing to pass an empty shard", file=sys.stderr)
+        return 1
     print(f"shard {index} of {count}: " + " ".join(name for name, _ in mine), flush=True)
     result = unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(suite for _, suite in mine))
     return 0 if result.wasSuccessful() else 1

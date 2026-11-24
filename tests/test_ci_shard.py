@@ -3,6 +3,7 @@ import pathlib
 import re
 import tempfile
 import unittest
+import unittest.mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("ci_shard", ROOT / "scripts" / "ci_shard.py")
@@ -35,6 +36,10 @@ class PartitionTests(unittest.TestCase):
             suites = list(unittest.TestLoader().discover(folder))
         self.assertEqual([ci_shard.module_name(suite) for suite in suites], ["test_broken"])
 
+    def test_an_empty_shard_fails(self):
+        with unittest.mock.patch.object(ci_shard.unittest.defaultTestLoader, "discover", return_value=unittest.TestSuite()):
+            self.assertEqual(ci_shard.main(["1", "1"]), 1)
+
     def test_bad_arguments_are_refused(self):
         for argv in ([], ["0", "4"], ["5", "4"], ["x", "4"], ["1"]):
             with self.subTest(argv=argv):
@@ -47,7 +52,10 @@ class WorkflowTests(unittest.TestCase):
         shards = re.search(r"shard: \[([0-9, ]+)\]", workflow).group(1).split(", ")
         count = re.search(r"scripts/ci_shard\.py \"\$\{\{ matrix\.shard \}\}\" (\d+)", workflow).group(1)
         self.assertEqual(shards, [str(i) for i in range(1, int(count) + 1)])
-        self.assertRegex(workflow, r"\n  validate:\n(?:    .*\n)*?    needs: \[checks, tests\]\n")
+        validate = workflow.split("\n  validate:\n", 1)[1]
+        self.assertIn("    if: always()\n", validate)
+        self.assertIn("    needs: [checks, tests]\n", validate)
+        self.assertIn('[ "$CHECKS" = success ] && [ "$TESTS" = success ]', validate)
 
 
 if __name__ == "__main__":
