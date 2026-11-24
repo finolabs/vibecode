@@ -1,6 +1,7 @@
 import importlib.util
 import pathlib
 import re
+import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -27,6 +28,12 @@ class PartitionTests(unittest.TestCase):
         shards = ci_shard.partition(suites, 2)
         self.assertEqual([[name for name, _ in shard] for shard in shards], [["test_a", "test_d"], ["test_b", "test_c"]])
         self.assertEqual(shards, ci_shard.partition(list(reversed(suites)), 2))
+
+    def test_a_module_that_fails_to_import_keeps_its_name(self):
+        with tempfile.TemporaryDirectory() as folder:
+            (pathlib.Path(folder) / "test_broken.py").write_text("import a_module_that_does_not_exist\n")
+            suites = list(unittest.TestLoader().discover(folder))
+        self.assertEqual([ci_shard.module_name(suite) for suite in suites], ["test_broken"])
 
     def test_bad_arguments_are_refused(self):
         for argv in ([], ["0", "4"], ["5", "4"], ["x", "4"], ["1"]):

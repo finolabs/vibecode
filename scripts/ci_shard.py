@@ -6,6 +6,7 @@ test modules into <count> shards by test count (largest first, each to the light
 ties by name), and runs shard <index> (1-based). Every module lands in exactly one shard,
 so the shards together are the full suite. Exit 0 when the shard passes, 1 otherwise.
 """
+import os
 import sys
 import unittest
 
@@ -13,6 +14,8 @@ import unittest
 def module_name(suite):
     """The test module a discovered top-level suite came from, or None for an empty one."""
     for test in _tests(suite):
+        if isinstance(test, unittest.loader._FailedTest):  # a module that failed to import
+            return test.id().rsplit(".", 1)[1]
         return test.id().split(".", 1)[0]
     return None
 
@@ -41,6 +44,7 @@ def main(argv):
         print("usage: ci_shard.py <index> <count>, 1 <= index <= count", file=sys.stderr)
         return 2
     index, count = int(argv[0]), int(argv[1])
+    sys.path[0] = os.getcwd()  # as `python3 -m unittest` does, so `from tests.x import ...` resolves
     discovered = unittest.defaultTestLoader.discover("tests")
     suites = [(module_name(suite), suite) for suite in discovered if module_name(suite)]
     mine = partition(suites, count)[index - 1]
