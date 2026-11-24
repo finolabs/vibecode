@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,8 +38,6 @@ jobs:
             printf 'Personal paths or addresses at:\n%s\n' "$found"
             exit 1
           fi
-      - name: Script tests
-        run: python3 -m unittest discover -s tests -v
       - name: Cross-references resolve
         run: python3 -I scripts/check-references.py
       - name: No ignored file is tracked
@@ -130,3 +128,30 @@ jobs:
         run: |
           npm install --global @anthropic-ai/claude-code@2.1.316
           claude plugin validate .
+
+  # The full script suite, split into shards that run in parallel (scripts/ci_shard.py);
+  # together they run every test module once.
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Script tests (shard ${{ matrix.shard }} of 4)
+        run: python3 scripts/ci_shard.py "${{ matrix.shard }}" 4
+
+  # The required status check: passes only when the checks and every test shard passed.
+  validate:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [checks, tests]
+    steps:
+      - name: All checks and test shards passed
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          TESTS: ${{ needs.tests.result }}
+        run: |
+          echo "checks=$CHECKS tests=$TESTS"
+          [ "$CHECKS" = success ] && [ "$TESTS" = success ]
