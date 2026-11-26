@@ -69,7 +69,6 @@ EXTRA_APPROVALS = [
     ("Save the shown command to display and record conversation-space usage?", REFS / "context-reading.md"),
     ("Let <agent family> receive any named runtime settings when it starts?", REFS / "features" / "delegation.md"),
     ("Let <agent family> receive the value of <VARIABLE_NAME> when it starts?", REFS / "features" / "delegation.md"),
-    ("Let TypeSafe check task evidence using your service account and approved budget?", REFS / "features" / "roles.md"),
     ("Save this list of checks for this repository?", REFS / "features" / "checks.md"),
     ("Turn on the heavy-job gate, which stops a heavy command in Claude Code unless it runs through heavy_run.py?",
      REFS / "heavy-gate.md"),

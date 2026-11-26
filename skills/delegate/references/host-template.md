@@ -122,7 +122,7 @@ Judge selection lives only in canonical `## Assignment matrix`; without a valid,
     ## Assignment matrix
 
     - Consent: yes (<YYYY-MM-DD>)
-    - Judge: <jev | host>
+    - Judge: <host>
     - <agent>: levels <L>-<H>[; works on <type>, ...][; model <id>][; roles <role>, ... | roles none]
 
 Agents are `claude`, `codex`, `antigravity`, `zcode` or an extra Claude Code command; types are `frontend`, `design`, `video`, `three-d`, `image-generation`, `transcription`; roles are `code-review`, `security-review`, `navigator`, `advisor`, each named by one agent at most.

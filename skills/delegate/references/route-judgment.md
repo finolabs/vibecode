@@ -7,11 +7,9 @@ with the minimum supporting evidence, as data, through `scripts/judge.py ask --s
 
 ## Which judge
 
-Canonical `## Assignment matrix` chooses `Judge: host` (the default) or `Judge: jev`; without a valid matrix with its own yes consent the judge is `host` (script-enforced). The host is a small model on the
-host's fast tier; supply its answer to `judge.py check-host`. A `yes` needs a verbatim quote with at least eight
-alphanumeric characters. Jev calls go directly through `judge.py`, only with canonical setup opt-in and the user's
-API budget; the optional `typesafe-ai` skill supplies cookbooks. `FNL_JUDGE=off` stops outbound calls. The script
-caps each field and body, rejects secrets and machine paths before sending, and permits at most 24 calls per run.
+The judge is the host's small model on its fast tier; supply its answer to `judge.py check-host`. A matrix `Judge:` line (`host` or the retired `jev`) reads as the host. A `yes` needs a verbatim quote with at least eight
+alphanumeric characters. `judge.py` makes no network call. The script
+caps each field and body and rejects secrets and machine paths before the question is accepted.
 
 ## Evidence and fallback
 
@@ -21,8 +19,7 @@ Never send code, secrets, personal data or customer records. Instruction-file ch
 The instruction check uses the configured judge; it does not authorize a new outbound call site.
 
 Only a validated response may be recorded as `--route-by judge`. Every `no` or `insufficient` goes to the coordinator.
-Unavailable, refused or invalid Jev answers fall back to the small host model with the same evidence and disclose
-the fallback. Without a usable answer, follow the conservative table choice and record `--route-by table`.
+Without a usable small-model answer, follow the conservative table choice and record `--route-by table`.
 Never store questions or answers in the ledger, and reuse a judgment only while its task, brief and candidate state match.
 
 ## Receipt after each decision
