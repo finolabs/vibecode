@@ -156,10 +156,12 @@ def sandbox_proxy():
 
     Inside a Codex sandbox with its network proxy on, direct connections fail and only Codex's own
     loopback proxy reaches the allowed hosts. Keep exactly that: `http://` to a loopback address with a
-    port, no credentials, path or query. TLS still runs end to end through the tunnel.
+    port, no credentials, query or path beyond a bare `/`, and no whitespace or control character.
+    TLS still runs end to end through the tunnel.
     """
     value = os.environ.get("HTTPS_PROXY", "")
-    if not os.environ.get("CODEX_NETWORK_PROXY_ACTIVE") or len(value) > 64:
+    if (not os.environ.get("CODEX_NETWORK_PROXY_ACTIVE") or len(value) > 64
+            or not re.fullmatch(r"[A-Za-z0-9.:/\[\]]+", value)):  # urlsplit strips whitespace; gh would not
         return None
     try:
         parts = urllib.parse.urlsplit(value)

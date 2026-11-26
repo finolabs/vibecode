@@ -432,7 +432,11 @@ else:
     def test_only_the_codex_sandbox_loopback_proxy_reaches_gh(self):
         # Codex's sandbox reaches the network only through its own loopback proxy; direct DNS fails there.
         def env_for(extra):
-            with mock.patch.dict(os.environ, extra), mock.patch.object(subprocess, "run") as run:
+            # Start from a caller with neither variable, so a real Codex sandbox running this test cannot leak in.
+            base = {key: value for key, value in os.environ.items()
+                    if key not in ("CODEX_NETWORK_PROXY_ACTIVE", "HTTPS_PROXY")}
+            with mock.patch.dict(os.environ, {**base, **extra}, clear=True), \
+                    mock.patch.object(subprocess, "run") as run:
                 run.return_value = subprocess.CompletedProcess([], 0, "{}", "")
                 post.gh_call(str(self.fake), ["pr", "view", "31"])
             return run.call_args.kwargs["env"]
@@ -449,7 +453,10 @@ else:
                       {**sandbox, "HTTPS_PROXY": "socks5://127.0.0.1:51234"},
                       {**sandbox, "HTTPS_PROXY": "http://127.0.0.1"},
                       {**sandbox, "HTTPS_PROXY": "http://127.0.0.1:51234/path"},
-                      {**sandbox, "HTTPS_PROXY": "http://127.0.0.1:51234?x=1"}):
+                      {**sandbox, "HTTPS_PROXY": "http://127.0.0.1:51234?x=1"},
+                      {**sandbox, "HTTPS_PROXY": " http://127.0.0.1:51234"},
+                      {**sandbox, "HTTPS_PROXY": "http://127.0.0.1:51\t234"},
+                      {"CODEX_NETWORK_PROXY_ACTIVE": "", "HTTPS_PROXY": "http://127.0.0.1:51234"}):
             with self.subTest(extra=extra):
                 self.assertNotIn("HTTPS_PROXY", env_for(extra))
 
