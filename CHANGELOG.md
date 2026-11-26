@@ -6,6 +6,7 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ### Fixed
 
+- A Codex reviewer can post from its sandbox: `post_review.py` keeps `HTTPS_PROXY` for `gh` only inside a Codex sandbox whose network proxy is on and only when it points to a loopback address (`http://`, a port, no credentials, whitespace, query or path beyond a bare `/`); every other proxy stays excluded. Before, the wrapper dropped the proxy that sandbox needs and the post failed with `cannot-post: no-network`. The `delegate` Codex reference names the sandbox posting form.
 - A delegated `codex exec` run no longer hangs waiting on stdin: `delegate_env.py` gives the child a closed stdin (`/dev/null`), so a command that forgot `< /dev/null` cannot leave Codex waiting for an end of input that never comes (its log stopped after `Reading additional input from stdin...`). The `delegate` Codex reference and the help troubleshooting page name the symptom.
 
 ## [0.3.3] - 2026-11-24

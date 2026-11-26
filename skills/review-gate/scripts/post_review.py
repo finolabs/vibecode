@@ -23,6 +23,7 @@ a failed receipt never changes the result.
 """
 import argparse
 import configparser
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -32,6 +33,7 @@ import stat
 import subprocess
 import sys
 import time
+import urllib.parse
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -149,11 +151,40 @@ def read_body(path):
     return text
 
 
+def sandbox_proxy():
+    """Codex's sandbox network proxy as `HTTPS_PROXY`, or None.
+
+    Inside a Codex sandbox with its network proxy on, direct connections fail and only Codex's own
+    loopback proxy reaches the allowed hosts. Keep exactly that: `http://` to a loopback address with a
+    port, no credentials, query or path beyond a bare `/`, and no whitespace or control character.
+    TLS still runs end to end through the tunnel.
+    """
+    value = os.environ.get("HTTPS_PROXY", "")
+    if (not os.environ.get("CODEX_NETWORK_PROXY_ACTIVE") or len(value) > 64
+            or not re.fullmatch(r"[A-Za-z0-9.:/\[\]]+", value)):  # urlsplit strips whitespace; gh would not
+        return None
+    try:
+        parts = urllib.parse.urlsplit(value)
+        port = parts.port
+        host = parts.hostname or ""
+        loopback = host == "localhost" or ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return None
+    if (parts.scheme != "http" or not loopback or port is None or parts.username is not None
+            or parts.password is not None or parts.path not in ("", "/") or parts.query or parts.fragment):
+        return None
+    return value
+
+
 def gh_environment():
     # Only approved github.com token injection and canonical account auth survive.
-    # No ambient host/repo, proxy, socket, config, browser or loader overrides.
+    # No ambient host/repo, proxy, socket, config, browser or loader overrides, except Codex's
+    # own sandbox loopback proxy (sandbox_proxy), without which a sandboxed reviewer cannot post.
     env = {key: os.environ[key] for key in ("GH_TOKEN", "GITHUB_TOKEN", "LANG", "LC_ALL") if key in os.environ}
     env.update(HOME=str(dr.account_home()), PATH="/usr/bin:/bin", GH_PROMPT_DISABLED="1", GH_NO_UPDATE_NOTIFIER="1")
+    proxy = sandbox_proxy()
+    if proxy:
+        env["HTTPS_PROXY"] = proxy
     return env
 
 
