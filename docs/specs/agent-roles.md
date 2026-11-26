@@ -1,6 +1,6 @@
 # Agent roles: routed reviews, verification without an agent, and a navigator
 
-Status: in progress; part B (the host section) retired in 0.2.6; release 0.2.0 scripts and local tests are implemented; relay receipts and the dashboard relay count are implemented (0.3.3); the Jev judge is retired by owner decision of 26/11/2026 (part I), its code and privacy text still present pending removal; independent navigator/judge validation and live-host routing, posting and SessionStart delivery remain unverified.
+Status: in progress; part B (the host section) retired in 0.2.6; release 0.2.0 scripts and local tests are implemented; relay receipts and the dashboard relay count are implemented (0.3.3); the Jev judge is retired by owner decision of 26/11/2026 (part I), its code and privacy text removed in 0.3.4; independent navigator/judge validation and live-host routing, posting and SessionStart delivery remain unverified.
 
 ## Why
 
@@ -241,17 +241,17 @@ and records the agreement; that result is part of acceptance.
 
 **Jev retired (owner decision, 26/11/2026).** From the merge of this record no procedure of the plugin runs a Jev
 judgment: the small host model below is the only judge, and the Jev bullet and fallback paragraph are kept as history.
-The outbound Jev code in `judge.py` and the "Judge" section of PRIVACY.md stay on main until the second pull request
-below removes them; until then they describe code that still exists but is no longer used. Why: in the two measurements below the host
+The outbound Jev code in `judge.py` and the "Judge" section of PRIVACY.md were removed by the second pull request
+below (0.3.4). Why: in the two measurements below the host
 model matched or beat Jev (10 agree and 0 wrong against 9 agree and 1 wrong) on the same 12 cases; in the 19 days after
 07/11/2026 the owner's sessions made about 25 Jev calls, none of which settled a choice by design; and the call carried the
 plugin's only outbound path for task data and a credential, with its own scoped exception, privacy section and
-security review on every change. What changes, in order: this record and `CLAUDE.md` (the fourth scoped exception
-becomes a removal note); then `judge.py` (all copies) will drop `ask --judge jev`, the endpoint, the key read and the
-`away-evaluation` outbound call, keep the payload screening, `check-host`, `check-table` and `validate --judge host`,
-and read a `Judge: jev` matrix line as `host` and say so once, while `PRIVACY.md` drops its "Judge" section and every
-mention of a judge call in the same pull request; then `setup` will stop asking for the judge, and the skills that name
-Jev (`checks`, `afk` "Decide", `delegate` route judgment, `tidy` context pressure, the navigator) will name only the host
+security review on every change. What changed, in order (pull requests 395 to 397): this record and `CLAUDE.md` (the fourth scoped exception
+became a removal note); then `judge.py` (all copies) dropped `ask --judge jev`, the endpoint, the key read and the
+`away-evaluation` outbound call, kept the payload screening, `check-host`, `check-table` and `validate --judge host`,
+and reads a `Judge: jev` matrix line as `host` and says so once, while `PRIVACY.md` dropped its "Judge" section and every
+mention of a judge call in the same pull request; then `setup` stopped asking for the judge, and the skills that name
+Jev (`checks`, `afk` "Decide", `delegate` route judgment, `tidy` context pressure, the navigator) name only the host
 model, with an upgrade note. The afk ladder keeps its `table` rung, filled by `host-small`. An agent may still consult
 Jev under the user's own instructions through the user's `typesafe-ai` skill; that is outside the plugin.
 
