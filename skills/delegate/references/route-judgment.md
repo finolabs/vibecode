@@ -16,7 +16,7 @@ caps each field and body and rejects secrets and machine paths before the questi
 Use only the brief's goal, acceptance, affected areas and risk flags needed to test one proposed grade or route.
 Never send code, secrets, personal data or customer records. Instruction-file checking is separate: only with
 `Instruction check: on` in canonical config, using the screened payload from `checkup.py`, never as part of a routing question.
-The instruction check uses the configured judge; it does not authorize a new outbound call site.
+The instruction check uses the small host model.
 
 Only a validated response may be recorded as `--route-by judge`. Every `no` or `insufficient` goes to the coordinator.
 Without a usable small-model answer, follow the conservative table choice and record `--route-by table`.
