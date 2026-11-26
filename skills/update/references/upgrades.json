@@ -577,7 +577,7 @@
         {
           "id": "0.3.4/jev-retired",
           "kind": "info",
-          "text": "Jev (TypeSafe) is retired: a Judge: jev line now reads as the host model and TYPESAFE_API_KEY is no longer read. Nothing to do: keep the line, or change it to Judge: host; do not delete it, since the assignment matrix needs a Judge line to stay valid."
+          "text": "Jev is retired: Judge: jev reads as the host model and TYPESAFE_API_KEY is unused. Keep that line or change it to Judge: host; deleting it makes the assignment matrix invalid."
         }
       ]
     }
