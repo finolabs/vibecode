@@ -429,6 +429,30 @@ else:
         self.assertEqual(kwargs["env"]["HOME"], str(self.home))
         self.assertEqual(kwargs["stdin"], subprocess.DEVNULL)
 
+    def test_only_the_codex_sandbox_loopback_proxy_reaches_gh(self):
+        # Codex's sandbox reaches the network only through its own loopback proxy; direct DNS fails there.
+        def env_for(extra):
+            with mock.patch.dict(os.environ, extra), mock.patch.object(subprocess, "run") as run:
+                run.return_value = subprocess.CompletedProcess([], 0, "{}", "")
+                post.gh_call(str(self.fake), ["pr", "view", "31"])
+            return run.call_args.kwargs["env"]
+        sandbox = {"CODEX_NETWORK_PROXY_ACTIVE": "1"}
+        for value in ("http://127.0.0.1:51234", "http://[::1]:51234", "http://localhost:51234/"):
+            with self.subTest(value=value):
+                env = env_for({**sandbox, "HTTPS_PROXY": value, "HTTP_PROXY": value, "ALL_PROXY": value})
+                self.assertEqual(env.get("HTTPS_PROXY"), value)
+                self.assertFalse({"HTTP_PROXY", "ALL_PROXY", "CODEX_NETWORK_PROXY_ACTIVE"} & set(env))
+        for extra in ({"HTTPS_PROXY": "http://127.0.0.1:51234"},
+                      {**sandbox, "HTTPS_PROXY": "http://proxy.invalid:51234"},
+                      {**sandbox, "HTTPS_PROXY": "http://10.0.0.1:51234"},
+                      {**sandbox, "HTTPS_PROXY": "http://user:pass@127.0.0.1:51234"},
+                      {**sandbox, "HTTPS_PROXY": "socks5://127.0.0.1:51234"},
+                      {**sandbox, "HTTPS_PROXY": "http://127.0.0.1"},
+                      {**sandbox, "HTTPS_PROXY": "http://127.0.0.1:51234/path"},
+                      {**sandbox, "HTTPS_PROXY": "http://127.0.0.1:51234?x=1"}):
+            with self.subTest(extra=extra):
+                self.assertNotIn("HTTPS_PROXY", env_for(extra))
+
     def test_yes_requires_both_marker_and_expected_identity(self):
         own = dict(body=BODY, author=dict(login="sample-reviewer"), includesCreatedEdit=False)
         relay = dict(body=BODY, author=dict(login="sample-coordinator"))
