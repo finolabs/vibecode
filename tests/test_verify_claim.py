@@ -74,12 +74,11 @@ class VerificationTest(unittest.TestCase):
         self.run_verify(answers={'C1': answer})
         self.assertEqual(self.receipt()['criteria'][0]['answer'], 'yes')
 
-    def test_fallback_is_reported_in_receipt_with_same_evidence(self):
-        with mock.patch.object(verify.judge, 'ask_jev', side_effect=verify.judge.Unavailable):
-            self.run_verify(source='jev')
-        self.assertTrue(self.receipt()['criteria'][0]['fallback'])
+    def test_a_retired_jev_source_is_judged_by_the_host_with_no_fallback(self):
+        self.run_verify(source='jev')
+        self.assertFalse(self.receipt()['criteria'][0]['fallback'])
         self.assertEqual(self.receipt()['criteria'][0]['source'], 'host')
-        self.assertIn('falling back', self.output.getvalue())
+        self.assertNotIn('Jev', self.output.getvalue())
 
     def test_scope_dirty_checkout_and_failed_tests_cannot_pass(self):
         self.brief['scope'] = ['other.txt']
@@ -108,8 +107,8 @@ class VerificationTest(unittest.TestCase):
         self.brief['criteria'] = [{'id': 'C1', 'documents': [
             {'path': 'target.txt', 'question': 'The document says the guard was added.'},
             {'path': 'target.txt', 'question': 'The document says the guard was added.'}]}]
-        answers = [dict(id='C1.1', answer='yes', source='jev', fallback=False),
-                   dict(id='C1.2', answer='no', source='jev', fallback=False)]
+        answers = [dict(id='C1.1', answer='yes', source='host', fallback=False),
+                   dict(id='C1.2', answer='no', source='host', fallback=False)]
         with mock.patch.object(verify, 'ask', side_effect=answers) as ask:
             self.run_verify()
         self.assertEqual(ask.call_count, 2)
@@ -172,9 +171,8 @@ class VerificationTest(unittest.TestCase):
                 else:
                     self.git('config', 'core.fsmonitor', str(monitor))
                 with mock.patch.dict(os.environ, {'TYPESAFE_API_KEY': 'synthetic-key',
-                                                 'PATH': os.defpath, 'TMPDIR': str(self.root)}, clear=True), \
-                        mock.patch.object(verify.judge, 'ask_jev', side_effect=verify.judge.Unavailable):
-                    passed, _ = self.run_verify(source='jev')
+                                                 'PATH': os.defpath, 'TMPDIR': str(self.root)}, clear=True):
+                    passed, _ = self.run_verify()
                 self.assertTrue(passed, self.output.getvalue())
                 self.assertFalse(marker.exists(), 'fsmonitor executed with coordinator environment')
                 self.assertEqual(self.receipt()['mechanical'], 'passed')
@@ -315,9 +313,8 @@ class VerificationTest(unittest.TestCase):
         with self.assertRaises(OSError):
             self.run_verify()
 
-    def test_complete_host_uses_exact_saved_run_and_keeps_fallback(self):
-        with mock.patch.object(verify.judge, 'ask_jev', side_effect=verify.judge.Unavailable):
-            passed, requests = self.run_verify(source='jev')
+    def test_complete_host_uses_exact_saved_run(self):
+        passed, requests = self.run_verify()
         packet = requests['C1']
         answer = {key: packet[key] for key in ('question', 'evidence_sha256')}
         answer.update(answer='yes', quote='one test passed')
@@ -325,7 +322,7 @@ class VerificationTest(unittest.TestCase):
                 mock.patch.object(verify, 'run_test', side_effect=AssertionError('must not rerun')):
             self.assertTrue(verify.complete_host(requests, {'C1': answer}, self.dispatch, self.head, self.checkout))
         self.assertEqual(self.receipt()['criteria'][0]['answer'], 'yes')
-        self.assertTrue(self.receipt()['criteria'][0]['fallback'])
+        self.assertFalse(self.receipt()['criteria'][0]['fallback'])
         requests['C1']['evidence'] = 'tampered'
         with self.assertRaises(ValueError):
             verify.complete_host(requests, {'C1': answer}, self.dispatch, self.head, self.checkout)

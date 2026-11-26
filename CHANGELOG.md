@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Removed
+
+- The Jev judge call to TypeSafe ([spec](docs/specs/agent-roles.md) part I, owner decision 26/11/2026). `judge.py` (every copy) makes no network call and reads no API key: the small host model is the only judge, and `judge.py` keeps only the payload screening, `check-host`, `check-table` and `validate` on host answers. `--judge jev`, and a `Judge: jev` line in `## Assignment matrix`, read as the host model with one retirement line; `--base-url` is gone; `ask` on the `away-evaluation` site now screens the fields and prints a `host-small` table request; `check-table` accepts only `host-small` tables. `verify_claim.py` judges with the host model only. `PRIVACY.md` drops the TypeSafe call.
+
 ### Fixed
 
 - A Codex reviewer can post from its sandbox: `post_review.py` keeps `HTTPS_PROXY` for `gh` only inside a Codex sandbox whose network proxy is on and only when it points to a loopback address (`http://`, a port, no credentials, whitespace, query or path beyond a bare `/`); every other proxy stays excluded. Before, the wrapper dropped the proxy that sandbox needs and the post failed with `cannot-post: no-network`. The `delegate` Codex reference names the sandbox posting form.
