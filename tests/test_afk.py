@@ -426,14 +426,11 @@ class AwayDecisionTest(AfkBase):
                 _, line = self.recorded('--rung', 'table', '--settled', 'yes', '--by', 'jev', '--of', '2', '--probability', str(p))
                 self.assertEqual(line['probability'], p)
                 self.assertIs(type(line['probability']), float)
-        # The judge's own table, with the provider call stubbed (no network), reaches the record unchanged.
+        # The small host model's table, as check-table returns it, reaches the record unchanged.
         self.load()
         import judge
-        spread = {'1': 0.823456789, '2': 0.176543211}
-        with patch.object(judge, 'configured_judge', return_value='jev'), patch.object(judge, 'post', return_value=spread), \
-                patch.dict(os.environ, {'FNL_JUDGE': 'on'}):
-            table = judge.ask_choice('Which schema fits the spec?', ['Keep one schema', 'Split it'], 'Goal: one schema.')
-        self.assertEqual(table, {'source': 'jev', 'of': 2, 'probabilities': [0.823456789, 0.176543211]})
+        table = judge.check_table({'source': 'host-small', 'of': 2, 'probabilities': [0.823456789, 0.176543211]}, 2)
+        self.assertEqual(table, {'source': 'host-small', 'of': 2, 'probabilities': [0.823456789, 0.176543211]})
         _, line = self.recorded('--rung', 'table', '--settled', 'yes', '--by', table['source'], '--of', str(table['of']),
                                 '--probability', str(max(table['probabilities'])))
         self.assertEqual((line['of'], line['probability']), (2, 0.823456789))

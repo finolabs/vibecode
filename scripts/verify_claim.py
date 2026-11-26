@@ -147,23 +147,13 @@ def run_test(argv, checkout, timeout):
 
 
 def ask(question, evidence, identifier, source, answers):
-    fallback = False
-    if source == "jev":
-        try:
-            out = judge.ask_jev(question, evidence)
-        except judge.Unavailable:
-            fallback = True
-            print(f"{identifier}: Jev unavailable; falling back to small host judge", file=sys.stderr)
-    if source == "host" or fallback:
-        packet = answers.get(identifier)
-        # Bind saved host output to this exact question and current evidence.
-        if (not isinstance(packet, dict) or "evidence_sha256" not in packet or "question" not in packet):
-            out = judge.result()
-        else:
-            out = judge.check_host(packet, evidence, question)
-    if out["source"] == "jev":
-        print(f"{identifier}: Jev p={out['p']}", file=sys.stderr)
-    return dict(id=identifier, answer=out["answer"], source=out["source"], fallback=fallback)
+    """The small host judge's saved answer, bound to this exact question and current evidence."""
+    packet = answers.get(identifier)
+    if (not isinstance(packet, dict) or "evidence_sha256" not in packet or "question" not in packet):
+        out = judge.result()
+    else:
+        out = judge.check_host(packet, evidence, question)
+    return dict(id=identifier, answer=out["answer"], source=out["source"], fallback=False)
 
 
 def verify(brief, base, head, dispatch, checkout, source, answers, timeout=300):
@@ -309,7 +299,7 @@ def main():
     parser.add_argument("--head", required=True)
     parser.add_argument("--ledger-id", required=True)
     parser.add_argument("--checkout", default=".")
-    parser.add_argument("--judge", choices=("jev", "host"))
+    parser.add_argument("--judge", choices=("jev", "host"), help="jev is retired and reads as host")
     parser.add_argument("--host-answers", help="JSON object keyed by criterion id")
     parser.add_argument("--requests-out", help="private local host request packet; contains evidence, never a receipt")
     parser.add_argument("--complete-host", help="complete the exact saved request packet without rerunning tests")
@@ -327,7 +317,7 @@ def main():
             raise ValueError("brief and base required")
         brief = load_brief(args.brief)
         passed, requests = verify(brief, args.base, args.head, args.ledger_id, args.checkout,
-                                  args.judge or judge.configured_judge(), answers)
+                                  judge.judge_source(args.judge), answers)
         if args.requests_out:
             write_packet(args.requests_out, requests)
         return 0 if passed else 1
