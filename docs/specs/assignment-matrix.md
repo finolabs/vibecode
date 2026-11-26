@@ -57,7 +57,7 @@ answer and makes deviation visible, without turning a preference into a block.
 - Model: one full model id (letters, digits, dot and dash, at most 64) that applies to the types on that line; `show`
   reports one that is not among the allowed models of `## Agents on this machine` as unverified.
 - Roles: `code-review`, `security-review`, `navigator`; each role names at most one agent (as today), and `none` or an
-  absent field means no role. `Judge` is `jev` or `host`, as today (`agent-roles.md` part I).
+  absent field means no role. `Judge` is `jev` or `host`, as today (`agent-roles.md` part I); by the owner decision of 26/11/2026 no procedure uses Jev any more, and once `judge.py` drops its Jev code both values will mean the host model, with `jev` reported once as retired.
 - Everything else (the posting line of `## Review posting`, quota, the shell functions) stays where it is.
 
 ## Reading and migration
@@ -82,8 +82,9 @@ answer and makes deviation visible, without turning a preference into a block.
      because the matrix is damaged.
 - Consent is not inherited. The `Consent:` line is the matrix's own: `matrix_setup.py migrate` shows the preview and asks
   for a new yes, and a matrix without a valid `Consent:` line is treated as absent for writing and as invalid for roles
-  and judge. The judge call's opt-in in `CLAUDE.md` (fourth scoped exception) and `PRIVACY.md` name only the matrix's
-  `Judge: jev` with its own valid `Consent: yes (<date>)` line; an absent, invalid or unconsented matrix means no call.
+  and judge. The judge call that `Judge: jev` with its own consent opts into is retired (owner decision, 26/11/2026;
+  `CLAUDE.md`, fourth scoped exception, now a removal note): no procedure runs it, and its code in `judge.py` is removed
+  in the pull request that follows, after which no matrix state makes the plugin call a judge endpoint.
 - `## Agent levels` is no longer read from 0.3.1 (it stayed readable without a matrix until then; the old global ledger
   lines were removed in 0.2.5), and `## Agent roles` is no longer read from 0.2.6; `/setup check` reports either one without a matrix as
   `roles: missing` or `levels: missing`, and one beside a matrix in its legacy host settings row, with the fix `/setup add delegation`. `matrix_setup.py migrate` previews the matrix built from the old sections and, after a yes, writes
