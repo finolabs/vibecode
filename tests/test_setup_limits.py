@@ -27,7 +27,6 @@ INVENTORY = [
     (5, "Let Antigravity run this exact test command again in this repository without asking?", "features/delegation.md"),
     (6, "Let this plugin check your AI usage limits before sharing work with helpers?", "features/quota.md"),
     (6, "Use the programs at the locations shown to check your AI usage limits?", "features/quota.md"),
-    (7, "Who should help check whether task evidence meets a requirement?", "features/roles.md"),
     (8, "Let your AI provider review your saved instructions during setup checks?", "features/roles.md"),
     (9, "Save which AI helpers review code, check safety and watch project progress?", "features/roles.md"),
     (9, "Set up this AI helper to post its own review comments on this repository’s pull requests?", "features/roles.md"),
@@ -260,7 +259,8 @@ class ConsentInventoryTests(unittest.TestCase):
             self.assertEqual(hits, [REFS / home], "row %d: %r" % (row, sentence))
 
     def test_inventory_covers_every_row(self):
-        self.assertEqual({row for row, _, _ in INVENTORY}, set(range(1, 25)))
+        # Row 7, the judge question, was removed with Jev (26/11/2026).
+        self.assertEqual({row for row, _, _ in INVENTORY}, set(range(1, 25)) - {7})
 
     def test_core_read_back_holds_inert_facts_only(self):
         core = (REFS / "core.md").read_text()

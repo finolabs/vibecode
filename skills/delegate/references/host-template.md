@@ -111,7 +111,7 @@ Which agent can coordinate on this machine, and which delegates each one can rea
 
 ## Instruction check
 
-- Instruction check: <on | off>. Default off. `on` means the user approved, on <DD/MM/YYYY>, sending lines of their private instruction files to the configured judge for the Check judgment items. Instruction checks use the small host fallback because they are outside the four outbound sites; retention is the host provider's. It is separate from the routing approval and is global to this machine; turning it off takes effect on the next run.
+- Instruction check: <on | off>. Default off. `on` means the user approved, on <DD/MM/YYYY>, sending lines of their private instruction files to the small host model for the Check judgment items; retention is the host provider's. It is separate from the routing approval and is global to this machine; turning it off takes effect on the next run.
 
 This section replaces `## Route judgment` (0.3.2), which nothing reads: `matrix_setup.py migrate` moves its `Instruction check` line here and removes it.
 
