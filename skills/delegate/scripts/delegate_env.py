@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Rule 2 dispatch wrapper. Canonical host config stores names and consent only.
 
+The child's stdin is always closed (`/dev/null`): briefs travel in argv, never on stdin.
+
 After the child exits, when FNL_DISPATCH_ID holds a valid dispatch id, it appends one `ended` line (id, time, exit
 code) to the dispatch ledger; any failure there is silent and the exit status stays the child's.
 """
@@ -134,7 +136,8 @@ def main():
             raise ValueError('missing command')
         env = environment(args.family, config_dir=args.claude_config_dir)
         prepare_logs()
-        code = subprocess.call(argv, env=env)
+        # The brief travels in argv; a piped stdin that never closes makes `codex exec` wait for EOF forever.
+        code = subprocess.call(argv, env=env, stdin=subprocess.DEVNULL)
         record_ended(code)
         return code if 0 <= code <= 255 and code != REFUSED else 1
     except (OSError, ValueError, UnicodeError):
