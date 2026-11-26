@@ -55,6 +55,21 @@ class EndedLineTest(unittest.TestCase):
         self.assertEqual(self.run_wrapper('pass'), 0)
         self.assertEqual(self.lines()[-1]['exit'], 0)
 
+    def test_the_child_gets_a_closed_stdin_even_when_the_callers_stays_open(self):
+        # `codex exec` appends piped stdin to its prompt and waits for EOF; an open pipe hung runs for hours.
+        child = ('import os, select, sys; ready = select.select([0], [], [], 3)[0]; '
+                 'sys.exit(0 if ready and os.read(0, 1) == b"" else 7)')
+        read_end, write_end = os.pipe()
+        saved = os.dup(0)
+        try:
+            os.dup2(read_end, 0)
+            code = self.run_wrapper(child)
+        finally:
+            os.dup2(saved, 0)
+            for fd in (saved, read_end, write_end):
+                os.close(fd)
+        self.assertEqual(code, 0)
+
     def test_a_signal_terminated_child_records_its_negative_code(self):
         code = self.run_wrapper('import os, signal; os.kill(os.getpid(), signal.SIGTERM)')
         self.assertEqual(code, 1)  # the wrapper's own status is unchanged by this feature

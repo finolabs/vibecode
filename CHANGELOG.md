@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Fixed
+
+- A delegated `codex exec` run no longer hangs waiting on stdin: `delegate_env.py` gives the child a closed stdin (`/dev/null`), so a command that forgot `< /dev/null` cannot leave Codex waiting for an end of input that never comes (its log stopped after `Reading additional input from stdin...`). The `delegate` Codex reference and the help troubleshooting page name the symptom.
+
 ## [0.3.3] - 2026-11-24
 
 ### Added
