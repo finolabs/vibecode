@@ -1,6 +1,6 @@
 # Release 0.3.4: scope
 
-Status: accepted; prepared, not yet tagged.
+Status: released; tagged v0.3.4 on 2026-11-27; a real upgrade from 0.3.3 on a user's machine remains unverified.
 
 ## What shipped
 
