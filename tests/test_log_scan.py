@@ -500,6 +500,19 @@ class SkPrefixBoundaryTest(unittest.TestCase):
                     self.assertTrue(sp.PREFIX.search(text), text)
                     self.assertTrue(sp.findings(text), text)
 
+    def test_sk_keys_after_encoded_delimiters_still_match(self):
+        # Review of 1d4ca941 (PR 400): a percent, \u or \x escape ends in a letter or digit but is a delimiter.
+        import brief_check
+        key = 'sk-' + 'A1b2C3d4E5f6G7h8J9k0' * 2
+        for text in ('https://example.invalid/?data=x%3D' + key, 'a%2F' + key, 'a%3a' + key, '"\\u000A' + key,
+                     'x\\u000a' + key, 'x\\x3D' + key):
+            with self.subTest(text=text[:-len(key)]):
+                self.assertTrue(sp.findings(text), text)
+                self.assertIn('rule_4_secret', [code for code, _ in brief_check.lint(text)])
+        for text in ('docs/%2Ftask-lifecycle-light.html', 'x\\u000Atask-lifecycle-light.html'):
+            with self.subTest(text=text):
+                self.assertFalse(sp.PREFIX.search(text), text)
+
     def test_sk_boundary_scans_in_bounded_time(self):
         from tests.scan_timing import timed_scan
         text = ('ask-' * (1024 * 1024 // 4))[:1024 * 1024]

@@ -245,6 +245,12 @@ class FloorCorpusTest(OpenBase):
         ap = self.load()
         self.assertFalse(ap.floor_hit(['cat', 'docs/diagrams/task-lifecycle-light.html']))
         self.assertTrue(ap.floor_hit(['cat', 'sk-' + 'A1b2C3d4E5f6G7h8J9k0']))
+        # Review of 1d4ca941 (PR 400): a key after an encoded delimiter still floors.
+        key = 'sk-' + 'A1b2C3d4E5f6G7h8J9k0' * 2
+        for value in ('https://example.invalid/?data=x%3D' + key, '"\\u000A' + key):
+            with self.subTest(value=value[:-len(key)]):
+                self.assertTrue(ap.floor_hit(['echo', value]))
+                self.assertTrue(ap.text_floor(value))
 
 
 class GuardTest(OpenBase):

@@ -10,8 +10,9 @@ NAME = re.compile(r'^[A-Z][A-Z0-9_]{0,63}$')
 SENSITIVE = re.compile(r'KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|SESSIONID|SESSID|(?:^|_)(?:PASS|PASSWD|PASSPHRASE|AUTH|COOKIE|COOKIES|SESSION|PRIVATE)(?:_|$)', re.I)
 ANSI = re.compile(r'\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))')
 TOKEN = r'[A-Za-z0-9+/_=.-]'
-# An sk prefix inside a word (task-, risk-, mask_live_) is not a key; after an escape (`\n`) or `%20` it still is.
-PREFIX = re.compile(r'(?:(?:(?<![A-Za-z])|(?<=\\[A-Za-z]))(?:sk-ant-|sk-|sk_live_|sk_test_)|ghp_|gho_|ghu_|ghs_|github_pat_|glpat-|xoxb-|xoxp-|npm_|AKIA|ASIA|AIza)' + TOKEN + r'{16,}')
+# An sk prefix inside a word (task-, risk-, mask_live_) is not a key. After a non-letter or an escape whose last
+# character is a letter or digit (`\n`, `%3D`, `\u000A`, `\x3D`) it still is; every lookbehind is fixed-width.
+PREFIX = re.compile(r'(?:(?:(?<![A-Za-z])|(?<=\\[A-Za-z])|(?<=%[0-9A-Fa-f]{2})|(?<=\\x[0-9A-Fa-f]{2})|(?<=\\u[0-9A-Fa-f]{4}))(?:sk-ant-|sk-|sk_live_|sk_test_)|ghp_|gho_|ghu_|ghs_|github_pat_|glpat-|xoxb-|xoxp-|npm_|AKIA|ASIA|AIza)' + TOKEN + r'{16,}')
 BEARER = re.compile(r'Authorization[ \t]*:[ \t]*Bearer[ \t]+' + TOKEN + r'{16,}', re.I)
 SECRET_NAME = re.compile(r'(?:[A-F0-9]{20,}|[A-Z2-7]{20,})')
 MAX_MATCHES = 1000
