@@ -17,7 +17,7 @@ Status: accepted; prepared, not yet tagged.
 
 ## Drift review
 
-Checked against the head of pull request 397 for every pull request from 391 to 397, surface by surface. `CLAUDE.md` was read, not edited.
+Checked against the head of pull request 397 for every pull request from 391 to 397, surface by surface. `CLAUDE.md` and `docs/specs/agent-roles.md` changed only to put the Jev code removal in the past tense; no rule changed.
 
 | Surface | Result |
 | --- | --- |
@@ -37,7 +37,7 @@ Checked against the head of pull request 397 for every pull request from 391 to 
 | `skills/update/references/upgrades.json` | Had `0.3.4/jev-retired` (397). Added `0.3.4/codex-sandbox-posting` (394): a user's own Codex command needs the proxy flags to post. Nothing for 392 or 393, which need no user action. |
 | `PRIVACY.md` | Current (396, 397): the only network call is the update check; the "Judge" section describes the host judge and the retirement. |
 | `docs/how-it-compares.md` | Current: it does not describe the judge, stdin or posting. |
-| `docs/diagrams/*.html` and `assets/*.png` | afk mechanism, away decision sequence, skills architecture and task lifecycle updated and re-rendered in 397. Others do not show the judge. |
+| `docs/diagrams/*.html` and `assets/*.png` | afk mechanism, away decision sequence, skills architecture and task lifecycle updated and re-rendered in 397. Settings scopes keeps "roles · judge · assignment matrix", which stays true (the matrix keeps its `Judge:` line). Others do not show the judge. |
 | `docs/specs/index.md` | Added this record's row. |
 | `CHANGELOG.md` | Unreleased matched the merged pull requests once 392 (CI shards) and 397 (setup and docs) were added under Changed; moved to 0.3.4. |
 | Codex manifest `longDescription` | Current (397). Claude and Antigravity manifests do not mention the judge. |
@@ -57,6 +57,6 @@ Checked against the head of pull request 397 for every pull request from 391 to 
 
 ## Known follow-ups
 
-- afk's credential floor refuses any path containing `sk-` after a letter (such as `task-lifecycle`), because the token prefix pattern in `secret_patterns.py` has no left word boundary. The task lifecycle diagram edit waited for the owner's return for that reason. Fix it in its own pull request with tests.
+- afk's credential floor refuses a path where `sk-` follows a letter and at least 16 token characters follow it (such as `docs/diagrams/task-lifecycle-light.html`; bare `task-lifecycle` does not match), because the token prefix pattern in `secret_patterns.py` has no left word boundary. The task lifecycle diagram edit waited for the owner's return for that reason. Fix it in its own pull request with tests.
 - `matrix_setup.py --judge` still accepts `jev`; both values mean the host model. Dropping the flag is a later, breaking change.
 - A real upgrade from 0.3.3 on a user's machine remains unverified.
