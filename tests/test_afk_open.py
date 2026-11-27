@@ -240,6 +240,12 @@ class FloorCorpusTest(OpenBase):
             with self.subTest(name=name):
                 self.assertTrue(ap.floor_hit(['cat', name]), name)
 
+    def test_sk_inside_a_path_word_does_not_floor(self):
+        # 27/11/2026: the task lifecycle diagram's path matched the `sk-` key prefix inside `task-`.
+        ap = self.load()
+        self.assertFalse(ap.floor_hit(['cat', 'docs/diagrams/task-lifecycle-light.html']))
+        self.assertTrue(ap.floor_hit(['cat', 'sk-' + 'A1b2C3d4E5f6G7h8J9k0']))
+
 
 class GuardTest(OpenBase):
     def test_guarded_forms(self):

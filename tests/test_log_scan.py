@@ -473,9 +473,37 @@ class GluedPrefixTest(unittest.TestCase):
 
     def test_glued_keys_still_match(self):
         for key in ("sk-" + "A1b2C3d4E5f6G7h8J9k0", "ghp_" + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJ"):
-            for text in (key, "\\n" + key, "%20" + key, "a" + key):
+            for text in (key, "\\n" + key, "%20" + key, "\\u0022" + key):
                 with self.subTest(text=text[:6]):
                     self.assertTrue(sp.PREFIX.search(text))
+        self.assertTrue(sp.PREFIX.search("a" + "ghp_" + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJ"))
+
+
+class SkPrefixBoundaryTest(unittest.TestCase):
+    """An `sk` prefix inside a word is not a key (27/11/2026: a path such as task-lifecycle-light.html tripped afk's
+    credential floor); one at the start, after a non-letter, an escape (`\\n`) or `%20` still is."""
+
+    def test_sk_inside_a_word_is_not_a_key(self):
+        for text in ('docs/diagrams/task-lifecycle-light.html', 'ask-protocol-no-question-tool',
+                     'risk-assessment-for-the-release', 'desk-research-notes-2026.md', 'C:/disk-image-backup-v12.img',
+                     'whisk_test_fixtures_for_the_kitchen', 'mask_live_preview_component.tsx'):
+            with self.subTest(text=text):
+                self.assertFalse(sp.PREFIX.search(text), text)
+                self.assertFalse(sp.findings(text), text)
+
+    def test_sk_keys_at_a_boundary_still_match(self):
+        for key in ('sk-' + 'A1b2C3d4E5f6G7h8J9k0', 'sk-ant-' + 'api03-' + 'b' * 20, 'sk_live_' + 'c' * 20,
+                    'sk_test_' + 'd' * 20, 'sk-' + 'f' * 16):
+            for text in (key, 'key=' + key, '"' + key + '"', 'x ' + key, '/' + key, '-' + key, '1' + key,
+                         '\\n' + key, '\\t' + key, '%20' + key, 'Bearer:' + key):
+                with self.subTest(text=text[:10]):
+                    self.assertTrue(sp.PREFIX.search(text), text)
+                    self.assertTrue(sp.findings(text), text)
+
+    def test_sk_boundary_scans_in_bounded_time(self):
+        from tests.scan_timing import timed_scan
+        text = ('ask-' * (1024 * 1024 // 4))[:1024 * 1024]
+        self.assertFalse(timed_scan(self, lambda: bool(sp.PREFIX.search(text))))
 
 if __name__ == '__main__':
     unittest.main()

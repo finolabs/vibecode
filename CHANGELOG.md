@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Fixed
+
+- afk's credential floor, the log scan and brief lint no longer read an `sk` key prefix inside a word as a key: `secret_patterns.py` (every copy) matches `sk-`, `sk-ant-`, `sk_live_` and `sk_test_` only at the start, after a character that is not a letter, or after an escape such as `\n`, so a path such as `docs/diagrams/task-lifecycle-light.html` (and `risk-`, `desk-`, `mask_live_` words) passes, while a key glued to `\n`, `%20` or a digit still matches. The other prefixes keep matching wherever they appear.
+
 ## [0.3.4] - 2026-11-27
 
 ### Removed
