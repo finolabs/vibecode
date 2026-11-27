@@ -111,18 +111,18 @@ Which agent can coordinate on this machine, and which delegates each one can rea
 
 ## Instruction check
 
-- Instruction check: <on | off>. Default off. `on` means the user approved, on <DD/MM/YYYY>, sending lines of their private instruction files to the configured judge for the Check judgment items. Instruction checks use the small host fallback because they are outside the four outbound sites; retention is the host provider's. It is separate from the routing approval and is global to this machine; turning it off takes effect on the next run.
+- Instruction check: <on | off>. Default off. `on` means the user approved, on <DD/MM/YYYY>, sending lines of their private instruction files to the small host model for the Check judgment items; retention is the host provider's. It is separate from the routing approval and is global to this machine; turning it off takes effect on the next run.
 
 This section replaces `## Route judgment` (0.3.2), which nothing reads: `matrix_setup.py migrate` moves its `Instruction check` line here and removes it.
 
-Judge selection lives only in canonical `## Assignment matrix`; without a valid, consented matrix the judge is `host`. `judge.py` caps calls at 24 per run, and no skill install is required for calls.
+Judge selection lives only in canonical `## Assignment matrix`; without a valid, consented matrix the judge is `host`. `judge.py` makes no call; its `validate` takes at most 24 cases per run.
 
 `/setup add delegation` writes `## Assignment matrix` (`matrix_setup.py`; `migrate` builds it from the old sections, asks for a new consent and removes them in the same write). It replaces `## Agent roles` and `## Agent levels`, which only `migrate` reads: without a matrix no review role and no levels are set and the judge is `host`. A valid matrix with its own yes consent alone decides roles and judge, and a role no line names is unassigned; an invalid matrix or one without consent leaves roles and judge unset, never falling back to the old sections. Its shape, shown indented here so that no reader takes it for a section:
 
     ## Assignment matrix
 
     - Consent: yes (<YYYY-MM-DD>)
-    - Judge: <jev | host>
+    - Judge: <host>
     - <agent>: levels <L>-<H>[; works on <type>, ...][; model <id>][; roles <role>, ... | roles none]
 
 Agents are `claude`, `codex`, `antigravity`, `zcode` or an extra Claude Code command; types are `frontend`, `design`, `video`, `three-d`, `image-generation`, `transcription`; roles are `code-review`, `security-review`, `navigator`, `advisor`, each named by one agent at most.

@@ -16,7 +16,7 @@ QUESTIONS = {
         "Set up Antigravity to ask for a fresh session when a saved conversation grows too large?", "Save the shown Antigravity session stop and its size limit?",
     ),
     "setup/references/check.md": ("4. Offer one small smoke task",),
-    "setup/references/features/roles.md": ("Who should help check whether task evidence meets a requirement?", "Let your AI provider review your saved instructions during setup checks?"),
+    "setup/references/features/roles.md": ("Let your AI provider review your saved instructions during setup checks?",),
     "update/SKILL.md": ("2. If the user only asked",),
     "status/SKILL.md": ("When the argument is `purge`", "Their consent record stays"),
 }

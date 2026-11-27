@@ -71,11 +71,10 @@ are advisory (agent judgment); the script supplies only the metadata below.
    paths and token-like strings with `[removed]`; collection screens and caps
    criterion text too. Keep both screened wordings in the caller's explanation.
 3. **Ask the judge.** Run
-   `python3 -I <plugin root>/scripts/judge.py ask --question <screened text> --evidence-file <path> [--judge jev|host]`.
+   `python3 -I <plugin root>/scripts/judge.py ask --question <screened text> --evidence-file <path> [--judge host]`.
    The evidence file holds only validated, screened fields. `judge.py`, not
-   `nav_state.py`, owns the judge contract and quote verification. Keep Jev spend
-   guards on. If Jev is unavailable, use the small host model and disclose the
-   fallback (advisory, agent judgment). A `yes` needs a checked supporting quote;
+   `nav_state.py`, owns the judge contract and quote verification. The small host
+   model supplies the answer (advisory, agent judgment). A `yes` needs a checked supporting quote;
    otherwise use `insufficient`. Quote presence does not prove semantic support.
    Before trusting the judge, record agreement over merged PR cases with known
    answers; label results `unvalidated` until agreement exists for the active judge

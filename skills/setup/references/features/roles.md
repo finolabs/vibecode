@@ -1,41 +1,27 @@
 # Feature: roles (user scope)
 
-Needs: the agent scan (`scan.md`), asked as its own consent; declining it ends the roles and posting steps. The judge step needs nothing. If `roles` is never run the judge is `host`. Every question uses neutral Yes and No (or the listed choices) with none preselected, as `interview.md` says. Roles, the judge and posting grant nothing by themselves; the section is never an access or posting right. Asking is advisory (agent judgment); `## Assignment matrix` and `## Review posting` are read strictly by their readers, and an unreadable section falls back to the routing rule.
+Needs: the agent scan (`scan.md`), asked as its own consent; declining it ends the roles and posting steps. If `roles` is never run the judge is `host`. Every question uses neutral Yes and No (or the listed choices) with none preselected, as `interview.md` says. Roles, the judge and posting grant nothing by themselves; the section is never an access or posting right. Asking is advisory (agent judgment); `## Assignment matrix` and `## Review posting` are read strictly by their readers, and an unreadable section falls back to the routing rule.
 
 Every question follows [interview.md](../interview.md): native question tool, neutral approvals, explicit yes; fallback only as stated there (advisory, agent judgment).
 
-Roles and the judge live only in the assignment matrix ([../matrix.md](../matrix.md), part of `add delegation`); `## Agent roles` is never read or written (owner decision, 13/11/2026). The judge and roles answers below become the matrix's `--judge` and each helper's `roles`, written only after the matrix's own save question (enforcer: `matrix_setup.py`).
+Roles and the judge live only in the assignment matrix ([../matrix.md](../matrix.md), part of `add delegation`); `## Agent roles` is never read or written (owner decision, 13/11/2026).
+Setup passes `--judge host`, and the roles answers become each helper's `roles`, written only after the matrix's own save question (enforcer: `matrix_setup.py`).
 Start from the lines `matrix_setup.py show` prints, shown before the helper question (none preselected): a re-picked helper keeps its values, an unpicked one loses its line, and a helper new to the matrix gets `levels 1-5` for the user to edit. With old sections and no matrix, run `matrix_setup.py migrate` first, as matrix.md says.
 
 ## Judge
 
-Ask with three neutral choices: Jev (TypeSafe’s evidence-checking service), a small model of your current AI app, or none. Question: "Who should help check whether task evidence meets a requirement?"
-Description: Save the choice in local host.md. Jev needs separate data/budget approval; the small model uses your AI provider. None omits judge and still reads as host fallback. Undecided keeps the setting; change later here or disable Jev with FNL_JUDGE=off.
-Carry the choice to the matrix as `--judge jev` or `--judge host`; `none` carries `--judge host`, and nothing leaves the host's own provider. Jev needs the user's own TypeSafe authorization and API budget; an installed `typesafe-ai` skill grants neither, and task data goes to that service only on the user's yes.
-If the user picks Jev, explain that `judge.py` sends a closed, size-capped English question and its evidence to
-`https://api.typesafe.ai/v1/systemone`, only at the four sites allowed by `CLAUDE.md`. The key comes only from
-`TYPESAFE_API_KEY` in the process environment; never read, store or search for it. A read-only check may report only
-whether it is set. The optional `typesafe-ai` skill supplies cookbooks and is not needed for calls. The script refuses
-secrets and machine paths before sending, caps attempts at 24 per run, verifies TLS, ignores proxy/certificate
-variables and follows no redirects; `FNL_JUDGE=off` stops calls. No hook starts a judgment. Pass `--judge jev` only
-after the user's separate yes and API-budget authorization. If unavailable, use the small host model with the same
-payload and disclose the fallback. Deterministic rules and explicit choices precede a bounded judge question.
-Receipts hold the answer and an identifier, never the criterion text.
+Setup no longer asks who judges evidence. The judge is the small model of your current AI app, and `judge.py` only checks its answer on your machine; it makes no network call. Jev (TypeSafe) was retired on 26/11/2026.
+A matrix's existing `Judge:` line stays valid and both values (`jev`, `host`) mean the host model; `matrix_setup.py --judge` still takes either; setup writes `host`, and a line that says `jev` stays until the matrix is saved again.
+The optional `typesafe-ai` skill is a companion for the user's own projects and is no part of this path. Deterministic rules and explicit choices precede a bounded judge question. Receipts hold the answer and an identifier, never the criterion text.
 
-Before recording Jev, ask separately: "Let TypeSafe check task evidence using your service account and approved budget?"
-Yes: Carry `Judge: jev` into the matrix, written only at its save question; only the four allowed call sites send capped English evidence to TypeSafe using your approved account and spend budget. No hook calls it.
-No: Leave the saved judge unchanged and use the small host fallback; ask later.
-Undo: Choose host in setup or use FNL_JUDGE=off; already sent data follows TypeSafe's policy.
-Choices: "Yes, allow budgeted TypeSafe checks" / "No, keep the host fallback".
-
-When the judge is not none, ask a second, separate question: "Let your AI provider review your saved instructions during setup checks?"
-Yes: Save Instruction check: on and its date under `## Instruction check` in local host.md. Send selected lines from files telling AI how to behave, excluding secret/path matches, to the small host model under that provider’s retention; never TypeSafe for this check.
+Ask a separate question: "Let your AI provider review your saved instructions during setup checks?"
+Yes: Save Instruction check: on and its date under `## Instruction check` in local host.md. Send selected lines from files telling AI how to behave, excluding secret/path matches, to the small host model under that provider’s retention.
 No: Record off; the agent assesses those items itself. Ask later.
 Undo: Set Instruction check to off through setup.
 Choices: "Yes, allow instruction-line checks" / "No, keep those checks off".
 
-Say it sees the text of your private instruction files, apart from lines that look like secrets or machine paths, which are dropped; instruction checking uses the small host fallback because it is outside the four outbound sites, under the host provider's retention; judge grading is optional and the agent grades those items itself without it.
-A yes does not follow from the judge choice. Record `- Instruction check: on (<DD/MM/YYYY>)` under `## Instruction check`; no, or no judge, records `off`. An old `## Route judgment` is not read; `matrix_setup.py migrate` moves it (matrix.md).
+Say it sees the text of your private instruction files, apart from lines that look like secrets or machine paths, which are dropped; instruction checking uses the small host model, under the host provider's retention; judge grading is optional and the agent grades those items itself without it.
+A yes does not follow from any other answer. Record `- Instruction check: on (<DD/MM/YYYY>)` under `## Instruction check`; no records `off`. An old `## Route judgment` is not read; `matrix_setup.py migrate` moves it (matrix.md).
 
 ## Roles
 

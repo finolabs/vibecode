@@ -49,7 +49,7 @@ class InstructionStandardTests(unittest.TestCase):
         self.assertIn("Instruction check: on", check)
         judge = text("setup", "references", "features", "roles.md")
         self.assertIn("separate question", judge)
-        self.assertIn("does not follow from the judge choice", judge)
+        self.assertIn("does not follow from any other answer", judge)
         template = text("delegate", "references", "host-template.md")
         self.assertIn("Instruction check: <on | off>", template)
         self.assertIn("Default off", template)

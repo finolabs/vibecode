@@ -29,7 +29,7 @@ A Yes only prints the pinned install command from the data, with source, license
 
 ## Advanced (rows 23 and 24)
 
-Advanced skips the Quick selection. For each missing companion, use its data question for a short interview: what it does for this user, a concrete example in their stack (look up authorized facts first; ask if unknown), what it costs or sends (telemetry, fonts, accounts), and the fallback the plugin keeps without it; then the same offer. `typesafe-ai` supplies optional cookbooks; `judge.py` makes calls without that skill; never imply the skill enables or consents to Jev.
+Advanced skips the Quick selection. For each missing companion, use its data question for a short interview: what it does for this user, a concrete example in their stack (look up authorized facts first; ask if unknown), what it costs or sends (telemetry, fonts, accounts), and the fallback the plugin keeps without it; then the same offer. `typesafe-ai` supplies optional cookbooks for the user's own projects; the plugin's judge is the small host model and the skill is no part of it.
 
 Advanced review instruments (row 24): inspect only installed hosts' skill listing and help for availability. Claude Code has native code/security review and Codex has native code review; recommend them without install or update commands. Antigravity has none. Review roles use instruments on their configured family; missing instruments leave manual review, disclosed in every report.
 For missing Cloudflare `security-audit` only, explain its table data and manual fallback, then ask: "Show how you can install or update this optional review helper yourself?"

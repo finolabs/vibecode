@@ -570,6 +570,16 @@
           "text": "On Codex, open /hooks in a new session after the refresh and trust the plugin's hooks again; the compaction nudge, metrics and session-start scripts changed."
         }
       ]
+    },
+    {
+      "version": "0.3.4",
+      "items": [
+        {
+          "id": "0.3.4/jev-retired",
+          "kind": "info",
+          "text": "Jev is retired: Judge: jev reads as the host model and TYPESAFE_API_KEY is unused. Keep that line or change it to Judge: host; deleting it makes the assignment matrix invalid."
+        }
+      ]
     }
   ]
 }
