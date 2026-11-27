@@ -4,9 +4,16 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-11-27
+
 ### Removed
 
 - The Jev judge call to TypeSafe ([spec](docs/specs/agent-roles.md) part I, owner decision 26/11/2026). `judge.py` (every copy) makes no network call and reads no API key: the small host model is the only judge, and `judge.py` keeps only the payload screening, `check-host`, `check-table` and `validate` on host answers. `--judge jev`, and a `Judge: jev` line in `## Assignment matrix`, read as the host model with one retirement line; `--base-url` is gone; `ask` on the `away-evaluation` site now screens the fields and prints a `host-small` table request; `check-table` accepts only `host-small` tables. `verify_claim.py` judges with the host model only. `PRIVACY.md` drops the TypeSafe call.
+
+### Changed
+
+- `setup` no longer asks for a judge, and every skill, the navigator, the help map, README and diagrams name only the small host model; an existing `Judge:` line stays valid and reads as the host (upgrade note `0.3.4/jev-retired`).
+- CI runs the script tests in four parallel shards (`scripts/ci_shard.py`); the `validate` check now waits for both jobs.
 
 ### Fixed
 
@@ -793,7 +800,8 @@ First public release.
 - Privacy notice, terms of use, issue and pull request templates, Dependabot and a validate workflow.
 - MIT license, contributing guide, security policy, Contributor Covenant 2.1 code of conduct, and contributor agent context in `CLAUDE.md`.
 
-[Unreleased]: https://github.com/finolabs/vibecode/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/finolabs/vibecode/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/finolabs/vibecode/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/finolabs/vibecode/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/finolabs/vibecode/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/finolabs/vibecode/compare/v0.3.0...v0.3.1

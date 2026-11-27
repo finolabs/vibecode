@@ -578,6 +578,11 @@
           "id": "0.3.4/jev-retired",
           "kind": "info",
           "text": "Jev is retired: Judge: jev reads as the host model and TYPESAFE_API_KEY is unused. Keep that line or change it to Judge: host; deleting it makes the assignment matrix invalid."
+        },
+        {
+          "id": "0.3.4/codex-sandbox-posting",
+          "kind": "info",
+          "text": "A Codex review run posts its own review from its sandbox once its command adds the network proxy flags for api.github.com, as the delegate skill's Codex notes show."
         }
       ]
     }
