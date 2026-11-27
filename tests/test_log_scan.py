@@ -480,8 +480,9 @@ class GluedPrefixTest(unittest.TestCase):
 
 
 class SkPrefixBoundaryTest(unittest.TestCase):
-    """An `sk` prefix inside a word is not a key (27/11/2026: a path such as task-lifecycle-light.html tripped afk's
-    credential floor); one at the start, after a non-letter, an escape (`\\n`) or `%20` still is."""
+    """An `sk` prefix inside a word is not a key when what follows reads as a word or path (27/11/2026: a path such as
+    task-lifecycle-light.html tripped afk's credential floor). The key body decides, not what precedes it: a body with
+    an uppercase letter, `+`, `=` or no separator still counts after any letter or encoding (review of PR 400)."""
 
     def test_sk_inside_a_word_is_not_a_key(self):
         for text in ('docs/diagrams/task-lifecycle-light.html', 'ask-protocol-no-question-tool',
@@ -512,6 +513,22 @@ class SkPrefixBoundaryTest(unittest.TestCase):
         for text in ('docs/%2Ftask-lifecycle-light.html', 'x\\u000Atask-lifecycle-light.html'):
             with self.subTest(text=text):
                 self.assertFalse(sp.PREFIX.search(text), text)
+
+    def test_sk_key_body_decides_after_any_encoding(self):
+        # Re-review of 2d84abe2 (PR 400): double percent-encoding and \U escapes; no list of encodings is complete.
+        import brief_check
+        keys = ('sk-' + 'A1b2C3d4E5f6G7h8J9k0' * 2, 'sk-' + '0123456789abcdef' * 2, 'sk-' + 'f' * 16,
+                'sk-proj-' + 'ab_cd-ef' * 3 + 'Gh', 'sk_live_' + 'abc+def' * 3, 'sk-ant-' + 'abc=' * 5)
+        for before in ('a%253D', 'a%252F', 'a%253A', 'x\\U0000000A', 'x&#61;', 'x&amp;', 'xx', 'task'):
+            for key in keys:
+                with self.subTest(before=before, key=key[:8]):
+                    self.assertTrue(sp.PREFIX.search(before + key))
+                    self.assertTrue(sp.findings(before + key))
+                    self.assertIn('rule_4_secret', [code for code, _ in brief_check.lint(before + key)])
+
+    def test_sk_after_a_word_inside_a_lowercase_run_still_matches_at_a_boundary(self):
+        self.assertTrue(sp.PREFIX.search('docs/task-notes/sk-' + 'abcdefghijklmnopqr'))
+        self.assertTrue(sp.PREFIX.search('task-lifecycle-ghp_' + 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJ'))
 
     def test_sk_boundary_scans_in_bounded_time(self):
         from tests.scan_timing import timed_scan

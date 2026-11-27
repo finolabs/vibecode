@@ -6,7 +6,7 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ### Fixed
 
-- afk's credential floor, the log scan and brief lint no longer read an `sk` key prefix inside a word as a key: `secret_patterns.py` (every copy) matches `sk-`, `sk-ant-`, `sk_live_` and `sk_test_` only at the start, after a character that is not a letter, or after an escape such as `\n`, `%3D`, `\u000A` or `\x3D`, so a path such as `docs/diagrams/task-lifecycle-light.html` (and `risk-`, `desk-`, `mask_live_` words) passes, while a key after `\n`, a percent, `\u` or `\x` escape, or a digit still matches. The other prefixes keep matching wherever they appear.
+- afk's credential floor, the log scan and brief lint no longer read an `sk` key prefix inside a word as a key: in `secret_patterns.py` (every copy) an `sk-`, `sk-ant-`, `sk_live_` or `sk_test_` glued to a letter is skipped only when what follows reads as a word or path (lowercase letters, digits and at least one `-`, `.`, `_` or `/`), so `docs/diagrams/task-lifecycle-light.html`, `risk-...` and `mask_live_...` pass. The key body decides, not what precedes it: a body with an uppercase letter, `+`, `=` or no separator still matches after any letter or encoding (`%3D`, `%253D`, `\u000A`, `\U0000000A`), and so does any prefix at the start, after a non-letter or after an escape such as `\n`. The other prefixes keep matching wherever they appear, and scanning stays linear.
 
 ## [0.3.4] - 2026-11-27
 

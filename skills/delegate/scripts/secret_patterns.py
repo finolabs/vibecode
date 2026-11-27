@@ -10,9 +10,35 @@ NAME = re.compile(r'^[A-Z][A-Z0-9_]{0,63}$')
 SENSITIVE = re.compile(r'KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|SESSIONID|SESSID|(?:^|_)(?:PASS|PASSWD|PASSPHRASE|AUTH|COOKIE|COOKIES|SESSION|PRIVATE)(?:_|$)', re.I)
 ANSI = re.compile(r'\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))')
 TOKEN = r'[A-Za-z0-9+/_=.-]'
-# An sk prefix inside a word (task-, risk-, mask_live_) is not a key. After a non-letter or an escape whose last
-# character is a letter or digit (`\n`, `%3D`, `\u000A`, `\x3D`) it still is; every lookbehind is fixed-width.
-PREFIX = re.compile(r'(?:(?:(?<![A-Za-z])|(?<=\\[A-Za-z])|(?<=%[0-9A-Fa-f]{2})|(?<=\\x[0-9A-Fa-f]{2})|(?<=\\u[0-9A-Fa-f]{4}))(?:sk-ant-|sk-|sk_live_|sk_test_)|ghp_|gho_|ghu_|ghs_|github_pat_|glpat-|xoxb-|xoxp-|npm_|AKIA|ASIA|AIza)' + TOKEN + r'{16,}')
+_SK = r'(?:sk-ant-|sk-|sk_live_|sk_test_)'
+_OTHER = r'(?:ghp_|gho_|ghu_|ghs_|github_pat_|glpat-|xoxb-|xoxp-|npm_|AKIA|ASIA|AIza)'
+_ANY_PREFIX = re.compile(r'(?:(?P<sk>' + _SK + r')|' + _OTHER + r')' + TOKEN + r'{16,}')
+_BOUNDED_PREFIX = re.compile(r'(?:(?<![A-Za-z])' + _SK + r'|' + _OTHER + r')' + TOKEN + r'{16,}')
+# A body of lowercase letters, digits and path separators, with at least one separator: a word or path, not a key.
+_WORD_BODY = re.compile(r'(?=[a-z0-9]*[._/-])[a-z0-9._/-]+')
+
+
+class _Prefix:
+    """Key prefixes. The key body decides, not what precedes it, because no list of encodings is complete: an sk
+    prefix glued to a letter is not a key only when its body reads as a word or path (task-lifecycle-light.html).
+    Matches never overlap, and an exempt span is scanned once more for a prefix at a boundary, so work stays linear."""
+
+    def finditer(self, text):
+        for match in _ANY_PREFIX.finditer(text):
+            start = match.start()
+            # A letter after a backslash is an escape such as `\n`, a delimiter, never part of a word.
+            if (match['sk'] and start and text[start - 1].isascii() and text[start - 1].isalpha()
+                    and text[start - 2:start - 1] != '\\'
+                    and _WORD_BODY.fullmatch(text, match.end('sk'), match.end())):
+                yield from _BOUNDED_PREFIX.finditer(text, start + 1, match.end())
+            else:
+                yield match
+
+    def search(self, text):
+        return next(self.finditer(text), None)
+
+
+PREFIX = _Prefix()
 BEARER = re.compile(r'Authorization[ \t]*:[ \t]*Bearer[ \t]+' + TOKEN + r'{16,}', re.I)
 SECRET_NAME = re.compile(r'(?:[A-F0-9]{20,}|[A-Z2-7]{20,})')
 MAX_MATCHES = 1000
