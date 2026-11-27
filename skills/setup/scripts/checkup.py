@@ -351,7 +351,9 @@ def assignments_evidence(status, matrix, text):
     if matrix.consent != "yes":
         return "missing", "matrix without consent; " + unset
     roles = [role for role in ROLES if role in matrix.roles]
-    return "ok", (f"matrix valid; {len(matrix.agents)} agents; judge {matrix.judge}; roles assigned: "
+    # Jev was retired (owner decision, 26/11/2026): `judge.py` reads `Judge: jev` as host, and so does this row.
+    judge = "host (jev retired)" if matrix.judge == "jev" else matrix.judge
+    return "ok", (f"matrix valid; {len(matrix.agents)} agents; judge {judge}; roles assigned: "
                   + (", ".join(roles) or "none"))
 
 

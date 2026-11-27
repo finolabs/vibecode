@@ -101,6 +101,8 @@ def roles_words(families=ALL_FAMILIES):
             allowed = ("host", "jev") if key == "judge" else ALL_FAMILIES
             value = roles.get(key, "host" if key == "judge" else "unassigned")
             word = value if isinstance(value, str) and value in (*allowed, "unassigned") else "unknown"
+            # Jev was retired (owner decision, 26/11/2026): `judge.py` reads `Judge: jev` as host, and so does this line.
+            word = "host (jev retired)" if key == "judge" and word == "jev" else word
             parts.append(f"{key} {word}")
         posts = []
         for family in families:
