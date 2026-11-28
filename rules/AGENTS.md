@@ -2,7 +2,7 @@
 
 The finolabs-vibecode plugin is installed.
 Your first step on any coding request (a bug fix, feature, refactor, test or review), before reading code or writing a plan, plan mode included: invoke the `coding-router` skill. It picks the workflow and depth and routes to the plugin's other skills.
-A delegated run with a complete brief (checkout, task, rules, tests to run) follows the brief instead, and says so in its report.
+A headless delegated run that `delegate` launched (`claude -p`, `codex exec`, `agy -p` or a runner, with a complete brief: checkout, task, rules, tests to run) follows the brief instead, and says so in its report. A session a coordinator opened for a task (the desktop app's session-start tool, or a session the user started from a task card) is not a delegated run: it still invokes `coding-router` first and, under Delegation mode `auto`, runs `delegate`'s load sharing and route before it writes code itself, giving a one-line reason for each task it keeps.
 Invoke `delegate` before handing work to another agent.
 A report is a claim, yours or another agent's: before saying work is done, fixed or passing, run the targeted tests yourself and read the output (counts, failures, skips); a missing setup, service or credential is BLOCKED, not PASS (advisory, agent judgment).
 Invoke `checks` before accepting a delegated run, and when choosing which tests a change needs (advisory, agent judgment).

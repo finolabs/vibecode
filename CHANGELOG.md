@@ -6,6 +6,7 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ### Fixed
 
+- The session-start rule and `delegate` "Keep or hand off" no longer let a task session skip routing: the "complete brief" exception now covers only a headless run that `delegate` launched. A session a coordinator opened for a task still invokes `coding-router` first and, under Delegation mode `auto`, applies "Keep or hand off" before writing code, with a one-line reason per kept task. Before, child sessions quoted the exception and did the work themselves.
 - The recorded same-family security fallback no longer asks for quota evidence about a family that never reviews: `merge_check.py --independent --fallback-family` counts only the present families `review_route.py` could pick (`review_config.review_families`: with a usable `## Assignment matrix`, only the families it lists). Before, a present Antigravity with no matrix line blocked the fallback with `no evidence that antigravity, codex is out` while Codex was out of quota.
 - `/setup check` and the session-start `Roles:` line print a retired `Judge: jev` as `judge host (jev retired)`, as `judge.py` reads it, instead of `judge jev`.
 
