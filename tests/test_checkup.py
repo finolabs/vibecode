@@ -72,7 +72,7 @@ class CheckupTest(unittest.TestCase):
         return [row for row in self.data()["setup"] if row["check"] == "antigravity posting rule"]
 
     def test_antigravity_posting_rule_to_a_moved_script_is_reported_without_paths(self):
-        """A `post_review.py` allow-rule from before a rename points at nothing (Fio, 28/11/2026): report only."""
+        """A `post_review.py` allow-rule from before a rename points at nothing (owner, 28/11/2026): report only."""
         stale = self.base / "old-checkout/skills/fnl-review-gate/scripts/post_review.py"
         secret_rule = "command(python3 -I /synthetic/private/tool.py)"
         settings = self.agy_rules(f"command(python3 -I {stale})", secret_rule, "command(git status)")
