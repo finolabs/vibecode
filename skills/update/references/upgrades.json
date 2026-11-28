@@ -34,20 +34,14 @@
           "kind": "setup",
           "text": "The Parallel lines in ## Limits of host.md are no longer read: set the limit again in each repository, then delete those lines by hand and keep the rest of ## Limits.",
           "setup": "/setup add delegation",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "no-parallel-lines"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "no-parallel-lines"]
         },
         {
           "id": "0.2.1/away-setup",
           "kind": "setup",
           "text": "The away session (/afk) needs its settings recorded first; skip this if you do not use it.",
           "setup": "/setup add afk",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "afk"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "afk"]
         }
       ]
     },
@@ -59,10 +53,7 @@
           "kind": "setup",
           "text": "Delegation can record which task levels (1 easy to 5 ultra hard) each helper takes; setup now asks this as part of the assignment matrix.",
           "setup": "/setup add delegation",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "levels"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "levels"]
         }
       ]
     },
@@ -74,10 +65,7 @@
           "kind": "migration",
           "text": "Move ## Agent roles and ## Agent levels into the assignment matrix: setup runs matrix_setup.py migrate, shows what it drops and asks your consent again.",
           "setup": "/setup add delegation",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "matrix"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "matrix"]
         },
         {
           "id": "0.2.3/help-rename",
@@ -89,10 +77,7 @@
           "kind": "setup",
           "text": "The away session can now decide some questions itself: setup asks which kinds of decision stop it, optional non-production targets and a separate excerpt consent.",
           "setup": "/setup add afk",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "afk-decisions"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "afk-decisions"]
         },
         {
           "id": "0.2.3/question-gate-trust",
@@ -119,10 +104,7 @@
           "kind": "setup",
           "text": "Run /setup add checks to save a check list per repository, with the optional local receipt and pre-push hook.",
           "setup": "/setup add checks",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "repo-checks"
-          ],
+          "check": ["skills/setup/scripts/upgrade_state.py", "repo-checks"],
           "where": "repository"
         },
         {
@@ -146,41 +128,28 @@
           "kind": "setup",
           "text": "A check list saved with 0.2.4 is no longer read: run /setup add checks again in each repository, then delete the old ## Checks section from host.md by hand.",
           "setup": "/setup add checks",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "no-checks-section"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "no-checks-section"]
         },
         {
           "id": "0.2.5/parallel-settings",
           "kind": "setup",
           "text": "Parallel limits in host.md are no longer read: set parallel and caps again in each repository before you delete ## Project settings by hand.",
           "setup": "/setup add delegation",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "no-project-settings"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "no-project-settings"]
         },
         {
           "id": "0.2.5/project-settings",
           "kind": "setup",
           "text": "Settings in host.md are no longer read: set them again in each repository, then delete ## Project settings and the Ledger project: and Task file: lines by hand.",
           "setup": "/setup add project",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "no-project-settings",
-            "no-global-lines"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "no-project-settings", "no-global-lines"]
         },
         {
           "id": "0.2.5/project-labels",
           "kind": "setup",
           "text": "Labels in host.md are no longer read: set each again inside each repository, then delete the ## Project labels section by hand.",
           "setup": "/setup add project",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "no-project-labels"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "no-project-labels"]
         },
         {
           "id": "0.2.5/skill-names",
@@ -192,10 +161,7 @@
           "kind": "setup",
           "text": "/autopilot is now /afk and the ## Autopilot section of host.md is no longer read: run /setup add afk again, then delete the old ## Autopilot section by hand.",
           "setup": "/setup add afk",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "afk-section"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "afk-section"]
         },
         {
           "id": "0.2.5/tidy-rename",
@@ -297,10 +263,7 @@
           "kind": "migration",
           "text": "Breaking: ## Agent roles is no longer read; without a matrix no review roles are set and the judge is host (no Jev). Setup runs matrix_setup.py migrate and asks consent again.",
           "setup": "/setup add delegation",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "roles-retired"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "roles-retired"]
         },
         {
           "id": "0.2.6/codex-hook-trust",
@@ -438,10 +401,7 @@
           "kind": "migration",
           "text": "Breaking: ## Agent levels is no longer read; without a matrix no levels are set. Setup runs matrix_setup.py migrate to move them into the matrix and asks consent again.",
           "setup": "/setup add delegation",
-          "check": [
-            "skills/setup/scripts/upgrade_state.py",
-            "levels-retired"
-          ]
+          "check": ["skills/setup/scripts/upgrade_state.py", "levels-retired"]
         },
         {
           "id": "0.3.1/verification-alias-removed",
