@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- `/setup check` reports an `antigravity posting rule` row: `warn` with a count when an Antigravity allow-rule for `post_review.py` (in `~/.gemini/antigravity-cli/settings.json`, `permissions.allow` only) no longer points to a script of this install, for example a path from before the repository rename, so headless posting is denied. Report only: it never prints a rule or a path and never edits the file; the fix is the Review posting step of `/setup add roles`.
+
 ### Fixed
 
 - The recorded same-family security fallback no longer asks for quota evidence about a family that never reviews: `merge_check.py --independent --fallback-family` counts only the present families `review_route.py` could pick (`review_config.review_families`: with a usable `## Assignment matrix`, only the families it lists). Before, a present Antigravity with no matrix line blocked the fallback with `no evidence that antigravity, codex is out` while Codex was out of quota.
