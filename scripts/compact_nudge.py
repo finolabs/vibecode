@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Compaction nudge (UserPromptSubmit): one fixed line at 80% and 90% of the threshold.
+"""Compaction nudge (UserPromptSubmit): one fixed line at 80% and 90% of the base.
 
-Claude Code: reads only the integer `usage` counts of the latest assistant entry in the
-session's transcript tail, that entry's model id (only to look up its per-model setting,
-never stored, logged or printed) and the compaction settings. Codex (`--host codex`): reads
+Claude Code: the base is the user's own auto-compact threshold for the session's model, else
+the model's context window (owner decision, 28/11/2026). Reads only the integer `usage` counts
+of the latest assistant entry in the session's transcript tail, that entry's model id (only to
+look up its per-model setting and a `[1m]` suffix, never stored, logged or printed), the
+compaction settings and, with no user threshold, the window of this session's own context
+snapshot. Codex (`--host codex`): reads
 only `last_token_usage.total_tokens` and `model_context_window` of the latest `token_count`
 event and the top-level `model_auto_compact_token_limit` of the Codex home's config.toml.
 Never blocks, always exits 0, sends nothing. See docs/specs/compaction-nudge.md and the
@@ -32,7 +35,11 @@ TOKENS = (1000, 10000000)
 MODEL = re.compile(r"[a-z0-9][a-z0-9.\[\]-]{0,63}")
 USAGE = ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")
 FOLDER = "state/compaction-nudge"
-MESSAGE = ("Context is at {}% of this session's compaction threshold. Before the host compacts, run "
+AUTO = "auto"
+ONE_MILLION = "[1m]"
+THRESHOLD = "auto-compact threshold"
+WINDOW = "context window"
+MESSAGE = ("Context is at {}% of the {} {}. Before the host compacts, run "
            "tidy now: save the handover, write back decisions and lessons, note background runs "
            "and open pull requests, then hand the user a ready /compact line that names the saved "
            "handover, or offer a fresh session.\n")
@@ -189,11 +196,23 @@ def settings_files(environ, cwd):
     return files
 
 
+def window_value(value):
+    """A valid integer window, AUTO for "auto" (the host's own tuned window: no user threshold), else None."""
+    if value == AUTO:
+        return AUTO
+    return value if type(value) is int and integer(value) is not None else None
+
+
 def settings_values(files, model=None):
     """(autoCompactEnabled, window) from each readable file, in the given order.
 
     The window is the file's `modelSettings[model].autoCompactWindow` when `model` is set and that value
-    is a valid integer, else its top-level `autoCompactWindow`; `model` is only an exact dictionary key."""
+    is a valid integer or "auto", else its top-level `autoCompactWindow`. `model` is only an exact
+    dictionary key, tried as given and then without a `[1m]` suffix (Claude Code matches the canonical
+    name against its [1m] spelling)."""
+    keys = [model] if model is not None else []
+    if model is not None and model.endswith(ONE_MILLION) and len(model) > len(ONE_MILLION):
+        keys.append(model[:-len(ONE_MILLION)])
     from compact_setup import read_settings
     values = []
     for _, path in files:
@@ -205,35 +224,66 @@ def settings_values(files, model=None):
         except (ValueError, UnicodeError):
             continue
         if isinstance(data, dict):
-            window = data.get("autoCompactWindow")
-            models = data.get("modelSettings") if model is not None else None
-            entry = models.get(model) if isinstance(models, dict) else None
-            if isinstance(entry, dict):
-                value = entry.get("autoCompactWindow")
-                if type(value) is int and integer(value) is not None:
+            window = window_value(data.get("autoCompactWindow"))
+            models = data.get("modelSettings")
+            for key in keys if isinstance(models, dict) else ():
+                entry = models.get(key)
+                value = window_value(entry.get("autoCompactWindow")) if isinstance(entry, dict) else None
+                if value is not None:
                     window = value
+                    break
             values.append((data.get("autoCompactEnabled"), window))
     return values
 
 
 def threshold(environ, values):
-    """Effective compaction threshold in tokens, or None when off or unresolved."""
+    """The user's own auto-compact threshold in tokens, else None (none set, or "auto" applies first)."""
+    window = integer(environ.get("CLAUDE_CODE_AUTO_COMPACT_WINDOW"))
+    if window is None:
+        window = next((w for _, w in values if w is not None), None)
+    return window if type(window) is int else None
+
+
+def base(environ, values, window):
+    """(tokens, THRESHOLD or WINDOW) the bands are measured against, or None when off or unresolved.
+
+    The user's own threshold, else the context window `window` (None when unknown); a valid
+    CLAUDE_AUTOCOMPACT_PCT_OVERRIDE lowers either to that share, which is then a user threshold."""
     if truthy(environ.get("DISABLE_AUTO_COMPACT")):
         return None
     enabled = next((e for e, _ in values if type(e) is bool), None)
     if enabled is False:
         return None
-    window = integer(environ.get("CLAUDE_CODE_AUTO_COMPACT_WINDOW"))
-    if window is None:
-        window = next((w for _, w in values if type(w) is int and integer(w) is not None), None)
-    if window is None:
-        return None  # the host default is not recorded yet
+    limit, kind = threshold(environ, values), THRESHOLD
+    if limit is None:
+        limit, kind = window, WINDOW
+    if limit is None:
+        return None
     override = environ.get("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE")
     if isinstance(override, str) and re.fullmatch(r"[0-9]{1,3}", override.strip()):
         percent = int(override.strip())
         if 1 <= percent <= 100:
-            window = window * percent // 100
-    return window if window > 0 else None
+            limit, kind = limit * percent // 100, THRESHOLD
+    return (limit, kind) if limit > 0 else None
+
+
+def context_window(session, model):
+    """This session's window from its own fresh context snapshot, else 1M for a `[1m]` model id, else None."""
+    try:
+        import context_snapshot
+        reading = context_snapshot.read(session)
+    except Exception:
+        reading = None
+    if isinstance(reading, dict) and type(reading.get("window")) is int and integer(reading["window"]) is not None:
+        return reading["window"]
+    return 1000000 if model is not None and model.endswith(ONE_MILLION) else None
+
+
+def size(tokens):
+    """700000 -> 700K, 1000000 -> 1M, 1500000 -> 1.5M."""
+    if tokens >= 1000000 and tokens % 100000 == 0:
+        return f"{tokens / 1000000:g}M"
+    return f"{round(tokens / 1000)}K" if tokens >= 1000 else str(tokens)
 
 
 def band(used, limit):
@@ -307,7 +357,7 @@ def main(argv=()):
             if found is None:
                 return 0
             used, window = found
-            limit = codex_threshold(home, window)
+            limit, kind = codex_threshold(home, window), THRESHOLD
             if limit is None or limit <= 0:
                 return 0
         else:
@@ -316,12 +366,15 @@ def main(argv=()):
             if found is None:
                 return 0
             used, model = found
-            limit = threshold(environ, settings_values(settings_files(environ, event.get("cwd")), model))
-            if limit is None:
+            values = settings_values(settings_files(environ, event.get("cwd")), model)
+            window = context_window(session, model) if threshold(environ, values) is None else None
+            found = base(environ, values, window)
+            if found is None:
                 return 0
+            limit, kind = found
         percent = decide(session, used, limit)
         if percent is not None:
-            os.write(1, MESSAGE.format(percent).encode("ascii"))
+            os.write(1, MESSAGE.format(percent, size(limit), kind).encode("ascii"))
     except Exception:
         pass
     return 0
