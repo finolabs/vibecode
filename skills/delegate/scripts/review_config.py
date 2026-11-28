@@ -65,6 +65,16 @@ def present_families(text):
     return machine_families(text)[1]
 
 
+def review_families(text):
+    """Present families that may review: with a usable matrix, only those with an agent line there (an extra command,
+    `claude<suffix>` or `zcode<suffix>`, is its prefix's family, as in `read_roles`); a present family without a line
+    never reviews. Without a usable matrix, every present family."""
+    present = present_families(text)
+    if matrix_state(text) != "valid":
+        return present
+    return present & {family_of(agent) for agent in am.parse(text).agents}
+
+
 def usable(matrix):
     """A present matrix counts only when it is valid and its own consent is yes; otherwise roles and judge are unset."""
     return matrix.state == "valid" and matrix.consent == "yes"

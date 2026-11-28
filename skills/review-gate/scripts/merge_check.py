@@ -561,7 +561,8 @@ def fallback(pr, family, families, files, verdicts_found, markers=None):
             return False, f"{family} is not the pull request author's family"
         if leased:
             return open_fallback(family, verdicts_found)
-        present = set(review_config.present_families(review_config.host_text()))
+        # Only a family routing could pick for review counts (`review_config.review_families`, as `review_route` uses).
+        present = set(review_config.review_families(review_config.host_text()))
         if family not in present:
             return False, f"{family} is not a present family"
         others = present - {family}
