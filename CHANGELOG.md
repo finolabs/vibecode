@@ -7,6 +7,7 @@ All notable changes to this plugin are documented here. The format follows [Keep
 ### Added
 
 - `/setup check` reports an `antigravity posting rule` row: `warn` with a count when an Antigravity allow-rule for `post_review.py` (in `~/.gemini/antigravity-cli/settings.json`, `permissions.allow` only) no longer points to a script of this install, for example a path from before the repository rename, so headless posting is denied. Report only: it never prints a rule or a path and never edits the file; the fix is the Review posting step of `/setup add roles`.
+- `/setup add roles` sets up Antigravity's reviewer allow-rules with `agy_rules_setup.py` (owner decision, 28/11/2026): a yes per item from a closed list, the read-only git prefixes `git show`, `git diff`, `git log`, `git rev-parse`, `git merge-base`, `git ls-files`, `git blame` and `git grep` and this install's `post_review.py`, then a preview that prints only those rules, a backup and a digest-bound apply. Adding the posting rule removes `post_review.py` rules that point to no script of this install.
 
 ### Fixed
 
