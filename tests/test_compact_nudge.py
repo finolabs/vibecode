@@ -23,8 +23,8 @@ SECRET = "SYNTHETIC-CONTENT-7f3a"
 WINDOW = 1000000
 
 
-def message(percent):
-    return cn.MESSAGE.format(percent)
+def message(percent, size="1M", base=None):
+    return cn.MESSAGE.format(percent, size, base or cn.THRESHOLD)
 
 
 class CompactNudgeTest(unittest.TestCase):
@@ -192,9 +192,10 @@ class CompactNudgeTest(unittest.TestCase):
 
     # Threshold resolution
 
-    def threshold(self, env=None):
+    def threshold(self, env=None, model=None, window=None):
         environ = env or {}
-        return cn.threshold(environ, cn.settings_values(cn.settings_files(environ, str(self.repo))))
+        found = cn.base(environ, cn.settings_values(cn.settings_files(environ, str(self.repo)), model), window)
+        return found[0] if found is not None else None
 
     def test_threshold_precedence(self):
         self.assertEqual(self.threshold(), WINDOW)
@@ -233,7 +234,7 @@ class CompactNudgeTest(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual(self.threshold({"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": value}), WINDOW)
         self.turn(420000)
-        self.assertEqual(self.run_hook(env={"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"}), message(84))
+        self.assertEqual(self.run_hook(env={"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"}), message(84, "500K"))
 
     def test_invalid_values_are_ignored(self):
         self.settings("project", "{not json")
@@ -250,8 +251,7 @@ class CompactNudgeTest(unittest.TestCase):
     # Per-model threshold
 
     def model_threshold(self, model, env=None):
-        environ = env or {}
-        return cn.threshold(environ, cn.settings_values(cn.settings_files(environ, str(self.repo)), model))
+        return self.threshold(env, model)
 
     def test_per_model_value_wins_within_a_file_for_that_model_only(self):
         self.settings("user", {"autoCompactWindow": WINDOW,
@@ -291,7 +291,7 @@ class CompactNudgeTest(unittest.TestCase):
         self.settings("user", {"autoCompactWindow": WINDOW,
                                "modelSettings": {"model-a": {"autoCompactWindow": 500000}}})
         self.turn(410000, model="model-a")
-        self.assertEqual(self.run_hook(), message(82))
+        self.assertEqual(self.run_hook(), message(82, "500K"))
         self.turn(820000, model="model-b")  # another model: top-level window, 82% again but band unchanged
         self.assertEqual(self.run_hook(), "")
         self.turn(920000, model="model-b")
@@ -305,7 +305,7 @@ class CompactNudgeTest(unittest.TestCase):
                                                  "model-a.5": {"autoCompactWindow": 300000}}})
         self.assertEqual(self.model_threshold(model), 500000)
         self.turn(410000, model=model)
-        self.assertEqual(self.run_hook(), message(82))
+        self.assertEqual(self.run_hook(), message(82, "500K"))
 
     def test_invalid_model_ids_fall_back_to_the_top_level(self):
         for model in ("Model-a", "m" * 65, "model/a", "model a", 5, ["model-a"], "-model", ""):
@@ -334,10 +334,79 @@ class CompactNudgeTest(unittest.TestCase):
         stderr = io.StringIO()
         with mock.patch.object(sys, "stderr", stderr):
             output = self.run_hook()
-        self.assertEqual(output, message(92))
+        self.assertEqual(output, message(92, "500K"))
         self.assertNotIn(model, output + stderr.getvalue())
         self.assertNotIn(model.encode(), b"".join(p.read_bytes() for p in self.mark_folder().iterdir()))
         self.assertNotIn(model, " ".join(os.listdir(self.mark_folder())))
+
+    # Base: the user's own threshold, else the context window (owner decision, 28/11/2026)
+
+    def snapshot(self, window, session=SESSION):
+        import context_snapshot as cs
+        cs.store(cs.filename(session), 1000, window, "2.1.332", "claude")
+
+    def test_auto_per_model_means_no_user_threshold(self):
+        # /autocompact auto saves "auto": the host's tuned window, not the top-level value.
+        self.settings("user", {"autoCompactWindow": 700000,
+                               "modelSettings": {"model-a": {"autoCompactWindow": "auto"}}})
+        self.assertIsNone(self.threshold(model="model-a"))
+        self.assertEqual(self.threshold(model="model-a", window=WINDOW), WINDOW)
+        self.assertEqual(self.threshold(model="model-b", window=WINDOW), 700000)
+        self.settings("user", {"autoCompactWindow": "auto"})
+        self.assertEqual(self.threshold(window=WINDOW), WINDOW)
+        self.assertIsNone(self.threshold())
+
+    def test_auto_in_a_more_specific_file_wins_over_a_user_value(self):
+        self.settings("user", {"autoCompactWindow": 700000})
+        self.settings("local", {"modelSettings": {"model-a": {"autoCompactWindow": "auto"}}})
+        self.assertEqual(self.threshold(model="model-a", window=WINDOW), WINDOW)
+        self.assertEqual(self.threshold(model="model-b", window=WINDOW), 700000)
+        self.assertEqual(self.threshold({"CLAUDE_CODE_AUTO_COMPACT_WINDOW": "300000"}, "model-a", WINDOW), 300000)
+
+    def test_no_user_threshold_uses_the_window_and_the_override_percent(self):
+        (self.config / "settings.json").unlink()
+        self.assertIsNone(self.threshold())
+        self.assertEqual(cn.base({}, [], WINDOW), (WINDOW, cn.WINDOW))
+        self.assertEqual(cn.base({}, [(None, 700000)], WINDOW), (700000, cn.THRESHOLD))
+        self.assertEqual(cn.base({"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"}, [], WINDOW), (500000, cn.THRESHOLD))
+        self.assertIsNone(cn.base({"DISABLE_AUTO_COMPACT": "1"}, [], WINDOW))
+
+    def test_owner_case_auto_on_a_1m_window_waits_for_80_percent_of_the_window(self):
+        self.settings("user", {"autoCompactWindow": 700000,
+                               "modelSettings": {"model-a": {"autoCompactWindow": "auto"}}})
+        self.turn(575000, model="model-a")
+        self.assertEqual(self.run_hook(), "")  # no window known: silent, never 80% of 700K
+        self.snapshot(WINDOW)
+        self.assertEqual(self.run_hook(), "")
+        self.turn(800000, model="model-a")
+        self.assertEqual(self.run_hook(), message(80, "1M", cn.WINDOW))
+
+    def test_window_from_a_1m_model_id_and_its_canonical_key(self):
+        self.settings("user", {"modelSettings": {"model-a": {"autoCompactWindow": "auto"}}})
+        self.turn(810000, model="model-a[1m]")
+        self.assertEqual(self.run_hook(), message(81, "1M", cn.WINDOW))
+        # The canonical key also matches the [1m] spelling, as Claude Code documents.
+        self.settings("user", {"modelSettings": {"model-a": {"autoCompactWindow": 500000}}})
+        self.assertEqual(self.threshold(model="model-a[1m]"), 500000)
+
+    def test_window_snapshot_of_another_session_is_not_used(self):
+        self.settings("user", {})
+        self.snapshot(WINDOW, session="00000000-0000-4000-8000-0000000000c3")
+        self.turn(900000, model="model-a")
+        self.assertEqual(self.run_hook(), "")
+        self.snapshot(WINDOW)
+        self.assertEqual(self.run_hook(), message(90, "1M", cn.WINDOW))
+
+    def test_message_names_the_base_size(self):
+        for tokens, text in ((700000, "700K"), (1000000, "1M"), (1500000, "1.5M"), (350500, "350K"), (999, "999")):
+            with self.subTest(tokens=tokens):
+                self.assertEqual(cn.size(tokens), text)
+        self.settings("user", {"autoCompactWindow": 700000})
+        self.turn(560000)
+        output = self.run_hook()
+        self.assertEqual(output, message(80, "700K"))
+        self.assertTrue(output.startswith("Context is at 80% of the 700K auto-compact threshold."))
+        self.assertTrue(output.isascii())
 
     def test_settings_symlink_is_not_read(self):
         real = self.base / "real-settings.json"
@@ -501,8 +570,8 @@ class CodexNudgeTest(unittest.TestCase):
 
     def test_default_threshold_is_nine_tenths_of_the_window(self):
         # threshold 900000: 80% = 720000, 90% = 810000
-        for used, expected in ((719999, ""), (720000, message(80)), (800000, ""), (810000, message(90)),
-                               (100000, ""), (720000, message(80))):
+        for used, expected in ((719999, ""), (720000, message(80, "900K")), (800000, ""),
+                               (810000, message(90, "900K")), (100000, ""), (720000, message(80, "900K"))):
             with self.subTest(used=used):
                 self.turn(used)
                 self.assertEqual(self.run_hook(), expected)
@@ -510,10 +579,10 @@ class CodexNudgeTest(unittest.TestCase):
     def test_configured_limit_wins_only_below_the_default(self):
         self.config('model_auto_compact_token_limit = 500000\n[profiles.big]\nmodel_auto_compact_token_limit = 10000\n')
         self.turn(400000)
-        self.assertEqual(self.run_hook(), message(80))
+        self.assertEqual(self.run_hook(), message(80, "500K"))
         self.config("model_auto_compact_token_limit = 5000000\n")
         self.turn(810000)
-        self.assertEqual(self.run_hook(), message(90))
+        self.assertEqual(self.run_hook(), message(90, "900K"))
 
     def test_bad_config_prints_nothing(self):
         for text in ("model_auto_compact_token_limit = 'x'\n", "not = = toml\n", "model_auto_compact_token_limit = 5\n"):
@@ -528,7 +597,7 @@ class CodexNudgeTest(unittest.TestCase):
         moved = other / "sessions" / "rollout.jsonl"
         self.turn(720000, path=moved)
         self.assertEqual(self.run_hook(transcript=moved), "")
-        self.assertEqual(self.run_hook(transcript=moved, env={"CODEX_HOME": str(other)}), message(80))
+        self.assertEqual(self.run_hook(transcript=moved, env={"CODEX_HOME": str(other)}), message(80, "900K"))
         claude = self.home / ".claude" / "projects"
         claude.mkdir(parents=True)
         self.turn(720000, path=claude / "x.jsonl")
@@ -541,7 +610,7 @@ class CodexNudgeTest(unittest.TestCase):
         self.assertEqual(self.run_hook(transcript=link), "")
         self.assertEqual(self.run_hook(env={"FNL_COMPACT_NUDGE": "off"}), "")
         out = self.run_hook()
-        self.assertEqual(out, message(80))
+        self.assertEqual(out, message(80, "900K"))
         self.assertNotIn(SECRET, out)
         mark = self.home / ".finolabs/vibecode/state/compaction-nudge" / cn.hashlib.sha256(SESSION.encode()).hexdigest()[:16]
         self.assertEqual(mark.read_text(), "80")
