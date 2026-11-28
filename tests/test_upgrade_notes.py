@@ -268,7 +268,8 @@ class NotesSchemaTest(unittest.TestCase):
         self.assertFalse(u.missing_release_entry('0.3.2', released))
         self.assertFalse(u.missing_release_entry('0.3.3', released))
         self.assertFalse(u.missing_release_entry('0.3.4', released))
-        self.assertTrue(u.missing_release_entry('0.3.5', released))
+        self.assertFalse(u.missing_release_entry('0.3.5', released))
+        self.assertTrue(u.missing_release_entry('0.3.6', released))
         self.assertFalse(u.missing_release_entry('0.2.5-dev', released))
         manifest = json.loads((ROOT / '.claude-plugin/plugin.json').read_text())['version']
         self.assertFalse(u.missing_release_entry(manifest, released),
