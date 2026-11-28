@@ -354,7 +354,7 @@ class OnboardTest(unittest.TestCase):
                 if slug in ('done', 'open', 'na', 'odd', 'slow'):
                     item['check'] = [f'scripts/check_{slug}.py']
                 if slug == 'open':
-                    item['setup'] = '/setup add thing'
+                    item['setup'] = '/setup thing'
                 items.append(item)
             versions.append({'version': release, 'items': items})
         self.notes_file.write_text(json.dumps({'versions': versions}))
@@ -382,7 +382,7 @@ class OnboardTest(unittest.TestCase):
             '- [unknown] 0.1.6/old: Synthetic item old.',
             '0.1.7',
             '- [done] 0.1.7/done: Synthetic item done.',
-            '- [open] 0.1.7/open: Synthetic item open. (setup: /setup add thing)',
+            '- [open] 0.1.7/open: Synthetic item open. (setup: /setup thing)',
             '- [not applicable] 0.1.7/na: Synthetic item na.',
             '- [unknown] 0.1.7/odd: Synthetic item odd.',
             '- [unknown] 0.1.7/none: Synthetic item none.', '']))

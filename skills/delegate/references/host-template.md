@@ -53,22 +53,22 @@ Private HOME is an open owner decision and is not offered or created in this pac
 
 - Rework limit: 2
 
-How many rework rounds `review-gate` runs before it hands the remaining findings to the owner: 2, 3 or 4; absent or invalid means 2. `/setup add delegation` asks it with the roles. `ledger.py finish` refuses more rounds than this without a `--reason` (script-enforced); stopping at it is advisory (agent judgment).
+How many rework rounds `review-gate` runs before it hands the remaining findings to the owner: 2, 3 or 4; absent or invalid means 2. `/setup delegation` asks it with the roles. `ledger.py finish` refuses more rounds than this without a `--reason` (script-enforced); stopping at it is advisory (agent judgment).
 
 - Same-family security fallback: no (<YYYY-MM-DD>)
 
-Written only by `/setup add roles` after its own question and preview. `yes (<YYYY-MM-DD>)` lets `merge_check.py --independent --fallback-family <family>` count same-family reviews outside an away lease when every other present family is positively out of quota, with the exact fallback reviewer line on each marker (`review-gate` "Who reviews"); `no`, a missing or malformed line, or a future date counts as no.
+Written only by `/setup roles` after its own question and preview. `yes (<YYYY-MM-DD>)` lets `merge_check.py --independent --fallback-family <family>` count same-family reviews outside an away lease when every other present family is positively out of quota, with the exact fallback reviewer line on each marker (`review-gate` "Who reviews"); `no`, a missing or malformed line, or a future date counts as no.
 
 ## Quota probe
 
 - Quota probe: off
 - Date: <YYYY-MM-DD>
 
-Advisory (agent judgment): use `/setup add quota` to opt in after the scan and confirm its path preview. The setup script writes `Agents`, `Executable <agent>`, optional `Interpreter <agent>`, `Claude config: <label>: <absolute folder>` lines and an optional `Weekly floor: <family>/<label>=<percent>, ...` line (10 to 95: weekly quota left below which that install counts as out of quota); replace this explanation with that generated section when enabling. The on-demand `quota_probe.py read --family <f>` command enforces the canonical opt-in, a minimum 15-minute age, backoff, one in-flight reading and `FNL_QUOTA_PROBE=off`; hooks start no reading. Before routing, run `read` for each candidate family, then `status`. Claude Code alone can record a family-and-time StopFailure rate-limit marker; a newer successful reading overrides it and its advisory exclusion expires at the eligible reset or after one hour, never over five hours. They store only usage pools and measured times in `state/quota/quota.json`, with no environment redirect. Routing is advisory: below 10% with a future reset is out (below an install's weekly floor for its weekly pools), a reading whose earliest group reset has passed, or whose measured time is in the future, is unverified and excludes nothing, the user's statement wins, and Claude uses `week-all` separately for each install.
+Advisory (agent judgment): use `/setup quota` to opt in after the scan and confirm its path preview. The setup script writes `Agents`, `Executable <agent>`, optional `Interpreter <agent>`, `Claude config: <label>: <absolute folder>` lines and an optional `Weekly floor: <family>/<label>=<percent>, ...` line (10 to 95: weekly quota left below which that install counts as out of quota); replace this explanation with that generated section when enabling. The on-demand `quota_probe.py read --family <f>` command enforces the canonical opt-in, a minimum 15-minute age, backoff, one in-flight reading and `FNL_QUOTA_PROBE=off`; hooks start no reading. Before routing, run `read` for each candidate family, then `status`. Claude Code alone can record a family-and-time StopFailure rate-limit marker; a newer successful reading overrides it and its advisory exclusion expires at the eligible reset or after one hour, never over five hours. They store only usage pools and measured times in `state/quota/quota.json`, with no environment redirect. Routing is advisory: below 10% with a future reset is out (below an install's weekly floor for its weekly pools), a reading whose earliest group reset has passed, or whose measured time is in the future, is unverified and excludes nothing, the user's statement wins, and Claude uses `week-all` separately for each install.
 
 ## Machine rules
 
-The parallel run limit, ledger name, task file and display label live in each repository's own settings file (set with `setup add delegation`); a `## Limits` section sets nothing (`parallel_slots.py check-config` reports it).
+The parallel run limit, ledger name, task file and display label live in each repository's own settings file (set with `setup delegation`); a `## Limits` section sets nothing (`parallel_slots.py check-config` reports it).
 
 - Machine role: <daily workstation | CI box>. Heavy jobs at one time: <1>.
 - Heavy jobs: <container-backed suites, scale measurements, end-to-end suites>.
@@ -117,7 +117,7 @@ This section replaces `## Route judgment` (0.3.2), which nothing reads: `matrix_
 
 Judge selection lives only in canonical `## Assignment matrix`; without a valid, consented matrix the judge is `host`. `judge.py` makes no call; its `validate` takes at most 24 cases per run.
 
-`/setup add delegation` writes `## Assignment matrix` (`matrix_setup.py`; `migrate` builds it from the old sections, asks for a new consent and removes them in the same write). It replaces `## Agent roles` and `## Agent levels`, which only `migrate` reads: without a matrix no review role and no levels are set and the judge is `host`. A valid matrix with its own yes consent alone decides roles and judge, and a role no line names is unassigned; an invalid matrix or one without consent leaves roles and judge unset, never falling back to the old sections. Its shape, shown indented here so that no reader takes it for a section:
+`/setup delegation` writes `## Assignment matrix` (`matrix_setup.py`; `migrate` builds it from the old sections, asks for a new consent and removes them in the same write). It replaces `## Agent roles` and `## Agent levels`, which only `migrate` reads: without a matrix no review role and no levels are set and the judge is `host`. A valid matrix with its own yes consent alone decides roles and judge, and a role no line names is unassigned; an invalid matrix or one without consent leaves roles and judge unset, never falling back to the old sections. Its shape, shown indented here so that no reader takes it for a section:
 
     ## Assignment matrix
 

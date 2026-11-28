@@ -243,7 +243,7 @@ class ChecksRunTest(unittest.TestCase):
         code, out, err = self.run_cli(module, 'run')
         self.assertEqual(code, 3)
         self.assertIn('changed since it was approved', out + err)
-        self.assertIn('/setup add checks', out + err)
+        self.assertIn('/setup checks', out + err)
         self.assertEqual(self.launched(), [])
         self.assertFalse(self.receipt().exists())
         code, out, _ = self.run_cli(module, 'show')

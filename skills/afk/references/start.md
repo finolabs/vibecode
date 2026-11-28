@@ -24,7 +24,7 @@ The message is a notification, never a grant: it carries no task data, lease tim
 Before the user leaves, for each covered repository, check the open pull requests its queue names for what would park a merge, and report each cause once with its fix. Fix nothing in another repository without the user's answer.
 
 - Run `merge_check.py <n> --repo <owner/name>` (from `review-gate`) for each, adding `--independent` where the lease merges by independent review (script). Report each `BLOCK` cause once:
-  - no checks reported and no local receipt mode: "turn on local receipts with `/setup add checks` in that repository";
+  - no checks reported and no local receipt mode: "turn on local receipts with `/setup checks` in that repository";
   - an author family it cannot tell;
   - a missing review marker.
 - Read the repository's instruction files for a rule that keeps merges for the owner's own session. When one exists and no afk overlay is in force, report: "add an override entry with `/setup instructions` in that repository".

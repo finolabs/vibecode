@@ -61,7 +61,7 @@ class CompanionQuestionsTest(unittest.TestCase):
             self.assertIn(choice, quick)
         for rule in ('at most four', 'five companion questions', 'none preselected',
                      'setup_features.py decline companions --yes', 'records nothing',
-                     '`add companions` always asks again', 'never combine'):
+                     '`/setup companions` always asks again', 'never combine'):
             self.assertIn(rule, procedure)
         skill = (REFS / 'menu.md').read_text()
         self.assertIn('Quick opens `companions` directly', skill)

@@ -26,6 +26,6 @@
     "Route this change through the coding router and tell me the depth you chose.",
     "Use delegate to coordinate this spec with one session per task.",
     "Use /setup scan to refresh my local agent inventory, then /setup mode to show effective settings.",
-    "Use /setup to choose Quick or Advanced, then show add <feature>, instructions and check."
+    "Use /setup to choose Quick or Advanced, then show /setup <feature>, instructions and doctor."
   ]
 }

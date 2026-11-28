@@ -47,7 +47,7 @@ MODULE_NAME = re.compile(r'[A-Za-z_][A-Za-z0-9_]{0,99}(?:\.[A-Za-z_][A-Za-z0-9_]
 APPROVED = 'state/checks-approved'
 APPROVED_KEYS = {'sha256', 'approved'}  # plus 'identity', the full digest of the main checkout, since 0.3.1
 CHANGED = 'changed since it was approved'
-AGAIN = 'run /setup add checks again'
+AGAIN = 'run /setup checks again'
 
 
 # The stored argument form

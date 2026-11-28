@@ -786,7 +786,7 @@ class ProjectFileTest(unittest.TestCase):
                 self.assertIsNone(reader.receipt_status(code_, 'a' * 40, root=self.repo))
                 code, out, _ = self.cli('show', '--root', str(self.repo))
                 self.assertIn(CHANGED, out)
-                self.assertIn('/setup add checks', out)
+                self.assertIn('/setup checks', out)
 
     def test_receipt_mode_lives_in_the_file(self):
         self.save('test=["make","test"]')

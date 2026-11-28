@@ -778,7 +778,7 @@ class QuotaTest(unittest.TestCase):
 
     def test_changed_program_path_is_reported_and_never_run(self):
         expected = ("Quota claude: program changed since setup (2.1.318 to 2.1.319); "
-                    "run /setup add quota to re-confirm the new path")
+                    "run /setup quota to re-confirm the new path")
         for current, line in (("2.1.319", expected),
                               (str(self.bin / "renamed"), expected.replace(" (2.1.318 to 2.1.319)", ""))):
             with self.subTest(current=current):

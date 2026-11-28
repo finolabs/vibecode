@@ -312,7 +312,7 @@ def run(changed, base, dispatch=None):
               file=sys.stderr)
         return 3
     if reason:
-        print(f'Repository {code}: no checks ({reason}); nothing was run. Set them with /setup add checks.',
+        print(f'Repository {code}: no checks ({reason}); nothing was run. Set them with /setup checks.',
               file=sys.stderr)
         return 3 if reason in ('invalid', 'unreadable') else 2
     if changed:

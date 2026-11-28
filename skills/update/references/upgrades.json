@@ -12,12 +12,12 @@
           "id": "0.2.0/context-reading",
           "kind": "setup",
           "text": "Context recording needs a status-line command in your own host settings: setup previews one, or gives a recipe when you already have a status line.",
-          "setup": "/setup add compaction"
+          "setup": "/setup compaction"
         },
         {
           "id": "0.2.0/removed-skills",
           "kind": "removed",
-          "text": "The separate scan-agents, set-mode and setup-instructions skills are gone: use /setup scan, /setup mode and /setup instructions. /setup check lists files that still name them."
+          "text": "The separate scan-agents, set-mode and setup-instructions skills are gone: use /setup scan, /setup mode and /setup instructions. /setup doctor lists files that still name them."
         }
       ]
     },
@@ -33,14 +33,14 @@
           "id": "0.2.1/parallel-limits",
           "kind": "setup",
           "text": "The Parallel lines in ## Limits of host.md are no longer read: set the limit again in each repository, then delete those lines by hand and keep the rest of ## Limits.",
-          "setup": "/setup add delegation",
+          "setup": "/setup delegation",
           "check": ["skills/setup/scripts/upgrade_state.py", "no-parallel-lines"]
         },
         {
           "id": "0.2.1/away-setup",
           "kind": "setup",
           "text": "The away session (/afk) needs its settings recorded first; skip this if you do not use it.",
-          "setup": "/setup add afk",
+          "setup": "/setup afk",
           "check": ["skills/setup/scripts/upgrade_state.py", "afk"]
         }
       ]
@@ -52,7 +52,7 @@
           "id": "0.2.2/agent-levels",
           "kind": "setup",
           "text": "Delegation can record which task levels (1 easy to 5 ultra hard) each helper takes; setup now asks this as part of the assignment matrix.",
-          "setup": "/setup add delegation",
+          "setup": "/setup delegation",
           "check": ["skills/setup/scripts/upgrade_state.py", "levels"]
         }
       ]
@@ -64,7 +64,7 @@
           "id": "0.2.3/matrix-migrate",
           "kind": "migration",
           "text": "Move ## Agent roles and ## Agent levels into the assignment matrix: setup runs matrix_setup.py migrate, shows what it drops and asks your consent again.",
-          "setup": "/setup add delegation",
+          "setup": "/setup delegation",
           "check": ["skills/setup/scripts/upgrade_state.py", "matrix"]
         },
         {
@@ -76,7 +76,7 @@
           "id": "0.2.3/away-decisions",
           "kind": "setup",
           "text": "The away session can now decide some questions itself: setup asks which kinds of decision stop it, optional non-production targets and a separate excerpt consent.",
-          "setup": "/setup add afk",
+          "setup": "/setup afk",
           "check": ["skills/setup/scripts/upgrade_state.py", "afk-decisions"]
         },
         {
@@ -102,8 +102,8 @@
         {
           "id": "0.2.4/checks-setup",
           "kind": "setup",
-          "text": "Run /setup add checks to save a check list per repository, with the optional local receipt and pre-push hook.",
-          "setup": "/setup add checks",
+          "text": "Run /setup checks to save a check list per repository, with the optional local receipt and pre-push hook.",
+          "setup": "/setup checks",
           "check": ["skills/setup/scripts/upgrade_state.py", "repo-checks"],
           "where": "repository"
         },
@@ -111,7 +111,7 @@
           "id": "0.2.4/ci-workflow",
           "kind": "setup",
           "text": "The same setup step can write, after a previewed yes, a cheaper CI workflow that runs on pull requests and skips document-only changes.",
-          "setup": "/setup add checks"
+          "setup": "/setup checks"
         },
         {
           "id": "0.2.4/codex-hook-trust",
@@ -126,47 +126,47 @@
         {
           "id": "0.2.5/checks-store",
           "kind": "setup",
-          "text": "A check list saved with 0.2.4 is no longer read: run /setup add checks again in each repository, then delete the old ## Checks section from host.md by hand.",
-          "setup": "/setup add checks",
+          "text": "A check list saved with 0.2.4 is no longer read: run /setup checks again in each repository, then delete the old ## Checks section from host.md by hand.",
+          "setup": "/setup checks",
           "check": ["skills/setup/scripts/upgrade_state.py", "no-checks-section"]
         },
         {
           "id": "0.2.5/parallel-settings",
           "kind": "setup",
           "text": "Parallel limits in host.md are no longer read: set parallel and caps again in each repository before you delete ## Project settings by hand.",
-          "setup": "/setup add delegation",
+          "setup": "/setup delegation",
           "check": ["skills/setup/scripts/upgrade_state.py", "no-project-settings"]
         },
         {
           "id": "0.2.5/project-settings",
           "kind": "setup",
           "text": "Settings in host.md are no longer read: set them again in each repository, then delete ## Project settings and the Ledger project: and Task file: lines by hand.",
-          "setup": "/setup add project",
+          "setup": "/setup project",
           "check": ["skills/setup/scripts/upgrade_state.py", "no-project-settings", "no-global-lines"]
         },
         {
           "id": "0.2.5/project-labels",
           "kind": "setup",
           "text": "Labels in host.md are no longer read: set each again inside each repository, then delete the ## Project labels section by hand.",
-          "setup": "/setup add project",
+          "setup": "/setup project",
           "check": ["skills/setup/scripts/upgrade_state.py", "no-project-labels"]
         },
         {
           "id": "0.2.5/skill-names",
           "kind": "rename",
-          "text": "Skills lost the fnl- prefix (fnl-setup is now setup). Old names work only when typed; instruction files must use the new names. /setup check lists each old name with its new one."
+          "text": "Skills lost the fnl- prefix (fnl-setup is now setup). Old names work only when typed; instruction files must use the new names. /setup doctor lists each old name with its new one."
         },
         {
           "id": "0.2.5/afk-section",
           "kind": "setup",
-          "text": "/autopilot is now /afk and the ## Autopilot section of host.md is no longer read: run /setup add afk again, then delete the old ## Autopilot section by hand.",
-          "setup": "/setup add afk",
+          "text": "/autopilot is now /afk and the ## Autopilot section of host.md is no longer read: run /setup afk again, then delete the old ## Autopilot section by hand.",
+          "setup": "/setup afk",
           "check": ["skills/setup/scripts/upgrade_state.py", "afk-section"]
         },
         {
           "id": "0.2.5/tidy-rename",
           "kind": "info",
-          "text": "session-hygiene is now tidy. The old name works only when typed; instruction files must name tidy. /setup check lists each old name with its new one."
+          "text": "session-hygiene is now tidy. The old name works only when typed; instruction files must name tidy. /setup doctor lists each old name with its new one."
         },
         {
           "id": "0.2.5/codex-hook-trust",
@@ -176,14 +176,14 @@
         {
           "id": "0.2.5/quota-repin",
           "kind": "setup",
-          "text": "After a Claude Code or Codex update, the probes and /setup check say \"program changed since setup\" and refuse that program until you re-confirm its new path with the quota setup.",
-          "setup": "/setup add quota"
+          "text": "After a Claude Code or Codex update, the probes and /setup doctor say \"program changed since setup\" and refuse that program until you re-confirm its new path with the quota setup.",
+          "setup": "/setup quota"
         },
         {
           "id": "0.2.5/context-probe",
           "kind": "setup",
           "text": "Reading the current session's context size on request uses the Claude Code or Codex program confirmed in the quota setup; set that up first.",
-          "setup": "/setup add quota"
+          "setup": "/setup quota"
         },
         {
           "id": "0.2.5/worktree-sweep",
@@ -208,20 +208,20 @@
         {
           "id": "0.2.5/afk-project",
           "kind": "setup",
-          "text": "A repository can now set its own away choices: run /setup add afk inside it to set task choice, push, merge, trusted authors and code folders, or keep your user setting.",
-          "setup": "/setup add afk"
+          "text": "A repository can now set its own away choices: run /setup afk inside it to set task choice, push, merge, trusted authors and code folders, or keep your user setting.",
+          "setup": "/setup afk"
         },
         {
           "id": "0.2.5/compaction-nudge",
           "kind": "setup",
           "text": "On Claude Code a hook asks the agent to run tidy at 80% and 90% of the compaction threshold; it needs the window set in compaction setup. FNL_COMPACT_NUDGE=off turns it off.",
-          "setup": "/setup add compaction"
+          "setup": "/setup compaction"
         },
         {
           "id": "0.2.5/compaction-config",
           "kind": "setup",
           "text": "Compaction setup now warns when a Claude Code setting or environment variable turns auto-compaction off, so the threshold you choose would never fire; it changes nothing.",
-          "setup": "/setup add compaction"
+          "setup": "/setup compaction"
         },
         {
           "id": "0.2.5/shape",
@@ -262,7 +262,7 @@
           "id": "0.2.6/agent-roles-retired",
           "kind": "migration",
           "text": "Breaking: ## Agent roles is no longer read; without a matrix no review roles are set and the judge is host (no Jev). Setup runs matrix_setup.py migrate and asks consent again.",
-          "setup": "/setup add delegation",
+          "setup": "/setup delegation",
           "check": ["skills/setup/scripts/upgrade_state.py", "roles-retired"]
         },
         {
@@ -278,12 +278,12 @@
         {
           "id": "0.2.6/setup-beginner",
           "kind": "info",
-          "text": "The setup beginner path asks only the essentials; extras such as the agent scan and companions wait for a later run or /setup add <feature>."
+          "text": "The setup beginner path asks only the essentials; extras such as the agent scan and companions wait for a later run or /setup <feature>."
         },
         {
           "id": "0.2.6/afk-scope",
           "kind": "info",
-          "text": "/setup add afk first asks whether the rules are for your account or only this repository, then for a repository asks only the rules you want different."
+          "text": "/setup afk first asks whether the rules are for your account or only this repository, then for a repository asks only the rules you want different."
         },
         {
           "id": "0.2.6/afk-worktree-cleanup",
@@ -303,8 +303,8 @@
         {
           "id": "0.3.0/afk-project-rules",
           "kind": "setup",
-          "text": "A repository can now set its own afk categories, deploy targets, production deploys and limits; run /setup add afk inside each repository that needs rules different from yours.",
-          "setup": "/setup add afk"
+          "text": "A repository can now set its own afk categories, deploy targets, production deploys and limits; run /setup afk inside each repository that needs rules different from yours.",
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.0/afk-table",
@@ -325,7 +325,7 @@
           "id": "0.3.0/matrix-models",
           "kind": "setup",
           "text": "An agent line in the assignment matrix may now choose a model per kind of work and level (models rules, with a then fallback when a pool is out of quota); add rules only if you want them.",
-          "setup": "/setup add delegation"
+          "setup": "/setup delegation"
         },
         {
           "id": "0.3.0/afk-new-branch",
@@ -335,13 +335,13 @@
         {
           "id": "0.3.0/afk-test-commands",
           "kind": "setup",
-          "text": "Under a lease, tests run only with a listed test command and a top-level file such as TASKS.md is edited only when listed; run /setup add afk to list them.",
-          "setup": "/setup add afk"
+          "text": "Under a lease, tests run only with a listed test command and a top-level file such as TASKS.md is edited only when listed; run /setup afk to list them.",
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.0/afk-rules-view",
           "kind": "info",
-          "text": "/afk start adds a This folder line and afk.py effective a rules field with the rules check applies in that repository; re-running /setup add afk offers your saved values."
+          "text": "/afk start adds a This folder line and afk.py effective a rules field with the rules check applies in that repository; re-running /setup afk offers your saved values."
         },
         {
           "id": "0.3.0/advisor-tier",
@@ -351,20 +351,20 @@
         {
           "id": "0.3.0/advisor-repin",
           "kind": "setup",
-          "text": "When an update moves a host program, the quota probe and the afk advisor treat that family as unavailable; run /setup add quota to confirm the program again.",
-          "setup": "/setup add quota"
+          "text": "When an update moves a host program, the quota probe and the afk advisor treat that family as unavailable; run /setup quota to confirm the program again.",
+          "setup": "/setup quota"
         },
         {
           "id": "0.3.0/afk-release-targets",
           "kind": "setup",
-          "text": "Breaking for away flows: git tag, gh release, npm publish and pnpm publish run under a lease only when the exact command is listed; run /setup add afk to list release targets.",
-          "setup": "/setup add afk"
+          "text": "Breaking for away flows: git tag, gh release, npm publish and pnpm publish run under a lease only when the exact command is listed; run /setup afk to list release targets.",
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.0/afk-account-lists",
           "kind": "setup",
           "text": "Production, release and test command lists and top-level files in ## afk are now every repository's default; a repository's own list replaces it whole. A changed list ends a live lease.",
-          "setup": "/setup add afk"
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.0/two-model-fallback",
@@ -394,13 +394,13 @@
         {
           "id": "0.3.1/checks-identity",
           "kind": "info",
-          "text": "An approved check list is now bound to its checkout's full identity; one saved before 0.3.1 still counts until /setup add checks writes it again."
+          "text": "An approved check list is now bound to its checkout's full identity; one saved before 0.3.1 still counts until /setup checks writes it again."
         },
         {
           "id": "0.3.1/agent-levels-retired",
           "kind": "migration",
           "text": "Breaking: ## Agent levels is no longer read; without a matrix no levels are set. Setup runs matrix_setup.py migrate to move them into the matrix and asks consent again.",
-          "setup": "/setup add delegation",
+          "setup": "/setup delegation",
           "check": ["skills/setup/scripts/upgrade_state.py", "levels-retired"]
         },
         {
@@ -421,13 +421,13 @@
         {
           "id": "0.3.2/fnl-aliases-removed",
           "kind": "removed",
-          "text": "Breaking: fnl- skill names are removed (fnl-setup is now setup) and the agents are reviewer, security-reviewer and navigator; use the new names. /setup check lists the old names it finds."
+          "text": "Breaking: fnl- skill names are removed (fnl-setup is now setup) and the agents are reviewer, security-reviewer and navigator; use the new names. /setup doctor lists the old names it finds."
         },
         {
           "id": "0.3.2/afk-modes",
           "kind": "migration",
           "text": "Breaking: afk runs in open mode by default: all but credentials, default-branch guard on. 0.3.3 removes strict mode; forbid other things with a host deny rule.",
-          "setup": "/setup add afk"
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.2/afk-open-fallback",
@@ -437,13 +437,13 @@
         {
           "id": "0.3.2/afk-overlay",
           "kind": "info",
-          "text": "/setup add afk can write a local AGENTS.afk.md that overrides instruction-file rules your away rules replace, printed only while a lease is live."
+          "text": "/setup afk can write a local AGENTS.afk.md that overrides instruction-file rules your away rules replace, printed only while a lease is live."
         },
         {
           "id": "0.3.2/instruction-check-section",
           "kind": "migration",
-          "text": "Breaking: the instruction-check consent moved from ## Route judgment to its own ## Instruction check section; until you migrate it reads off and /setup check flags the old section.",
-          "setup": "/setup add delegation"
+          "text": "Breaking: the instruction-check consent moved from ## Route judgment to its own ## Instruction check section; until you migrate it reads off and /setup doctor flags the old section.",
+          "setup": "/setup delegation"
         },
         {
           "id": "0.3.2/rework-limit",
@@ -464,13 +464,13 @@
           "id": "0.3.2/compaction-threshold",
           "kind": "setup",
           "text": "Setup recommends an auto-compact threshold and, on Claude Code, can write it for one repository; there tidy also hands you a ready /compact <focus> command.",
-          "setup": "/setup add compaction"
+          "setup": "/setup compaction"
         },
         {
           "id": "0.3.2/security-fallback",
           "kind": "setup",
           "text": "Outside a lease you can record a same-family security fallback for when no other family can review; setup asks it with the review roles.",
-          "setup": "/setup add roles"
+          "setup": "/setup roles"
         },
         {
           "id": "0.3.2/codex-hook-trust",
@@ -491,13 +491,13 @@
           "id": "0.3.3/coordinator-threshold",
           "kind": "setup",
           "text": "Claude Code: open a coordinator with CLAUDE_CODE_AUTO_COMPACT_WINDOW=<tokens> claude (hooks miss --autocompact); setup can remove per-model values that override your limit.",
-          "setup": "/setup add compaction"
+          "setup": "/setup compaction"
         },
         {
           "id": "0.3.3/per-model-threshold",
           "kind": "setup",
           "text": "Claude Code: the compaction reminder follows the session model's own /autocompact value; setup can save a threshold for one model only.",
-          "setup": "/setup add compaction"
+          "setup": "/setup compaction"
         },
         {
           "id": "0.3.3/worktree-clean",
@@ -518,13 +518,13 @@
           "id": "0.3.3/afk-native-rules",
           "kind": "setup",
           "text": "Claude Code: afk setup can add native deny rules for the credential floor; /afk start warns while none is set and no approval mode asks.",
-          "setup": "/setup add afk"
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.3/afk-one-mode",
           "kind": "removed",
           "text": "afk strict mode and the Max runs, runtime and hourly limits are gone; old lines are ignored. Use host deny rules. An old lease: /afk stop, then /afk start.",
-          "setup": "/setup add afk"
+          "setup": "/setup afk"
         },
         {
           "id": "0.3.3/afk-goals",
@@ -545,19 +545,19 @@
           "id": "0.3.3/quota-weekly-floor",
           "kind": "setup",
           "text": "Routing can stop handing work to one install before its week runs out: record a weekly floor such as claude/work=15 (stop after 85% used).",
-          "setup": "/setup add quota"
+          "setup": "/setup quota"
         },
         {
           "id": "0.3.3/light-checks",
           "kind": "setup",
           "text": "Stored checks that name test modules can run outside the heavy-job lock; a list saved before 0.3.3 stays all heavy until you save it again.",
-          "setup": "/setup add checks"
+          "setup": "/setup checks"
         },
         {
           "id": "0.3.3/heavy-job-gate",
           "kind": "setup",
           "text": "On Claude Code you may turn on the heavy-job gate: a heavy command such as docker compose up is refused unless it runs through heavy_run.py. Heavy jobs now wait at a load of 25, not 12.",
-          "setup": "/setup add delegation"
+          "setup": "/setup delegation"
         },
         {
           "id": "0.3.3/quota-reset-freshness",
@@ -598,6 +598,11 @@
           "id": "0.3.5/codex-hook-trust",
           "kind": "hook",
           "text": "On Codex, open /hooks in a new session after the refresh and trust the plugin's hooks again; the compaction nudge script changed."
+        },
+        {
+          "id": "0.3.5/setup-commands",
+          "kind": "rename",
+          "text": "Setup commands renamed, no alias: type /setup <feature> (for example /setup quota) instead of /setup add <feature>, and /setup doctor instead of /setup check."
         }
       ]
     }

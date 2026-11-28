@@ -195,7 +195,7 @@ def temp_index_env(repo_root, seed_from_real=True):
         pass
     root, source = dr.data_root()
     if source == "invalid":
-        raise ValueError("The plugin data folder is not usable; run the setup check.")
+        raise ValueError("The plugin data folder is not usable; run the setup doctor.")
     tmpdir = str(root / "tmp" / ("fnl-restore-" + os.urandom(8).hex()))
     os.mkdir(tmpdir, 0o700)
     try:

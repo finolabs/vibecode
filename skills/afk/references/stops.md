@@ -4,7 +4,7 @@
 
 ## Start lines
 
-Read the start summary's Claude Code lines: add the printed allow rules with `/permissions` so the lease commands never prompt, copy the `Lease commands:` and `End a turn:` lines as the exact form of every `afk.py` command: `<script>` written out as this install's absolute path, arguments without spaces (labels and notes in words joined by hyphens), no shell variable, `;`, `&&`, pipe, quotes or `$`. On Claude Code the afk permission hook allows a lease command without a prompt only in that form (hook), so a variable form of `log --kind idle` leaves the turn unable to end; `check --argv-json` needs quotes and passes without a prompt only through the printed allow rules, and on a `Warning:` line tell the user before they leave that nothing on the host blocks credential reads until `/setup add afk` adds the native deny rules (advisory (agent judgment)).
+Read the start summary's Claude Code lines: add the printed allow rules with `/permissions` so the lease commands never prompt, copy the `Lease commands:` and `End a turn:` lines as the exact form of every `afk.py` command: `<script>` written out as this install's absolute path, arguments without spaces (labels and notes in words joined by hyphens), no shell variable, `;`, `&&`, pipe, quotes or `$`. On Claude Code the afk permission hook allows a lease command without a prompt only in that form (hook), so a variable form of `log --kind idle` leaves the turn unable to end; `check --argv-json` needs quotes and passes without a prompt only through the printed allow rules, and on a `Warning:` line tell the user before they leave that nothing on the host blocks credential reads until `/setup afk` adds the native deny rules (advisory (agent judgment)).
 
 ## End a turn
 

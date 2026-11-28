@@ -344,7 +344,7 @@ def assignments_evidence(status, matrix, text):
             unread = " and ".join(name for name, found in (("roles", roles), ("levels", levels)) if found)
             return "missing", (("roles: missing; " if roles else "levels: missing; ") + "matrix absent and " + old +
                                " no longer read, so " + unread + " are unset and the judge is host; "
-                               "/setup add delegation (migrate) converts it")
+                               "/setup delegation (migrate) converts it")
         return "ok", "matrix absent; roles unset, judge host"
     if matrix.state != "valid":
         return "missing", "matrix invalid (" + ", ".join(matrix.problems) + "); " + unset
@@ -1013,7 +1013,7 @@ def legacy_evidence(status, text):
     from upgrade_state import headings, legacy
     import assignments
     found = legacy(text) if status == "ok" else []
-    fixes = ["set again per repository (/setup add project, /setup add checks), then delete by hand"] if found else []
+    fixes = ["set again per repository (/setup project, /setup checks), then delete by hand"] if found else []
     # Without a matrix the host config row reports Agent roles and Agent levels with their conversion instead.
     if status == "ok" and has_agent_roles(text) and assignments.parse(text).state != "absent":
         found.append("## Agent roles beside the matrix")
@@ -1024,7 +1024,7 @@ def legacy_evidence(status, text):
     # Retired 0.3.2: the instruction-check consent lives in its own section; migrate moves it.
     if status == "ok" and "Route judgment" in headings(text):
         found.append("## Route judgment")
-        fixes.append("/setup add delegation (migrate) moves its Instruction check line and removes it")
+        fixes.append("/setup delegation (migrate) moves its Instruction check line and removes it")
     if not found:
         return []
     return [item("legacy host settings", "missing", "no longer read: " + ", ".join(found) + "; " + "; ".join(fixes))]
@@ -1038,13 +1038,13 @@ def quota_config():
     except FileNotFoundError:
         return None
     except (OSError, ValueError, UnicodeError):
-        return "config: unreadable; run /setup add quota again", True
+        return "config: unreadable; run /setup quota again", True
     values = dict(re.findall(r"^- ([A-Za-z ]+): (.+?)\s*$", qp.section(text), re.M))
     if values.get("Quota probe") != "on":
         return None
     agents = [name for name in values.get("Agents", "").split(", ") if name in qp.SOURCES]
     if not agents:
-        return "config: no recorded program; run /setup add quota again", True
+        return "config: no recorded program; run /setup quota again", True
     entries, rows, changed = qp.canonical_config(), [], False
     for agent in agents:
         problem = None
@@ -1066,7 +1066,7 @@ def quota_config():
                 problem = "executable unreadable"
         rows.append(agent + " " + (problem or "ok"))
     broken = any(not row.endswith(" ok") for row in rows)
-    fix = "; run /setup add quota to re-confirm the new path" if changed else "; run /setup add quota again"
+    fix = "; run /setup quota to re-confirm the new path" if changed else "; run /setup quota again"
     return "config: " + ", ".join(rows) + (fix if broken else ""), broken
 
 
@@ -1164,7 +1164,7 @@ def posting_rule_evidence(home):
 
     Reads `permissions.allow` of the Antigravity CLI settings and never writes it; a rule counts as current only
     when its absolute script path resolves to a `post_review.py` of this install. The fix is the Review posting step
-    of `/setup add roles`, with its preview and yes."""
+    of `/setup roles`, with its preview and yes."""
     status, data = read_json(home / ".gemini/antigravity-cli/settings.json")
     if status == "missing":
         return []
@@ -1183,7 +1183,7 @@ def posting_rule_evidence(home):
     if stale:
         return [item("antigravity posting rule", "warn",
                      f"{stale} post_review.py {'rule points' if stale == 1 else 'rules point'} to no script of this "
-                     f"install; /setup add roles, Review posting, replaces {'it' if stale == 1 else 'them'}")]
+                     f"install; /setup roles, Review posting, replaces {'it' if stale == 1 else 'them'}")]
     count = len(rules)
     return [item("antigravity posting rule", "ok",
                  f"{count} post_review.py {'rule points' if count == 1 else 'rules point'} to this install")]
@@ -1250,7 +1250,7 @@ def collect(payload=False):
     # Posting has its own setup step, so only the delegation template's sections show it ran.
     never = not (HEADINGS - {"Review posting"}) & present
     host_config = item("host config", status if status != "ok" else ("missing" if missing and not never else "ok"),
-                       ("delegation not set up; /setup add delegation sets it up" if never else
+                       ("delegation not set up; /setup delegation sets it up" if never else
                         "required headings present; values not validated" if not missing else
                         "required headings absent: " + ", ".join(missing)) if status == "ok" else
                        "host config absent or unreadable")

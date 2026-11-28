@@ -544,7 +544,7 @@
       ["no task list · Looked for Spec Kit specs/NNN-name, work records, configured checkboxes, docs/specs, docs/spec and specs indexes/status lines, release packages, and exact-project ledger runs."];
     if (p.ledger_join === "none") items.push("No ledger source: no Ledger project override and no runs match the folder name.");
     if (p.ledger_join === "configured-empty") items.push("No ledger source: no runs match the configured Ledger project.");
-    if (p.ledger_join === "unknown") items.push("Ledger source unknown: project settings need setup again (setup add delegation).");
+    if (p.ledger_join === "unknown") items.push("Ledger source unknown: project settings need setup again (setup delegation).");
     if (p.work_records && p.work_records.skipped) items.push("Work records skipped: " + p.work_records.skipped);
     if (p.reason) items.push(p.reason);
     return {title: title, sub: sourceName(p), items: items.concat(p.skipped || []).slice(0, 5)};

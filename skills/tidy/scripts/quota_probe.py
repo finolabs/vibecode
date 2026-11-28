@@ -443,7 +443,7 @@ def program_change(entry):
 def changed_line(agent, change):
     """One fixed line: the agent and at most two sanitized version names, never a path."""
     versions = f" ({change[0]} to {change[1]})" if change[0] else ""
-    return f"{agent}: program changed since setup{versions}; run /setup add quota to re-confirm the new path"
+    return f"{agent}: program changed since setup{versions}; run /setup quota to re-confirm the new path"
 
 
 def checked_executable(agent, entry):

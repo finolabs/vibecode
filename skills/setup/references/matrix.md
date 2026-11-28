@@ -1,4 +1,4 @@
-# Assignment matrix (part of `add delegation`)
+# Assignment matrix (part of `/setup delegation`)
 
 Writes the canonical `## Assignment matrix` section: for each helper, which task levels it takes, which types of work suit it, which model to use and which reviews it owns, plus the judge. Questions follow [interview.md](interview.md): native question tool, neutral Yes and No, none preselected. Only the section is written (advisory: the script enforces the format and the write, not the choices).
 
@@ -10,7 +10,7 @@ Choose the helpers, then the roles, as native multiple-choice questions (AskUser
 - Roles: when no helper is chosen, skip the role questions. Otherwise ask one question per role in a single call (up to 4 questions): code-review, security-review, navigator, advisor (the optional agent asked for opinions and away decisions); then ui-review (the optional helper that runs `ui-review-gate` reviews; with "None", a UI review goes to the code reviewer) in a second call, because a call holds at most four questions. The role list is `roles` in `matrix_setup.py choices`. Each is a single choice with 2 to 4 options: the recommended helper, up to two other chosen helpers and "None"; any other chosen helper only through "Other". Recommend a helper of a family other than the coordinator's, first and marked "(Recommended)", with the reason first: a different family catches what the coder's family misses. With the coordinator's family alone, "None" goes first and nothing is marked. An "Other" answer that does not name a chosen helper counts as "None". Each role goes to one helper.
 A helper the user did not choose gets no matrix line, so it takes no work and no role.
 
-Then, only for the chosen helpers, ask once per helper, in one pass, as free text; a blank answer skips that part (on a re-run a blank keeps the current value). In Quick mode skip these questions: each newly chosen helper gets `levels 1-5` and no types or model, a re-picked one keeps its values, and tell the user they can edit this later with `/setup add delegation`.
+Then, only for the chosen helpers, ask once per helper, in one pass, as free text; a blank answer skips that part (on a re-run a blank keeps the current value). In Quick mode skip these questions: each newly chosen helper gets `levels 1-5` and no types or model, a re-picked one keeps its values, and tell the user they can edit this later with `/setup delegation`.
 1. Levels: "Which task levels can <helper> take? 1 easy to 5 ultra hard; answer like 3-5, blank for all five."
 2. Types of work: "Which types of work suit <helper>? Choose from frontend, design, video, three-d, image-generation, transcription (at most four); blank for none." When several helpers list a type, the earlier one is preferred.
 3. Model: "Which full model id should <helper> use for those types? Blank for its default." A model not allowed on this machine is kept and shown as unverified.

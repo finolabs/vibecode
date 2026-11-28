@@ -325,7 +325,7 @@ def native_notice(cwd):
             modes.add(mode)
     if not deny & set(FLOOR_RULES) and not (modes and modes <= ASKING_MODES):
         lines.append('Warning: Claude Code has no deny rule for the credential floor and no approval mode that asks, so '
-                     'nothing on the host blocks a credential read under this lease. Run /setup add afk to add the '
+                     'nothing on the host blocks a credential read under this lease. Run /setup afk to add the '
                      'native deny rules.')
     return ''.join(line + '\n' for line in lines)
 

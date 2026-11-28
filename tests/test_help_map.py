@@ -23,13 +23,13 @@ class HelpMapTest(unittest.TestCase):
 
     def test_every_setup_feature_is_listed(self):
         features = sorted(p.stem for p in (ROOT / "skills/setup/references/features").glob("*.md"))
-        missing = [f for f in features if f"`/setup add {f}`" not in self.text]
+        missing = [f for f in features if f"`/setup {f}`" not in self.text]
         self.assertEqual(missing, [], "setup features missing from the map")
 
     def test_a_route_answers_which_agent_takes_which_work(self):
         rows = [line for line in self.text.splitlines() if line.startswith("| Which agent takes which work")]
         self.assertEqual(len(rows), 1)
-        for needed in ("route_pick.py", "/setup add roles"):
+        for needed in ("route_pick.py", "/setup roles"):
             self.assertIn(needed, rows[0])
 
     def test_new_skills_are_in_the_skill_table(self):

@@ -43,7 +43,7 @@ The answer of a rung is the decision, not advice: apply it, and do not re-ask, o
 | The small model's table fails `check-table`, or its run fails | go to the advisor without a table | `table`, `unavailable`, `--by host-small` |
 | The lease's Hosts hold no other family, or no other family has a strong model | the host chooses | `advisor`, `unavailable` (no `--by`), then `host` |
 | The advisor is out of quota, unreachable or its run fails | the host chooses | `advisor`, `unavailable`, then `host` |
-| The advisor's run refuses because its program changed since setup recorded it (a Claude Code or Codex update) | the host chooses; tell the user to run `/setup add quota` again | `advisor`, `unavailable`, `--by <agent>`, then `host` |
+| The advisor's run refuses because its program changed since setup recorded it (a Claude Code or Codex update) | the host chooses; tell the user to run `/setup quota` again | `advisor`, `unavailable`, `--by <agent>`, then `host` |
 | The advisor answers `none`, or names something outside the options | the host chooses | `advisor`, `no`, then `host` |
 | You find a fact the deciding rung lacked, and it changes which option fits | one new attempt at that rung with the fact, same decision id; if it does not hold, the host chooses | a further attempt, then `host` |
 | "Where it must stop" applies at either check | park | `park` |

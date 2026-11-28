@@ -27,7 +27,7 @@ Questions below ask through the host's native question tool when the session has
 
 ## The checklist
 
-5. Run `python3 -I <update_check.py> whats-new` and show it. For each `[open]` or `[unknown]` item in the order given, offer its setup step: invoke `setup` with that `/setup add <feature>`, which asks its own consent, preview and neutral yes exactly as it always does. Nothing is set up without the user's own answer there. When the user chooses to skip an item, run `onboard skip <id>`. Items without a setup step are told, not offered.
+5. Run `python3 -I <update_check.py> whats-new` and show it. For each `[open]` or `[unknown]` item in the order given, offer its setup step: invoke `setup` with that `/setup <feature>`, which asks its own consent, preview and neutral yes exactly as it always does. Nothing is set up without the user's own answer there. When the user chooses to skip an item, run `onboard skip <id>`. Items without a setup step are told, not offered.
 6. When the user has gone through that installation's list, run `onboard seen <installed version>` with the same re-resolved helper and run `whats-new` again to verify. This clears the session-start line.
 
 `/update whats-new` runs step 5's command only: it shows the checklist and changes nothing, installs nothing, offers no setup step and never calls `onboard`.

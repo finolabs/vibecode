@@ -27,7 +27,7 @@ Yes: Save shown inert notes at listed local targets; saving sends nothing.
 No: Keep notes unchanged; answer later.
 Undo: Restore prior notes.
 Choices: "Yes, save these notes" / "No, keep current notes".
-6. **Report.** Writes/skips/pending/reasons. **After your first result**: offer instructions (not beginner; before Codex coding), missing-companion reminders, `/setup check`; ask what to build.
+6. **Report.** Writes/skips/pending/reasons. **After your first result**: offer instructions (not beginner; before Codex coding), missing-companion reminders, `/setup doctor`; ask what to build.
 
 ## Project scope
 

@@ -4,7 +4,7 @@ Needs: the agent scan (`scan.md`), asked as its own consent; declining it ends t
 
 Every question follows [interview.md](../interview.md): native question tool, neutral approvals, explicit yes; fallback only as stated there (advisory, agent judgment).
 
-Roles and the judge live only in the assignment matrix ([../matrix.md](../matrix.md), part of `add delegation`); `## Agent roles` is never read or written (owner decision, 13/11/2026).
+Roles and the judge live only in the assignment matrix ([../matrix.md](../matrix.md), part of `/setup delegation`); `## Agent roles` is never read or written (owner decision, 13/11/2026).
 Setup passes `--judge host`, and the roles answers become each helper's `roles`, written only after the matrix's own save question (enforcer: `matrix_setup.py`).
 Start from the lines `matrix_setup.py show` prints, shown before the helper question (none preselected): a re-picked helper keeps its values, an unpicked one loses its line, and a helper new to the matrix gets `levels 1-5` for the user to edit. With old sections and no matrix, run `matrix_setup.py migrate` first, as matrix.md says.
 
@@ -43,7 +43,7 @@ A review run posts its own comment when it can; otherwise it returns the comment
 - Codex: a fine-grained GitHub token limited to this one repository with an expiry, supplied through the credential injection the user approves; the plugin never reads, stores or searches for it. State the residual risk: a token with pull-request write can also approve, dismiss, close and edit the body, and a reviewer reads attacker-controlled text, so the wrapper is the only intended path. If the sandbox already reads the user's `gh` login, that is used instead.
 - Antigravity: allow-rules in its own `~/.gemini/antigravity-cli/settings.json`, written only by `python3 -I <this skill folder>/scripts/agy_rules_setup.py` (owner decision, 28/11/2026: setup sets them up when it sets Antigravity up as a reviewer). No shell, no write command, no wildcard.
   - Offer each item with its own neutral question, "Let Antigravity run `<rule>` without asking?", from the closed list: `posting` (`command(python3 -I <this install's post_review.py>)`, never `gh` itself) and the read-only git prefixes a reviewer needs: `git-show`, `git-diff`, `git-log`, `git-rev-parse`, `git-merge-base`, `git-ls-files`, `git-blame`, `git-grep`.
-  - `posting` also removes `post_review.py` rules that point to no script of this install, the case `/setup check` reports as `antigravity posting rule: warn`. Say that a prefix rule allows any arguments: `git diff --output=<file>` and `git log --output=<file>` can write a file.
+  - `posting` also removes `post_review.py` rules that point to no script of this install, the case `/setup doctor` reports as `antigravity posting rule: warn`. Say that a prefix rule allows any arguments: `git diff --output=<file>` and `git log --output=<file>` can write a file.
   - Run `agy_rules_setup.py preview --rule <name> ...` with the items the user said yes to and show its output (only those rules and a count of the others). Ask "Save these Antigravity allow-rules?"; on a yes run `apply --digest <digest> --yes`, which keeps a backup and refuses a changed file or a preview older than an hour. Record the posting state as `unverified` like every family.
 
 Record `- <family>: unverified` in `## Review posting`; `yes` is written only after the coordinator sees that family's own marker on a pull request from the expected identity, and enabling a setting does not count. Before `yes`, no family's posting is promised.

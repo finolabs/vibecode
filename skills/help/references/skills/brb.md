@@ -10,4 +10,4 @@ Typed by the user only. Older short name (be right back) of `afk`, kept as an al
 
 ## Tips
 
-- Everything on the [afk page](afk.md) applies, including the `/setup add afk` prerequisite.
+- Everything on the [afk page](afk.md) applies, including the `/setup afk` prerequisite.
