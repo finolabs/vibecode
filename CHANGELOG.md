@@ -4,8 +4,13 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Changed
+
+- The compaction nudge on Claude Code measures its 80% and 90% bands against the user's own auto-compact threshold for the session's model, else the model's context window (owner decision 28/11/2026; eighth scoped exception in `CLAUDE.md`, `PRIVACY.md`, [spec](docs/specs/compaction-nudge.md) section "Base"). The window comes from the session's own context snapshot or a `[1m]` model id; with neither it prints nothing. The line now names its base and size, such as "80% of the 700K auto-compact threshold" or "80% of the 1M context window", on Codex too, where the base itself is unchanged.
+
 ### Fixed
 
+- A per-model `"auto"` auto-compact window (what `/autocompact auto` saves) no longer falls back to the top-level `autoCompactWindow`: with `autoCompactWindow: 700000` and Opus set to `auto`, the nudge fired at about 575K of a 1M window. It now means no user threshold for that model, and a settings key without `[1m]` also matches a `[1m]` model id.
 - The recorded same-family security fallback no longer asks for quota evidence about a family that never reviews: `merge_check.py --independent --fallback-family` counts only the present families `review_route.py` could pick (`review_config.review_families`: with a usable `## Assignment matrix`, only the families it lists). Before, a present Antigravity with no matrix line blocked the fallback with `no evidence that antigravity, codex is out` while Codex was out of quota.
 - `/setup check` and the session-start `Roles:` line print a retired `Judge: jev` as `judge host (jev retired)`, as `judge.py` reads it, instead of `judge jev`.
 
