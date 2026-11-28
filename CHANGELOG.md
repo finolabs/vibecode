@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- `brief-review` skill ([spec](docs/specs/brief-review.md), owner decisions 28/11/2026): reads a business brief, PRD, requirement or spec, or a vibebiz idea folder, from the tech side; explains it, lists gaps, assesses risk and feasibility, sizes it as an S/M/L estimate, recommends cuts and an order, offers to save `tech-review.md` beside the brief in the brief's language, and proposes going back to the business side (`vibebiz:continue`) or building (`coding-router`) without starting either. On a brief with AI, personal data or money, or sized L or larger, it runs `advisor` without asking, and the advisor reads the whole folder (`PRIVACY.md` "Where your data goes"). The plugin now has 26 skills.
+
 ### Fixed
 
 - The session-start rule and `delegate` "Keep or hand off" no longer let a task session skip routing: the "complete brief" exception now covers only a headless run that `delegate` launched. A session a coordinator opened for a task still invokes `coding-router` first and, under Delegation mode `auto`, applies "Keep or hand off" before writing code, with a one-line reason per kept task. Before, child sessions quoted the exception and did the work themselves.
