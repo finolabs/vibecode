@@ -562,6 +562,7 @@ class MatrixSetupTest(unittest.TestCase):
         self.assertEqual(result['inventory'], 'current')
         self.assertNotIn('advice', result)
         self.assertEqual(result['coordinator'], 'codex')
+        self.assertEqual(result['roles'], ['code-review', 'security-review', 'navigator', 'advisor', 'ui-review'])
         self.assertEqual(result['helpers'], [
             {'name': 'claude', 'family': 'claude', 'present': True, 'coordinator': False},
             {'name': 'codex', 'family': 'codex', 'present': False, 'coordinator': True},

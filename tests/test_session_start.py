@@ -420,6 +420,14 @@ class StateBlockTest(SyntheticStateTest):
         self.state()
         self.assertEqual((self.root / "host.md").read_bytes(), original)
 
+    def test_a_ui_review_role_prints_only_when_assigned(self):
+        base = ("## Agents on this machine\n| Claude Code | yes | x | x | x |\n| Codex | yes | x | x | x |\n"
+                "## Assignment matrix\n- Consent: yes (2026-11-09)\n- Judge: host\n- codex: levels 1-5; roles code-review\n")
+        self.write("host.md", base)
+        self.assertNotIn("ui review", self.state())
+        self.write("host.md", base + "- claude: levels 1-5; roles ui-review\n")
+        self.assertIn("navigator unassigned; judge host; ui review claude; posting", self.state())
+
     def test_assignment_matrix_states(self):
         legacy = ("## Agents on this machine\n| Claude Code | yes | x | x | x |\n| Codex | yes | x | x | x |\n"
                   "## Agent roles\n- code review: codex\n- security review: claude\n- judge: jev\n")
