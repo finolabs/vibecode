@@ -784,7 +784,7 @@ def summary_rows(keys=SUMMARY_KEYS, since=None, project=None):
         # Records closed late as cancelled say nothing about the run: they stay out of the rates and medians.
         # Deferred runs never started (a desktop `blocked`): no failure, quality or quota data (owner, 28/11/2026).
         pairs = [(s, f) for s, f in every if not closed_late(f) and f["outcome"] != "deferred"]
-        late = len(every) - len(pairs)
+        late = sum(closed_late(f) for _, f in every)
         n = len(pairs)
         if not n:
             continue

@@ -858,6 +858,23 @@ class RefreshTest(unittest.TestCase):
         self.assertEqual(self.data()["kpi"]["spark"]["first_pass"], before)
         self.assertEqual(self.data()["delegation"][0]["runs"], 2)
 
+    def test_deferred_runs_leave_the_weekly_first_pass_unchanged(self):
+        """A desktop `blocked` run never started: no quality data on the dashboard either (owner, 28/11/2026)."""
+        self.consent()
+        self.fixture_ledger()
+        self.refresh("run")
+        before = self.data()["kpi"]["spark"]["first_pass"]
+        start = ["start", "--project", "demo", "--task", "t", "--kind", "implement", "--grade", "medium",
+                 "--agent", "codex", "--model", "m1", "--budget", "40"]
+        for _ in range(2):
+            deferred = subprocess.run([sys.executable, "-I", str(LEDGER), *start], capture_output=True, text=True,
+                                      env=self.env).stdout.strip()
+            subprocess.run([sys.executable, "-I", str(LEDGER), "finish", deferred, "--outcome", "deferred"],
+                           check=True, env=self.env)
+        self.refresh("run")
+        self.assertEqual(self.data()["kpi"]["spark"]["first_pass"], before)
+        self.assertEqual(self.data()["delegation"][0]["runs"], 2)
+
     def judge_ledger(self, rows):
         lines = []
         for i, (route_by, outcome, rework) in enumerate(rows):

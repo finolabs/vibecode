@@ -453,6 +453,7 @@ class LedgerTest(unittest.TestCase):
         self.run_ledger("finish", ids[2], "--outcome", "deferred")
         [row] = json.loads(self.run_ledger("summary", "--json").stdout)
         self.assertEqual((row["n"], row["accepted"], row["quota"], row["error"]), (1, 1, 0, 0))
+        self.assertEqual((row["closed_late"], row["cancelled"]), (0, 0))  # a deferred run is not one closed late
         self.assertNotIn(ids[1], self.run_ledger("open").stdout)
 
     def test_only_deferred_runs_leave_no_summary_row(self):
