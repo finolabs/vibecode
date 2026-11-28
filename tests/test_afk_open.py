@@ -213,6 +213,34 @@ class FloorCorpusTest(OpenBase):
         (self.repo / diagram).write_text('token ' + key + '\n')
         self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file', diagram], tier=3, code='floor')
 
+    def test_an_equals_joined_repository_path_is_exempt_too(self):
+        # Review of 6e4fc744 (PR 400, C1): `--body-file=<path>` names the same file as `--body-file <path>`.
+        diagram = 'docs/diagrams/task-lifecycle-light.html'
+        (self.repo / 'docs/diagrams').mkdir(parents=True)
+        (self.repo / diagram).write_text('<svg/>\n')
+        self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file', diagram])
+        self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file=' + diagram])
+        key = 'sk-or-v1-' + '0123456789abcdef' * 4
+        self.check(['gh', 'pr', 'create', '--title', 'x', '--body=' + key], tier=3, code='floor')
+        self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file=docs/' + key], tier=3, code='floor')
+
+    def test_a_repository_link_keeps_the_floor_of_its_target(self):
+        # Review of 6e4fc744 (PR 400, S1): a prefix-bearing alias of a credential file is still that file.
+        (self.repo / '.env').write_text('TOKEN=dummy\n')
+        (self.repo / '.ssh').mkdir()
+        (self.repo / '.ssh/config').write_text('Host x\n')
+        (self.repo / 'docs/diagrams').mkdir(parents=True)
+        (self.repo / 'docs/diagrams/task-lifecycle-light.html').symlink_to('../../.env')
+        (self.repo / 'docs/task-lifecycle-folder').symlink_to('../.ssh')
+        for path in ('docs/diagrams/task-lifecycle-light.html', 'docs/task-lifecycle-folder/config'):
+            with self.subTest(path=path):
+                self.check(paths=[path], tier=3, code='floor')
+                self.check(['cat', path], tier=3, code='floor')
+        (self.repo / 'docs/diagrams/task-lifecycle-dark.html').write_text('<svg/>\n')
+        (self.repo / 'docs/task-lifecycle-alias.html').symlink_to('diagrams/task-lifecycle-dark.html')
+        self.check(paths=['docs/task-lifecycle-alias.html'])
+        self.check(['cat', 'docs/task-lifecycle-alias.html'])
+
     def test_a_path_that_leaves_the_repository_keeps_the_key_pattern(self):
         outside = self.home / 'outside'
         (outside / 'diagrams').mkdir(parents=True)

@@ -904,26 +904,39 @@ def inline_codes(program, words):
 
 
 def repository_path(token, cwd=None):
-    """True when the token names an existing file or folder inside the repository holding `cwd`, with no symlink
-    leaving it. Such a name is the repository's own, so a key prefix inside it (`task-lifecycle`) is not a key."""
+    """(target, root) when the token, or the value of a `--option=value` token, names an existing file or folder
+    inside the repository holding `cwd` with no symlink leaving it: `target` is its resolved path relative to `root`.
+    Such a name is the repository's own, so a key prefix inside it (`task-lifecycle`) is not a key; None otherwise."""
     value = strip_token(token)
+    option = re.fullmatch(r'-{1,2}[A-Za-z][A-Za-z0-9-]*=(.+)', value)
+    value = option[1] if option else value
     if not value or value.startswith('~') or '\0' in value:
-        return False
+        return None
     try:
         found, ident = store.identity(str(cwd or os.getcwd()))
         if found != 'found':
-            return False
+            return None
         root = os.path.realpath(ident.checkout)
         real = os.path.realpath(os.path.join(cwd or os.getcwd(), value))
-        return (real == root or real.startswith(root + os.sep)) and os.path.exists(real)
+        if real != root and not real.startswith(root + os.sep) or not os.path.exists(real):
+            return None
+        return os.path.relpath(real, root), root
     except (OSError, ValueError):
-        return False
+        return None
 
 
 def floor_path(token, cwd=None):
     """True when one path or argv token names a secret, key or credential file, folder or helper (B, obligation 4)."""
-    if secret_patterns.PREFIX.search(token) and not repository_path(token, cwd):
-        return True
+    if secret_patterns.PREFIX.search(token):
+        found = repository_path(token, cwd)
+        # The repository's own path is not a key by its name, but it is still the file or folder it resolves to.
+        if found is None or floor_name(found[0], found[1]):
+            return True
+    return floor_name(token, cwd)
+
+
+def floor_name(token, cwd=None):
+    """True when a token names a credential file, folder or helper by its name or a sensitive variable (B)."""
     raw = token
     for match in DOLLAR_NAME.finditer(raw):
         if match[1] == '!' or sensitive_name(match[2]):
