@@ -54,23 +54,28 @@ The plugin runs no Codex program for this: the CLI command needs no new scoped e
 ## Tasks
 
 ### US1 Ephemeral runs
-- [ ] T1 Command shapes with `--ephemeral` and `--no-session-persistence` in `agents/codex.md`, `agents/claude-code.md`, `host-template.md` and the review references
-- [ ] T2 Rework after an ephemeral run in `loop.md` and `budget-and-liveness.md`
+- [x] T1 Command shapes with `--ephemeral` and `--no-session-persistence` in `agents/codex.md`, `agents/claude-code.md`, `host-template.md` and the review references
+- [x] T2 Rework after an ephemeral run in `loop.md` and `budget-and-liveness.md`
 
 ### US2 Desktop sessions
-- [ ] T3 `tidy` archiving text and [`titles.md`](../../skills/tidy/references/titles.md); `delegate` session-per-task notes
+- [x] T3 `tidy` archiving text and [`titles.md`](../../skills/tidy/references/titles.md); `delegate` session-per-task notes
 
 ### US3 Codex threads
-- [ ] T4 Red tests for `codex_thread` and `codex-threads`
-- [ ] T5 `ledger.py` field and subcommand
-- [ ] T6 `ledger.md`, `PRIVACY.md`
+- [x] T4 Red tests for `codex_thread` and `codex-threads`
+- [x] T5 `ledger.py` field and subcommand
+- [x] T6 `ledger.md`, `PRIVACY.md`
 
 ### US4 Antigravity
-- [ ] T7 Boundary in `agents/antigravity.md`
+- [x] T7 Boundary in `agents/antigravity.md`
 
 ### Docs
-- [ ] T8 Help pages, README, CHANGELOG
+- [x] T8 Help pages, README, CHANGELOG
 
 ## Evidence
 
-Pending.
+- Red (2026-11-28): `tests.test_ledger_codex_threads` against the `origin/main` ledger: 10 tests, 9 errors (`codex-threads` not a subcommand; no `codex_thread` key); the one no-digest case passed as expected. Green on this branch: 10 tests OK.
+- Targeted modules from `scripts/select_tests.py --base origin/main`, two per command through `heavy_run.py`: 19 pairs pass (one pair rerun after a memory-pressure wait, one after a fix to this spec's links).
+- `python3 scripts/check-references.py .`: references ok; `claude plugin validate .`: passed with warnings.
+- No test covers the reference text in `accept.md`, `agents/antigravity.md`, `agents/codex.md`, `coordinator-sessions.md` and the help pages for `delegate` and `tidy` (`select_tests.py`: no test names).
+- Not verified live: a real `codex archive` of a delegated run, and `set_monitor` auto-archive in a started session.
+- Pull request and reviews: pending.
