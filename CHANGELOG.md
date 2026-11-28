@@ -4,6 +4,17 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- Antigravity is back as a delegate worker, code reviewer and security reviewer through the opt-in desktop transport of `agybird` 0.4.8 or later ([spec](docs/specs/antigravity-desktop.md), owner decisions 28/11/2026): the signed-in Antigravity app on macOS does the work, with the model the app has set (recorded as `--model app`); `agy -p` is a fallback only when the app cannot be used, never after a task's own failure. Briefs carry the limits the heavy-job gate cannot enforce inside the app (no push, heavy tests only through `heavy_run.py`, edits only in the given worktree). A reviewer in the app posts its own marker with `post_review.py` under the `Turbo` or `Auto` preset after a pilot on one real pull request; until then the coordinator relays. Re-adding Antigravity to your helpers is `/setup add roles` or `/setup add delegation`, with a preview and your yes; nothing on your machine changes by itself.
+- `ledger.py finish --outcome deferred` for a run that never started (a desktop `blocked` envelope: you were typing, the screen was locked, another run held the app). `ledger.py summary` leaves deferred runs out of every row, so they count as no failure, quality data or quota.
+- `parallel_slots.py` gives Antigravity one machine-wide slot (agybird 0.4.8 holds one desktop lock per machine): `check --family antigravity` also counts other projects' open Antigravity runs, and `status` reports `families.antigravity.machine`.
+
+### Changed
+
+- `review_route.py` prints `desktop` as Antigravity's review form, so the coordinator starts it through the `agybird` desktop transport instead of `agy -p`.
+- The `agybird` companion pin moves to v0.4.8.
+
 ### Fixed
 
 - The recorded same-family security fallback no longer asks for quota evidence about a family that never reviews: `merge_check.py --independent --fallback-family` counts only the present families `review_route.py` could pick (`review_config.review_families`: with a usable `## Assignment matrix`, only the families it lists). Before, a present Antigravity with no matrix line blocked the fallback with `no evidence that antigravity, codex is out` while Codex was out of quota.

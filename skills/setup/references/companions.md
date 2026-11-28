@@ -6,7 +6,7 @@ Optional data for the `companions` feature; questions are advisory (agent judgme
 
 | Skill | Official source / license | Release/tag | Install command (print only) | Checked |
 | --- | --- | --- | --- | --- |
-| `agybird` | [finolabs/agybird](https://github.com/finolabs/agybird/tree/v0.4.0), MIT | v0.4.0 | `DISABLE_TELEMETRY=1 npx skills@1.5.20 add https://github.com/finolabs/agybird/tree/v0.4.0 --skill agybird` | 2026-11-07 |
+| `agybird` | [finolabs/agybird](https://github.com/finolabs/agybird/tree/v0.4.8), MIT | v0.4.8 | `DISABLE_TELEMETRY=1 npx skills@1.5.20 add https://github.com/finolabs/agybird/tree/v0.4.8 --skill agybird` | 2026-11-28 |
 | `vietnamizer` | [finolabs/vietnamizer](https://github.com/finolabs/vietnamizer/tree/v0.13.3), MIT | v0.13.3 | `DISABLE_TELEMETRY=1 npx skills@1.5.20 add https://github.com/finolabs/vietnamizer/tree/v0.13.3 --skill vietnamizer` | 2026-11-07 |
 | `typesafe-ai` | [typesafe-ai/skills](https://github.com/typesafe-ai/skills/tree/v0.6.2), MIT | v0.6.2 | `DISABLE_TELEMETRY=1 npx skills@1.5.20 add https://github.com/typesafe-ai/skills/tree/v0.6.2 --skill typesafe-ai` | 2026-11-07 |
 | `diagram-design` | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design), MIT | none (no release/tag) | `DISABLE_TELEMETRY=1 npx skills@1.5.20 add https://github.com/cathrynlavery/diagram-design --skill diagram-design` | 2026-11-07 |
@@ -19,7 +19,7 @@ These are preferences for choosing offers: no file changes, consent or installat
 
 | Skill | Question text | Quick selection condition | Data note and fallback |
 | --- | --- | --- | --- |
-| `agybird` | What tasks would you ask Antigravity to do from Claude Code or Codex? | delegating work to Antigravity | Task/context goes to Google's CLI with the user's account/subscription; quota applies, no agybird telemetry. Never install in Antigravity. Fallback: plugin delegation or a manual handoff; separate test-command grants stay in `delegation`. |
+| `agybird` | What tasks would you ask Antigravity to do from Claude Code or Codex? | delegating work or reviews to Antigravity | Task/context goes to Google through the Antigravity desktop app (macOS, Accessibility granted; its desktop transport comes first since 28/11/2026) or Google's CLI, with the user's account/subscription; quota applies, no agybird telemetry. The desktop transport is 0.4.8 or later and is chosen in agybird's own setup (`--transport desktop`). Never install in Antigravity. Fallback: plugin delegation or a manual handoff; separate test-command grants stay in `delegation`. |
 | `vietnamizer` | What Vietnamese documents or posts do your readers need? | writing Vietnamese for readers | Edits reader-facing Vietnamese in the host's model/context; host data policy and token costs apply, not agent text/logs/code. Fallback: host edits manually and checks meaning/voice. |
 | `typesafe-ai` | Which small decisions would you like TypeSafe’s examples to help you check in your own projects? | Advanced only; never selected by Quick | Optional cookbooks under the user's own instructions, outside the plugin: `judge.py` makes no call and the judge is the small host model. Fallback: the plugin's host judge; no skill needed. |
 | `diagram-design` | Which software parts or steps would you like to see in a diagram? | drawing architecture or flow diagrams | Produces HTML/SVG/PNG in the host; Google Fonts requests and optional browser/export dependencies may access the network; no author telemetry declared. Fallback: host draws Mermaid or plain diagrams. |

@@ -11,7 +11,8 @@ Loaded by the agent when work is split across agents; you can also type it.
 ## Tips
 
 - `/setup mode` shows or changes Delegation mode; `/setup scan` refreshes which agents and models are present.
-- Parallel runs go up to the limit you set per repository (3 by default).
+- Parallel runs go up to the limit you set per repository (3 by default); Antigravity runs one at a time on this machine with `agybird` 0.4.8.
+- Antigravity works through the `agybird` desktop transport first (the signed-in app on macOS, with the model the app has set); `agy -p` is only the fallback when the app cannot be used. A desktop run that comes back `blocked` (you are typing, the screen is locked, another run holds the app) has not run: it is recorded as `deferred` and retried later, and never counts against Antigravity.
 - Accepting a run needs a passing check receipt for its current head (`checks`).
 - For the brief of a single task, use `handoff`.
 - Heavy jobs run one at a time through `heavy_run.py`, which waits while the one-minute load is at or above 25 by default; on Claude Code the opt-in heavy-job gate refuses a listed heavy command run without it (`FNL_HEAVY_GATE=off` for one session).

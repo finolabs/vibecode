@@ -14,6 +14,8 @@ Claude Code, Codex and Antigravity each ship ways to run more than one agent and
 | What gates a merge | Nothing merge-specific: permission rules, tool lists, hooks and sandboxes bound what an agent may run, not what reaches the default branch. | Independent code and security reviews by another model family, `merge_check.py` at the reviewed head, and your yes. Under an afk lease, afk's check enforces neither reviews nor `merge_check.py`, and the default-branch guard covers `git commit` and `git push` only: only server-side branch protection or a required `merge_check.py --ci-context` status gates a merge. |
 | How work is shaped | Whatever the prompt asks. | `coding-router` picks depth and gates before the first edit; `checks` decides what proof is enough; `tidy` keeps sessions named and handovers saved. |
 
+Antigravity takes delegated work and reviews through the `agybird` desktop transport first (28/11/2026): the signed-in desktop app does the work, one run at a time per machine, and the plugin keeps its ledger, brief limits and review markers around it; `agy -p` is a fallback only when the app cannot be used.
+
 They work together: an agent following `delegate` may still use its host's subagents inside its own task. The plugin decides what reaches `main`; the host decides how one task's work is split.
 
 ## afk versus loops, goals and scheduled runs
