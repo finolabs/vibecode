@@ -445,6 +445,20 @@ class LedgerTest(unittest.TestCase):
         self.assertEqual((row["agent"], row["kind"], row["n"], row["quota"], row["error"]), ("codex", "implement", 3, 1, 1))
         self.assertAlmostEqual(row["first_pass"], 1 / 3)
 
+    def test_deferred_runs_never_ran_and_stay_out_of_the_summary(self):
+        """A desktop `blocked` envelope is not run yet: no quality, failure or quota data (owner, 28/11/2026)."""
+        ids = [self.run_ledger(*START).stdout.strip() for _ in range(3)]
+        self.run_ledger("finish", ids[0], "--outcome", "accepted", "--accept-unverified", "--reason", "Synthetic fixture")
+        self.run_ledger("finish", ids[1], "--outcome", "deferred")
+        self.run_ledger("finish", ids[2], "--outcome", "deferred")
+        [row] = json.loads(self.run_ledger("summary", "--json").stdout)
+        self.assertEqual((row["n"], row["accepted"], row["quota"], row["error"]), (1, 1, 0, 0))
+        self.assertNotIn(ids[1], self.run_ledger("open").stdout)
+
+    def test_only_deferred_runs_leave_no_summary_row(self):
+        self.run_ledger("finish", self.run_ledger(*START).stdout.strip(), "--outcome", "deferred")
+        self.assertEqual(json.loads(self.run_ledger("summary", "--json").stdout), [])
+
     def test_summary_without_finished_runs_says_so(self):
         self.run_ledger(*START)
         self.assertIn("no finished dispatches", self.run_ledger("summary").stdout)

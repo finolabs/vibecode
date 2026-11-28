@@ -37,6 +37,8 @@ REASONS = ["routing", "fallback-quota", "fallback-failure", "user-choice"]
 OUTCOMES = [
     "accepted", "rejected", "timeout", "stalled", "error",
     "blocked", "needs-permission", "quota", "cancelled",
+    # Not run yet: an agybird desktop `blocked` envelope sent nothing (docs/specs/antigravity-desktop.md).
+    "deferred",
 ]
 TESTS = ["passed", "failed", "not-run"]
 # Same closed lists as the assignment matrix (assignments.py); local ledger only.
@@ -780,7 +782,8 @@ def summary_rows(keys=SUMMARY_KEYS, since=None, project=None):
     rows = []
     for key, every in sorted(groups.items()):
         # Records closed late as cancelled say nothing about the run: they stay out of the rates and medians.
-        pairs = [(s, f) for s, f in every if not closed_late(f)]
+        # Deferred runs never started (a desktop `blocked`): no failure, quality or quota data (owner, 28/11/2026).
+        pairs = [(s, f) for s, f in every if not closed_late(f) and f["outcome"] != "deferred"]
         late = len(every) - len(pairs)
         n = len(pairs)
         if not n:

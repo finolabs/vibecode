@@ -149,6 +149,22 @@ class ParallelSlotsTest(unittest.TestCase):
         self.host(32, None)
         self.assertEqual(slots.status()['limit'], 32)
 
+    def test_antigravity_has_one_machine_wide_slot_across_projects(self):
+        """agybird 0.4.8 holds one desktop lock per machine (owner decision 4, 28/11/2026)."""
+        self.host(6, None)
+        self.assertEqual(slots.ANTIGRAVITY_MACHINE_SLOTS, 1)
+        self.assertEqual(self.command('check', '--family', 'antigravity'), (0, 'Parallel slots: available\n'))
+        self.assertEqual(self.command('check', '--family', 'antigravity', '--count', '2'), (3, 'Parallel slots: full\n'))
+        rows = [dict(event='start', id='a', agent='antigravity', project='another-repository')]
+        self.write('ledger.jsonl', ''.join(json.dumps(r) + '\n' for r in rows))
+        state = slots.status()
+        self.assertEqual(state['families']['antigravity']['open'], 0)
+        self.assertEqual(state['families']['antigravity']['machine'], dict(open=1, cap=1, free=0))
+        self.assertEqual(self.command('check', '--family', 'antigravity'), (3, 'Parallel slots: full\n'))
+        self.assertEqual(self.command('check', '--family', 'codex'), (0, 'Parallel slots: available\n'))
+        self.write('ledger.jsonl', ''.join(json.dumps(r) + '\n' for r in rows + [dict(event='finish', id='a')]))
+        self.assertEqual(self.command('check', '--family', 'antigravity'), (0, 'Parallel slots: available\n'))
+
     def test_missing_and_invalid_totals_default_with_source(self):
         self.assertEqual(slots.status()['limit'], 3)
         for text in ('', '# Host\n', '## Other\n- Parallel dispatches: at most 8 at one time.\n',

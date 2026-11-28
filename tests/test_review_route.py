@@ -181,7 +181,8 @@ class RouteTest(unittest.TestCase):
 
     def test_assigned_family(self):
         rows = self.pick(host() + matrix(code="antigravity", security="codex"))
-        self.assertEqual(rows, [("antigravity", "headless", "assigned"), ("codex", "headless", "assigned")])
+        # Antigravity reviews through agybird's desktop transport (owner decision 2, 28/11/2026).
+        self.assertEqual(rows, [("antigravity", "desktop", "assigned"), ("codex", "headless", "assigned")])
 
     def test_same_family_fresh_context_disclosure(self):
         rows = self.pick(host(("claude",)))

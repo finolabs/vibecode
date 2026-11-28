@@ -22,6 +22,10 @@ AGENTS = {'claude': 'claude', 'claude-session': 'claude', 'subagent': 'claude',
 HOST_LIMIT = 262144
 LEDGER_LIMIT = 4 * 1024 * 1024
 DEFAULT_LIMIT = 3
+# agybird 0.4.8 holds one desktop lock per machine, so Antigravity has one slot across every project
+# (docs/specs/antigravity-desktop.md, owner decision 4, 28/11/2026). Raise it in a release that follows
+# finolabs/agybird#59 and names the agybird version it follows.
+ANTIGRAVITY_MACHINE_SLOTS = 1
 
 
 INSTRUCTION_FILES = ('CLAUDE.MD', 'CLAUDE.LOCAL.MD', 'AGENTS.MD', 'AGENTS.OVERRIDE.MD', 'GEMINI.MD',
@@ -236,17 +240,22 @@ def status(repo=None):
     stale, other = {}, {}
     counts = open_counts(raw, stale=stale, scope=settings['scope'] or {'project': None}, other=other)
     opened = sum(counts.values())
-    return dict(limit=settings['limit'], open=opened, stale=sum(stale.values()),
-                free=max(0, settings['limit'] - opened),
-                families={family: dict(open=counts[family], cap=settings['caps'][family],
+    families = {family: dict(open=counts[family], cap=settings['caps'][family],
                     free=None if settings['caps'][family] is None else max(0, settings['caps'][family] - counts[family]))
-                    for family in FAMILIES}, source=settings['source'],
+                for family in FAMILIES}
+    machine = open_counts(raw)['antigravity']  # every project's open Antigravity runs, stale ones left out
+    families['antigravity']['machine'] = dict(open=machine, cap=ANTIGRAVITY_MACHINE_SLOTS,
+                                              free=max(0, ANTIGRAVITY_MACHINE_SLOTS - machine))
+    return dict(limit=settings['limit'], open=opened, stale=sum(stale.values()),
+                free=max(0, settings['limit'] - opened), families=families, source=settings['source'],
                 scope=settings['scope'], other_projects=other.get('open', 0))
 
 
 def fits(state, family, count=1):
     available = state['families'][family]['free']
-    return count <= state['free'] and (available is None or count <= available)
+    machine = state['families'][family].get('machine')
+    return (count <= state['free'] and (available is None or count <= available)
+            and (machine is None or count <= machine['free']))
 
 
 def summary(repo=None, families=FAMILIES):

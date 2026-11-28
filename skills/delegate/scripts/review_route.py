@@ -30,9 +30,10 @@ import quota_probe
 import review_config as config
 import git_metadata as metadata
 
-# ZCode reviews headless in `plan` mode (owner decision, 17/11/2026); a family missing here never reviews or authors.
+# ZCode reviews headless in `plan` mode (owner decision, 17/11/2026); Antigravity through the agybird desktop
+# transport (owner decision, 28/11/2026); a family missing here never reviews or authors.
 # A ZCode-authored range does not route yet: `author_family` accepts no ZCode trailer, so it fails closed.
-FORMS = {"claude": "agent", "codex": "headless", "antigravity": "headless", "zcode": "headless"}
+FORMS = {"claude": "agent", "codex": "headless", "antigravity": "desktop", "zcode": "headless"}
 ORDER = tuple(f for f in config.FAMILIES if f in FORMS)
 OID = re.compile(r"[0-9a-f]{40}")
 MAX_OBJECT = 16 * 1024 * 1024

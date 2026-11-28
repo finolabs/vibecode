@@ -77,7 +77,7 @@ class NotesSchemaTest(unittest.TestCase):
 
     def test_shipped_notes_backfill_020_to_023_with_setup_steps_and_checks(self):
         parsed = u.parse_notes(json.loads(NOTES.read_text()))
-        self.assertEqual([entry['version'] for entry in parsed], ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4'])
+        self.assertEqual([entry['version'] for entry in parsed], ['0.2.0', '0.2.1', '0.2.2', '0.2.3', '0.2.4', '0.2.5', '0.2.6', '0.3.0', '0.3.1', '0.3.2', '0.3.3', '0.3.4', '0.3.5'])
         items = {item['id']: item for entry in parsed for item in entry['items']}
         state = 'skills/setup/scripts/upgrade_state.py'
         expected = {
