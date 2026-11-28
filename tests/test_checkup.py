@@ -605,11 +605,11 @@ class CheckupTest(unittest.TestCase):
                          "judge is host; /setup add delegation (migrate) converts it"})
         self.write(config, legacy + matrix)
         self.assertEqual(self.setup_item("host config"), {"check": "host config", "status": "ok", "reason": present +
-                         "matrix valid; 2 agents; judge jev; roles assigned: code-review, navigator"})
+                         "matrix valid; 2 agents; judge host (jev retired); roles assigned: code-review, navigator"})
         # Retired 15/11/2026 (0.3.1): a legacy levels section sets no levels; beside a matrix the legacy row names it.
         self.write(config, legacy + "## Agent levels\n" + matrix)
         self.assertEqual(self.setup_item("host config")["reason"],
-                         present + "matrix valid; 2 agents; judge jev; roles assigned: code-review, navigator")
+                         present + "matrix valid; 2 agents; judge host (jev retired); roles assigned: code-review, navigator")
         self.write(config, legacy + "## Agent levels\n- Consent: yes (2026-10-01)\n- codex: levels 1-4\n")
         self.assertEqual(self.setup_item("host config"), {"check": "host config", "status": "missing", "reason": present +
                          "levels: missing; matrix absent and Agent levels no longer read, so levels are unset and the "

@@ -414,7 +414,7 @@ class StateBlockTest(SyntheticStateTest):
                    "- codex: levels 1-5; roles code-review\n- claude: levels 1-5; roles security-review, navigator\n"
                    "## Review posting\n- codex: yes (checked 2026-01-01)\n"
                    "- claude: no (checked 2026-01-01)\n")
-        self.assertIn("Roles: code review codex; security review claude; navigator claude; judge jev; "
+        self.assertIn("Roles: code review codex; security review claude; navigator claude; judge host (jev retired); "
                       "posting claude no, codex yes\n", self.state())
         original = (self.root / "host.md").read_bytes()
         self.state()

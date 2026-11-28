@@ -1096,6 +1096,24 @@ class RecordedSecurityFallbackTest(unittest.TestCase):
                 self.assertFalse(ok)
                 self.assertIn("BLOCK same-family review: no live away lease", lines)
 
+    def test_a_family_without_a_matrix_line_never_counts(self):
+        # Routing never picks a present family with no line in a usable matrix, so the fallback needs no evidence
+        # that it is out (`review_config.review_families`); a listed family with no review role still needs it.
+        import review_config
+        matrix = ("## Assignment matrix\n\n- Consent: yes (2026-11-19)\n- Judge: host\n"
+                  "- codex: levels 1-5; roles code-review, security-review\n- claudework: levels 1-5\n")
+        self.outside(self.RECORDED + matrix)
+        self.out = [self.quota[0]]  # only codex is out; antigravity has no evidence
+        with patch.object(review_config, "present_families", return_value={"claude", "codex", "antigravity"}):
+            ok, lines = self.evaluate()
+            self.assertTrue(ok, lines)
+            self.assertIn("ok    same-family review: outside a lease, by the recorded same-family security "
+                          "fallback: no other family reachable (codex)", lines)
+            self.outside(self.RECORDED + matrix + "- antigravity: levels 1-2\n")
+            ok, lines = self.evaluate()
+        self.assertFalse(ok)
+        self.assertIn("BLOCK same-family review: no evidence that antigravity is out", lines)
+
     def test_every_other_condition_still_applies(self):
         self.outside()
         self.out = [self.quota[0]]  # antigravity has no evidence of being out

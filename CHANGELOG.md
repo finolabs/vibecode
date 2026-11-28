@@ -6,7 +6,9 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ### Fixed
 
-- afk's credential floor, the log scan and brief lint no longer read an `sk` key prefix inside a word as a key: in `secret_patterns.py` (every copy) an `sk-`, `sk-ant-`, `sk_live_` or `sk_test_` glued to a letter is skipped only when what follows reads as a word or path (lowercase letters, digits and at least one `-`, `.`, `_` or `/`), so `docs/diagrams/task-lifecycle-light.html`, `risk-...` and `mask_live_...` pass. The key body decides, not what precedes it: a body with an uppercase letter, `+`, `=` or no separator still matches after any letter or encoding (`%3D`, `%253D`, `\u000A`, `\U0000000A`), and so does any prefix at the start, after a non-letter or after an escape such as `\n`. The other prefixes keep matching wherever they appear, and scanning stays linear.
+- afk's credential floor no longer refuses a path to an existing file or folder of the repository because its name holds a key prefix: `floor_path` skips the `secret_patterns.py` prefix test for such a path (resolved from the working folder, with no symlink leaving the repository), so `docs/diagrams/task-lifecycle-light.html` (`sk-` inside `task-`) passes. Every other floor check still applies, a key in a file's content is still refused, and a path that does not exist or leaves the repository keeps the prefix test. The shared detector is unchanged, so log redaction and brief lint still read every glued prefix as a key.
+- The recorded same-family security fallback no longer asks for quota evidence about a family that never reviews: `merge_check.py --independent --fallback-family` counts only the present families `review_route.py` could pick (`review_config.review_families`: with a usable `## Assignment matrix`, only the families it lists). Before, a present Antigravity with no matrix line blocked the fallback with `no evidence that antigravity, codex is out` while Codex was out of quota.
+- `/setup check` and the session-start `Roles:` line print a retired `Judge: jev` as `judge host (jev retired)`, as `judge.py` reads it, instead of `judge jev`.
 
 ## [0.3.4] - 2026-11-27
 
