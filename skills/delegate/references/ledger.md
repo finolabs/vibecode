@@ -13,6 +13,7 @@ python3 -I "$L" stale                    # preview this repository's open record
 python3 -I "$L" stale --close --digest <first 12+ hex digits>
 python3 -I "$L" summary --since 2026-11-01
 python3 -I "$L" summary --json           # the same rows as JSON, with quota and error counts
+python3 -I "$L" codex-threads --dispatch <id>  # the codex archive command of an accepted run's saved session
 ```
 
 ## Start
@@ -33,6 +34,12 @@ python3 -I "$L" summary --json           # the same rows as JSON, with quota and
 - **Review dispatch**: accepted on its posted review with `finish <id> --outcome accepted --head <reviewed head> --review-url <comment URL>`, with no receipt and no `--accept-unverified`. The URL must match `https://github.com/<owner>/<repo>/pull/<n>#issuecomment-<id>`; it is checked by pattern, never fetched or stored, and records `review_posted: true`. Every other kind keeps the receipt rule. `--reason <text>` may go with any outcome; only its digest is stored.
 - **Field checks**: `finish` refuses, writing nothing, a negative `--rework-rounds`, more rework rounds than the loop's limit (`Rework limit` under `## Reviews` of the host config, 2 to 4, default 2) without a `--reason`, and `--outcome accepted` with `--tests failed`. Use `finish --retro` for a record written after the fact; its duration stays out of the medians.
 - **Log scan**: `--log-path <log>` must lie directly inside the private `.finolabs/logs/` folder of the current, the `--checkout` or the main checkout; `finish` scans it and stores only `log_scan: no_findings|findings|not_scanned` (an empty log is `not_scanned`). Any other location, a link or another user's file is refused and nothing is recorded; omit the path to record `not_scanned`. The `--head` and receipt gates still apply.
+
+- **Codex session digest**: for a dispatch started with `--agent codex`, `finish --log-path` looks in the first 40 lines of the scanned log for the Codex session id (the `session id: <id>` header line, or a whole `{"type":"thread.started","thread_id":"<id>"}` line of a `--json` stream, each a lowercase UUID). When the log names exactly one, the finish line gets `codex_thread`: the first 16 hex digits of the SHA-256 of that id. The id itself is never stored or printed; no id, two different ids, an unscanned log or another agent store nothing (script). A predictable id can be guessed from its digest, so treat the ledger as private.
+
+## Codex sessions
+
+`codex-threads` lists this repository's accepted Codex dispatches that carry `codex_thread` (the project `stale` resolves; `--dispatch <id>`, repeatable, narrows it and refuses an id that is not one of them). For each, it lists the file names in `sessions/YYYY/MM/DD/` of the Codex home (`CODEX_HOME` when absolute, else `.codex` in the account home) from the day before the start to the day after the finish, takes only regular files named `rollout-<time>-<id>.jsonl` or `.jsonl.zst` (no linked file, and a linked `sessions`, year, month or day folder is skipped), hashes each id and prints `codex archive <id>  # <dispatch id> <project>: <task>` for a match, then one line counting the dispatches with no saved session left (archived, ephemeral or gone). It reads no file content, writes nothing and runs nothing (script). Run it after the dispatch's pull request merged and run each printed command yourself; the ledger cannot see a forge, so waiting for the merge is agent judgment (advisory). `codex archive` moves the session to Codex's `archived_sessions` and `codex unarchive` restores it; never delete a session or its file.
 
 ## Open and ended runs
 

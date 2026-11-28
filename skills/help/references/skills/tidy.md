@@ -17,5 +17,6 @@ Typed by the user, or loaded by the agent when the task matches. `session-hygien
 - Open a coordinator session on Claude Code with its own threshold: `CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000 claude`. The reminder to save a handover before compaction sees this variable but not the `--autocompact` flag.
 - `/autocompact <tokens>` saves the threshold for the current model, and since 0.3.3 the reminder follows the session's model too.
 - Before the agent archives a session in the Claude Code desktop app, it turns that session's Remote Control off first, as a precaution: whether a switch left on reconnects after an unarchive has not been verified.
+- A desktop session a coordinator started for a task that ends in a pull request turns on its own pull request monitor's auto-archive, so it archives itself when the pull request merges or closes; the coordinator archives a linked session that is idle and whose pull request merged. Sessions are archived, never deleted.
 - A wholly new task starts in a fresh, correctly named session with a short handover.
 - Notes, briefs and logs go in `.finolabs/` at the main checkout's root, kept out of git; temporary folders are wiped on restart.

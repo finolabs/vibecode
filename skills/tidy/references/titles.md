@@ -14,8 +14,10 @@ How each host sets a session's title, as checked against each CLI's help and com
 Archive only sessions this agent started, or one the user names, after the user agreed to archive it.
 
 - **Claude Code (desktop app):** read the session with the session tools (`get_session`); when `remoteControlState` is `on` or `connecting`, call `set_remote_control` with `enabled: false` first, then `archive_session`. Each call asks the user to approve it unless the permission mode decides. Checked 19/11/2026: archived sessions report `remoteControlActive: false`, since archiving stops the process; whether a switch left `on` reconnects when the session is unarchived was not verified, so turning it off first keeps the state explicit.
-- **Codex:** `codex archive` takes a session name or id (see the table); it has no remote access switch.
-- **Antigravity:** no archive command was found.
+- **Claude Code (desktop app), sessions a coordinator started:** when the session's task ends in a pull request, the session turns on auto-archive once it has bound its pull request: the PR tools' `set_monitor` with `auto_archive_on_close: true`. That switch acts only on the calling session's own bound pull request, so the coordinator puts the step in the session's brief (owner decision of 2026-11-28) instead of calling it for another session. Separately, list the linked sessions (`list_sessions` with `linked: true`); for each that is idle and whose pull request merged, turn its Remote Control off as above, then archive it. The coordinator never archives itself or a session waiting on the user. No script can call the app's tools, so this is agent judgment (advisory).
+- **Claude Code (CLI) and headless runs:** no archive command. A one-shot `claude -p` run with `--no-session-persistence` saves nothing; a saved one stays in the config folder's `projects` folder. Never delete it: a deleted transcript cannot be resumed or recovered.
+- **Codex:** `codex archive` takes a session name or id (see the table); it has no remote access switch, and `codex unarchive` restores the session. For a delegated run, `delegate`'s `ledger.py codex-threads --dispatch <id>` prints the `codex archive <id>` command once the dispatch was accepted; run it after its pull request merged. A one-shot run with `codex exec --ephemeral` saves nothing to archive. `codex delete` is permanent and needs the user's explicit go.
+- **Antigravity:** no archive command was found. Conversations made by `agy -p` and by the `agybird` desktop transport are `agybird`'s to archive.
 
 ## Emoji
 

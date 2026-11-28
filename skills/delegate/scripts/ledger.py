@@ -349,14 +349,36 @@ def validate_finish(args):
         sys.exit("ledger: an accepted run cannot have --tests failed; record rejected, or rerun the tests")
 
 
+CODEX_UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+# The `codex exec` header line, or a `--json` stream's whole `thread.started` line; only in the log's first lines.
+CODEX_SESSION = re.compile(r"^(?:session id: (" + CODEX_UUID + r")|\{\"type\": ?\"thread\.started\", ?\"thread_id\": ?\"("
+                           + CODEX_UUID + r")\"\})\r?$", re.MULTILINE)
+CODEX_HEAD_LINES = 40
+
+
+def thread_digest(session):
+    """The first 16 hex digits of the SHA-256 of a Codex session id; the id itself is never stored."""
+    return hashlib.sha256(session.encode()).hexdigest()[:16]
+
+
+def codex_thread(text):
+    """The digest of the one Codex session id a run log names (its header or `thread.started`), else None."""
+    if not text:
+        return None
+    head = "\n".join(text.splitlines()[:CODEX_HEAD_LINES])
+    found = {a or b for a, b in CODEX_SESSION.findall(head)}
+    return thread_digest(found.pop()) if len(found) == 1 else None
+
+
 def cmd_finish(args):
     # Scan before ledger reads can warn or anything about the run is stored.
-    status = "not_scanned"
+    status, thread = "not_scanned", None
     validate_finish(args)
     if args.log_path is not None:
         try:
             import log_scan
-            status = log_scan.scan(args.log_path, log_scan.log_root(args.log_path, args.checkout))["status"]
+            result = log_scan.scan(args.log_path, log_scan.log_root(args.log_path, args.checkout))
+            status, thread = result["status"], codex_thread(result.get("text"))
         except (ImportError, OSError, ValueError) as error:
             # Only fixed messages are shown, never a path.
             folder = getattr(sys.modules.get("log_scan"), "FolderRefused", None)
@@ -364,11 +386,11 @@ def cmd_finish(args):
                 sys.exit("ledger: log refused; " + str(error))
             sys.exit(LOG_REFUSED)
     with finish_lock():
-        finish_locked(args, status)
+        finish_locked(args, status, thread)
     spawn_cleanup(args.checkout)
 
 
-def finish_locked(args, status):
+def finish_locked(args, status, thread=None):
     starts, finishes = load()
     if args.id not in starts:
         sys.exit(f"ledger: no start line for {args.id}")
@@ -438,6 +460,7 @@ def finish_locked(args, status):
         "event": "finish", "id": args.id, "ts": now(), "outcome": args.outcome,
         "rework_rounds": args.rework_rounds, "tests": args.tests, "note": args.note,
         "log_scan": status, **({"retro": True} if args.retro else {}),
+        **({"codex_thread": thread} if thread and starts[args.id].get("agent") == "codex" else {}),
     })
 
 
@@ -754,6 +777,77 @@ def cmd_stale(args):
         sys.exit("ledger: stale refused: another stale command is running")
     except (OSError, json.JSONDecodeError, UnicodeError):
         sys.exit("ledger: stale refused: unsafe or unreadable state; preview again")
+
+
+ROLLOUT = re.compile(r"rollout-[0-9T:-]{1,40}-(" + CODEX_UUID + r")\.jsonl(?:\.zst)?")
+
+
+def codex_home():
+    """`CODEX_HOME` when set to an absolute path, else `.codex` in the account home."""
+    value = os.environ.get("CODEX_HOME", "")
+    return Path(value) if os.path.isabs(value) else dr.account_home() / ".codex"
+
+
+def saved_sessions(day_from, day_to):
+    """{digest: id} of the saved Codex sessions named in `sessions/YYYY/MM/DD` between two dates (names only)."""
+    from datetime import timedelta
+    import stat
+    found, day, root = {}, day_from, codex_home() / "sessions"
+    while day <= day_to:
+        folder = root / day.strftime("%Y/%m/%d")
+        try:
+            for part in (root, root / day.strftime("%Y"), root / day.strftime("%Y/%m"), folder):
+                if not stat.S_ISDIR(os.lstat(part).st_mode):
+                    raise OSError("not a plain folder")  # a linked sessions, year, month or day folder is skipped
+            with os.scandir(folder) as entries:
+                for entry in entries:
+                    match = ROLLOUT.fullmatch(entry.name)
+                    if match and entry.is_file(follow_symlinks=False):
+                        found[thread_digest(match[1])] = match[1]
+        except OSError:
+            pass  # a missing or unreadable day holds nothing to archive
+        day += timedelta(days=1)
+    return found
+
+
+def cmd_codex_threads(args):
+    """Print `codex archive <id>` for this repository's accepted Codex dispatches whose saved session still exists."""
+    from datetime import timedelta
+    project = this_project()
+    if project is None:
+        sys.exit("ledger: codex-threads refused: no ledger project resolves for this checkout")
+    starts, finishes = load()
+    wanted = []
+    for ident, start in starts.items():
+        done = finishes.get(ident)
+        if (start.get("project") != project or start.get("agent") != "codex" or not done
+                or done.get("outcome") != "accepted" or not isinstance(done.get("codex_thread"), str)):
+            continue
+        if args.dispatch and ident not in args.dispatch:
+            continue
+        wanted.append((ident, start, done))
+    for ident in args.dispatch or ():
+        if ident not in {w[0] for w in wanted}:
+            sys.exit(f"ledger: no accepted Codex dispatch {ident} in this project")
+    if not wanted:
+        print("No accepted Codex dispatch with a recorded session")
+        return
+    missing = 0
+    for ident, start, done in wanted:
+        try:
+            first = datetime.fromisoformat(start["ts"]).date() - timedelta(days=1)
+            last = datetime.fromisoformat(done["ts"]).date() + timedelta(days=1)
+        except (TypeError, ValueError):
+            missing += 1
+            continue
+        session = saved_sessions(first, last).get(done["codex_thread"])
+        if session is None:
+            missing += 1
+        else:
+            print(f"codex archive {session}  # {ident} {stale_label(start)}")
+    if missing:
+        noun = "dispatch has" if missing == 1 else "dispatches have"
+        print(f"{missing} accepted Codex {noun} no saved session to archive")
 
 
 SUMMARY_KEYS = ("agent", "model", "kind", "grade")
@@ -1517,6 +1611,11 @@ def build_parser():
     m.add_argument("--project")
     m.add_argument("--json", action="store_true", help="print the rows as JSON")
     m.set_defaults(func=cmd_summary)
+
+    t = sub.add_parser("codex-threads", help="print `codex archive <id>` for this repository's accepted Codex "
+                                             "dispatches whose saved session still exists; reads file names only")
+    t.add_argument("--dispatch", action="append", help="only this dispatch id (repeatable)")
+    t.set_defaults(func=cmd_codex_threads)
 
     c = sub.add_parser("clean-worktrees", help="remove the merged, clean worktrees of finished dispatches "
                                                "(start and finish also start it in the background; "

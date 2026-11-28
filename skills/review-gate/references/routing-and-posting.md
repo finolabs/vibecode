@@ -37,7 +37,7 @@ Enforcers: `merge_check.py --lane` decides lane eligibility; invoking it before 
 
 Enforcer: `review_route.build_packet(checkout, base, head, criteria, decisions, known_consumers)`. The coordinator calls this Python function when assembling a brief. It resolves refs to full OIDs and computes per-file additions/removals, binary changes and mode changes from local Git trees and blobs. This is the local-object equivalent of the packet's `git diff --stat`; it runs no subprocess. Unsupported or oversized objects fail closed. The return value contains `base`, `head`, `diff_stat`, `known_consumers`, `acceptance_criteria` and `decisions`. Criteria, decisions and starting consumers come from the coordinator, never inferred by the script. Keep it in the review brief; no packet content enters an event or receipt (advisory, agent judgment).
 
-Add test results and limits, requested coverage, the hard budget and the triggered security-audit requirement before dispatch. Re-review resumes the same run (advisory, agent judgment). Reading the diff and extending the known-consumer list remain the reviewer's work.
+Add test results and limits, requested coverage, the hard budget and the triggered security-audit requirement before dispatch. A review run is one-shot and saves no session (`codex exec review --ephemeral`, `claude -p --no-session-persistence`), so a re-review is a new run on the new head whose brief carries the earlier findings and the diff since the reviewed head (advisory, agent judgment). Reading the diff and extending the known-consumer list remain the reviewer's work.
 
 ## Post
 

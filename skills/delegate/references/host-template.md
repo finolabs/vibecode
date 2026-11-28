@@ -133,7 +133,7 @@ Each headless command below starts with `FNL_DISPATCH_ID=<ledger id>`, the id `l
 
 ## Claude Code
 
-- First lint the brief with `brief_check.py` from `handoff`; set `umask 077` and create the private log folder as the common procedure in `agents.md` requires; the wrapper checks its mode. Headless command: FNL_DISPATCH_ID=<ledger id> python3 -I <delegate skill folder>/scripts/delegate_env.py --family claude -- <hard-cap wrapper> <claude path> -p "$(cat "$B")" --model <full model id> --effort <level> --output-format json --max-turns <n> --max-budget-usd <cap> --allowedTools "<tools the brief needs>" < /dev/null
+- First lint the brief with `brief_check.py` from `handoff`; set `umask 077` and create the private log folder as the common procedure in `agents.md` requires; the wrapper checks its mode. Headless command: FNL_DISPATCH_ID=<ledger id> python3 -I <delegate skill folder>/scripts/delegate_env.py --family claude -- <hard-cap wrapper> <claude path> -p "$(cat "$B")" --model <full model id> --effort <level> --output-format json --max-turns <n> --max-budget-usd <cap> --allowedTools "<tools the brief needs>" < /dev/null; add `--no-session-persistence` for a one-shot run (review, advice, a small task with no rework round expected).
 - Allowed models: <full model ids>.
 - How task sessions start on this host: <desktop app session tools | `claude -p` headless>.
 - Session title convention: <`<emoji> <project> <scope>: <activity>` as `tidy` says, or this machine's own>.
@@ -153,7 +153,8 @@ FNL_DISPATCH_ID="<ledger id>" python3 -I <delegate skill folder>/scripts/delegat
 ```
 
 - Allowed models: <list>.
-- Reviews and advice: `-s read-only`, or `delegate_env.py --family codex -- codex review`.
+- One-shot runs (reviews, advice, small tasks with no rework round expected): add `--ephemeral` after `exec`, so no session file is saved.
+- Reviews and advice: `-s read-only`, or `delegate_env.py --family codex -- codex exec review --ephemeral --base <branch>`.
 - Machine quirks: <e.g. broken Node shim on PATH, missing `timeout`>.
 
 ## Antigravity

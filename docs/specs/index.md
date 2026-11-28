@@ -59,3 +59,4 @@
 | [Heavy-job guard and test scope](heavy-jobs.md) | implemented; `heavy_run.py`, the opt-in gate, its installer and the setup question; default load limit 25 (owner, 2026-11-23). |
 | [Agent levels](agent-levels.md) | implemented; retired in 0.3.1: `## Agent levels` is no longer read and `levels_setup.py` is removed; the matrix is the only source of levels, and `matrix_setup.py migrate` the only reader left. |
 | [README standard and release checklist](readme-standard.md) | implemented; shipped in 0.2.6 (pull request 268): `plugin-packaging` standard, checklist and `readme_check.py` wired into `versioning`; the owner kept the README's unpublished name (2026-11-13). |
+| [Session cleanup](session-cleanup.md) | in progress; owner decisions 2026-11-28: ephemeral one-shot runs, desktop auto-archive, the `codex_thread` ledger digest with `ledger.py codex-threads`, and the Antigravity boundary. |

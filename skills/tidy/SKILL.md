@@ -44,7 +44,7 @@ description field for the run (`ledger.py start` prints it), the log file names 
 
 Titles carry no secrets, customer data or private history. Use the host's supported mechanism ([references/titles.md](references/titles.md)); where a host offers none, say so in one line and carry the name in the handover and log file names instead. Pin the active session and unpin retired ones only where the host supports it and the user allows it. Session stores and app databases are never edited by hand.
 
-Before archiving a session, turn off its remote access where the host keeps a switch for it; the host steps are in [references/titles.md](references/titles.md) "Archiving". Advisory (agent judgment).
+Before archiving a session, turn off its remote access where the host keeps a switch for it; the host steps are in [references/titles.md](references/titles.md) "Archiving". A coordinator keeps the sessions it starts from piling up: a desktop session started for a task that ends in a pull request gets the pull request monitor's auto-archive, and a linked session that is idle and whose pull request merged is archived; a one-shot delegated run saves no session at all (`delegate`). Archive, never delete: a deleted session or transcript cannot be brought back. Advisory (agent judgment).
 
 ## Writers and checkouts
 
