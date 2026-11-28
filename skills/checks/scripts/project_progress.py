@@ -833,7 +833,7 @@ def ledger_items(project, starts, finishes):
         finish = finishes.get(ident)
         outcome = finish.get('outcome') if isinstance(finish, dict) else 'open'
         state = ('done' if outcome == 'accepted' else 'active' if outcome == 'open' else
-                 'deferred' if outcome == 'cancelled' else 'needs-attention' if outcome in
+                 'deferred' if outcome in ('cancelled', 'deferred') else 'needs-attention' if outcome in
                  ('rejected', 'timeout', 'stalled', 'needs-permission', 'blocked', 'error', 'quota') else 'unknown')
         item.update(state=state, done=int(state == 'done'), stages=[stage('work', state, int(state == 'done'), 1)])
     return list(groups.values())

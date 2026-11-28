@@ -607,6 +607,8 @@ class ProgressTest(unittest.TestCase):
         self.taskfile()
         self.assertEqual(self.collect(starts=starts, finishes=finishes)['source'], 'speckit')
         self.assertEqual(self.pp.ledger_items('alias', starts, {'2': dict(outcome='needs-permission')})[1]['state'], 'needs-attention')
+        # A desktop `blocked` run that never started is deferred, not unknown (owner decision, 28/11/2026).
+        self.assertEqual(self.pp.ledger_items('alias', starts, {'2': dict(outcome='deferred')})[1]['state'], 'deferred')
 
     def test_ledger_equal_timestamps_preserve_record_order_for_latest_attempt(self):
         starts = {ident: dict(project='alias', task='PRIVATE', ts='2026-11-06T09:00:00Z') for ident in ('z', 'a')}
