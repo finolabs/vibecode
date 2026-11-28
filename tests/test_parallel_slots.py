@@ -82,7 +82,8 @@ class ParallelSlotsTest(unittest.TestCase):
         state = slots.status()
         self.assertEqual(state, dict(limit=9, open=6, stale=0, free=3, source='project settings', scope=dict(code=self.code, project=self.repo.name), other_projects=0, families={
             'claude': dict(open=3, cap=4, free=1), 'codex': dict(open=1, cap=3, free=2),
-            'antigravity': dict(open=1, cap=None, free=None), 'zcode': dict(open=1, cap=None, free=None)}))
+            'antigravity': dict(open=1, cap=None, free=None, machine=dict(open=1, cap=1, free=0)),
+            'zcode': dict(open=1, cap=None, free=None)}))
         code, output = self.command('status')
         self.assertEqual(code, 0)
         self.assertEqual(json.loads(output), state)
@@ -139,7 +140,8 @@ class ParallelSlotsTest(unittest.TestCase):
         self.host()
         self.ledger(['claude', 'codex', 'codex', 'codex'])
         for family, count, expected in [('codex', 1, False), ('claude', 2, True), ('claude', 3, False),
-                                         ('antigravity', 2, True), ('claude', 33, False)]:
+                                         # Antigravity's one machine-wide desktop slot (owner decision, 28/11/2026).
+                                         ('antigravity', 1, True), ('antigravity', 2, False), ('claude', 33, False)]:
             with self.subTest(family=family, count=count):
                 self.assertEqual(self.command('check', '--family', family, '--count', str(count)),
                                  (0, 'Parallel slots: available\n') if expected else (3, 'Parallel slots: full\n'))
