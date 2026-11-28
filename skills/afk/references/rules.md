@@ -73,7 +73,7 @@ Also: any program word holding `credential`; `git credential*`; a credential hel
 ### Floor: names and text
 
 - Environment readers anywhere in inline code: `$env:`, `bun.env`, `childitem env:`, `deno.env`, `env:\`, `environ`, `getenv`, `getenvironmentvariable`, `os.environ`, `printenv`, `process.env`, `process["env"]`, `process['env']`, `system attribute`, `system.getenv`; the whole identifiers `ENV`, `%ENV`, `$ENV` and `ENVIRON` (case-sensitive).
-- A `$NAME` or `NAME=value` whose name is sensitive (`secret_patterns.py`), `${!name}`, and a value with a known secret prefix.
+- A `$NAME` or `NAME=value` whose name is sensitive (`secret_patterns.py`), `${!name}`, and a value with a known secret prefix, except in the name of an existing file or folder of the repository (no symlink leaving it).
 - Files and folders: `.aws`, `.azure`, `.boto`, `.config/gh`, `.dev.vars`, `.docker`, `.git-credentials`, `.gnupg`, `.kube`, `.netrc`, `.npmrc`, `.pgpass`, `.pypirc`, `.ssh`, `.vault-token`, `.wrangler`, `application_default_credentials.json`, `auth.json`, `hosts.yml`, `id_dsa`, `id_ecdsa`, `id_ed25519`, `id_rsa`, `keychain-db`; names ending in `.asc`, `.gpg`, `.kdbx`, `.key`, `.keychain`, `.keychain-db`, `.p12`, `.pem`, `.pfx`; any token holding `credentials` or `creds`; `.env` and `.env.*` except `.env.example`, `.env.sample`, `.env.template`; `*.env`; `secrets` and `secrets.*`; `/proc/*/environ`; a `.yarnrc*` that holds a token.
 
 ### Default-branch guard

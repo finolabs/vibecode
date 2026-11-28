@@ -903,10 +903,50 @@ def inline_codes(program, words):
     return codes
 
 
+def repository_path(token, cwd=None):
+    """(target, root) when the token, or the value of a `--option=value` token, names an existing file or folder
+    inside the repository holding `cwd` with no symlink leaving it: `target` is its resolved path relative to `root`.
+    Such a name is the repository's own, so a key prefix inside it (`task-lifecycle`) is not a key; None otherwise."""
+    value = strip_token(token)
+    option = re.fullmatch(r'(-{1,2}[A-Za-z][A-Za-z0-9-]*)=(.+)', value)
+    if option:
+        if secret_patterns.PREFIX.search(option[1]):
+            return None  # a key written as the option name is still a key
+        value = option[2]
+    if not value or value.startswith('~') or '\0' in value or '..' in value.replace('\\', '/').split('/'):
+        return None
+    try:
+        found, ident = store.identity(str(cwd or os.getcwd()))
+        if found != 'found':
+            return None
+        root = os.path.realpath(ident.checkout, strict=True)
+        current = '/' if os.path.isabs(value) else (cwd or os.getcwd())
+        real = os.path.realpath(current, strict=True)
+        # Every component must exist and resolve inside the repository, or to a folder above it on the way in.
+        for part in [p for p in value.split('/') if p not in ('', '.')]:
+            current = os.path.join(current, part)
+            real = os.path.realpath(current, strict=True)
+            if real != root and not real.startswith(root + os.sep) and not root.startswith(real.rstrip(os.sep) + os.sep):
+                return None
+        if real != root and not real.startswith(root + os.sep):
+            return None
+        return os.path.relpath(real, root), root
+    except (OSError, ValueError):
+        return None
+
+
 def floor_path(token, cwd=None):
     """True when one path or argv token names a secret, key or credential file, folder or helper (B, obligation 4)."""
     if secret_patterns.PREFIX.search(token):
-        return True
+        found = repository_path(token, cwd)
+        # The repository's own path is not a key by its name, but it is still the file or folder it resolves to.
+        if found is None or floor_name(found[0], found[1]):
+            return True
+    return floor_name(token, cwd)
+
+
+def floor_name(token, cwd=None):
+    """True when a token names a credential file, folder or helper by its name or a sensitive variable (B)."""
     raw = token
     for match in DOLLAR_NAME.finditer(raw):
         if match[1] == '!' or sensitive_name(match[2]):
@@ -1785,7 +1825,8 @@ def rules():
             f'- Environment readers anywhere in inline code: {_codes(ENV_WORDS)}; the whole identifiers `ENV`, '
             '`%ENV`, `$ENV` and `ENVIRON` (case-sensitive).',
             '- A `$NAME` or `NAME=value` whose name is sensitive (`secret_patterns.py`), `${!name}`, and a value with '
-            'a known secret prefix.',
+            'a known secret prefix, except in the name of an existing file or folder of the repository (no symlink '
+            'leaving it).',
             f'- Files and folders: {_codes(FLOOR_NAMES)}; names ending in {_codes(FLOOR_SUFFIXES)}; any token holding '
             '`credentials` or `creds`; `.env` and `.env.*` except '
             f'{_codes(ENV_EXCEPTIONS)}; `*.env`; `secrets` and `secrets.*`; `/proc/*/environ`; a `.yarnrc*` that '
