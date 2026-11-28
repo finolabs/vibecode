@@ -3,7 +3,7 @@
   "name": "finolabs-vibecode",
   "displayName": "Finolabs Vibecode",
   "version": "0.3.5-dev",
-  "description": "25 skills and 3 agents (reviewer, security-reviewer, navigator) for review routing, verification, setup, run hygiene and quota on demand.",
+  "description": "26 skills and 3 agents (reviewer, security-reviewer, navigator) for review routing, verification, setup, run hygiene and quota on demand.",
   "logo": "assets/icon.svg",
   "author": {
     "name": "FINOLABS",
