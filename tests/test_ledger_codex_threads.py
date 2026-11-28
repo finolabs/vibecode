@@ -131,7 +131,35 @@ class CodexThreadTest(unittest.TestCase):
         self.assertEqual(self.call("finish", "bare", "--outcome", "rejected")[0], 0)
         self.assertNotIn("codex_thread", self.records()[-1])
 
+    def test_only_a_thread_started_line_or_the_header_names_the_session(self):
+        cases = (("quoted", json.dumps({"type": "item.completed", "text": "x", "thread_id": ONE}) + "\n"),
+                 ("late", "ordinary output\n" * 200 + f"session id: {ONE}\n"))
+        for ident, text in cases:
+            with self.subTest(case=ident):
+                self.write([self.start(ident)])
+                code, _, err = self.finish(ident, self.log(ident + ".log", text))
+                self.assertEqual(code, 0, err)
+                self.assertNotIn("codex_thread", self.records()[-1])
+
     # codex-threads
+
+    def test_a_linked_day_or_sessions_folder_is_not_followed(self):
+        self.write([self.start("d1"), self.done("d1", codex_thread=digest(ONE))])
+        real = self.session_file("2026/11/20", ONE).parent
+        month = self.codex / "sessions/2026/11"
+        (month / "10").symlink_to(real)
+        code, out, _ = self.call("codex-threads")
+        self.assertEqual(out.splitlines(), ["1 accepted Codex dispatch has no saved session to archive"])
+        (month / "10").unlink()
+        elsewhere = Path(self.dir.name) / "elsewhere"
+        self.codex.rename(elsewhere)
+        self.codex.mkdir()
+        (self.codex / "sessions").symlink_to(elsewhere / "sessions")
+        (elsewhere / "sessions/2026/11/10").mkdir()
+        (elsewhere / "sessions/2026/11/10" / f"rollout-2026-11-10T01-00-00-{ONE}.jsonl").write_text("{}\n")
+        code, out, _ = self.call("codex-threads")
+        self.assertEqual(out.splitlines(), ["1 accepted Codex dispatch has no saved session to archive"])
+
 
     def test_lists_the_archive_command_of_each_saved_session_it_finds(self):
         self.write([self.start("d1"), self.done("d1", codex_thread=digest(ONE)),

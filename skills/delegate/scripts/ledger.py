@@ -350,8 +350,10 @@ def validate_finish(args):
 
 
 CODEX_UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-CODEX_SESSION = re.compile(r"^session id: (" + CODEX_UUID + r")\r?$|\"thread_id\": ?\"(" + CODEX_UUID + r")\"",
-                           re.MULTILINE)
+# The `codex exec` header line, or a `--json` stream's whole `thread.started` line; only in the log's first lines.
+CODEX_SESSION = re.compile(r"^(?:session id: (" + CODEX_UUID + r")|\{\"type\": ?\"thread\.started\", ?\"thread_id\": ?\"("
+                           + CODEX_UUID + r")\"\})\r?$", re.MULTILINE)
+CODEX_HEAD_LINES = 40
 
 
 def thread_digest(session):
@@ -363,7 +365,8 @@ def codex_thread(text):
     """The digest of the one Codex session id a run log names (its header or `thread.started`), else None."""
     if not text:
         return None
-    found = {a or b for a, b in CODEX_SESSION.findall(text)}
+    head = "\n".join(text.splitlines()[:CODEX_HEAD_LINES])
+    found = {a or b for a, b in CODEX_SESSION.findall(head)}
     return thread_digest(found.pop()) if len(found) == 1 else None
 
 
@@ -788,10 +791,14 @@ def codex_home():
 def saved_sessions(day_from, day_to):
     """{digest: id} of the saved Codex sessions named in `sessions/YYYY/MM/DD` between two dates (names only)."""
     from datetime import timedelta
+    import stat
     found, day, root = {}, day_from, codex_home() / "sessions"
     while day <= day_to:
         folder = root / day.strftime("%Y/%m/%d")
         try:
+            for part in (root, root / day.strftime("%Y"), root / day.strftime("%Y/%m"), folder):
+                if not stat.S_ISDIR(os.lstat(part).st_mode):
+                    raise OSError("not a plain folder")  # a linked sessions, year, month or day folder is skipped
             with os.scandir(folder) as entries:
                 for entry in entries:
                     match = ROLLOUT.fullmatch(entry.name)
