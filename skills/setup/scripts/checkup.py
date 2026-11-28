@@ -1156,6 +1156,39 @@ def claude_plugin_enablement(home, active):
     return [item("claude plugin enablement", "unverified" if unverified else "ok", "; ".join(rows))]
 
 
+POSTING_PATH = re.compile(r"/[^\s()'\"]*post_review\.py")
+
+
+def posting_rule_evidence(home):
+    """Antigravity allow-rules naming `post_review.py`, as counts only: no rule text, path or other rule is shown.
+
+    Reads `permissions.allow` of the Antigravity CLI settings and never writes it; a rule counts as current only
+    when its absolute script path resolves to a `post_review.py` of this install. The fix is the Review posting step
+    of `/setup add roles`, with its preview and yes."""
+    status, data = read_json(home / ".gemini/antigravity-cli/settings.json")
+    if status == "missing":
+        return []
+    permissions = data.get("permissions", {}) if status == "ok" else None
+    allow = permissions.get("allow", []) if isinstance(permissions, dict) else None
+    if not isinstance(allow, list):
+        return [item("antigravity posting rule", "unverified", "Antigravity settings unreadable")]
+    rules = [rule for rule in allow if isinstance(rule, str) and "post_review.py" in rule]
+    if not rules:
+        return []
+    root = Path(__file__).resolve().parents[3]
+    current = {os.path.realpath(path) for path in (root / "skills/review-gate/scripts/post_review.py",
+                                                   root / "scripts/post_review.py") if path.is_file()}
+    stale = sum(1 for rule in rules if not any(os.path.realpath(found) in current
+                                               for found in POSTING_PATH.findall(rule)))
+    if stale:
+        return [item("antigravity posting rule", "warn",
+                     f"{stale} post_review.py {'rule points' if stale == 1 else 'rules point'} to no script of this "
+                     f"install; /setup add roles, Review posting, replaces {'it' if stale == 1 else 'them'}")]
+    count = len(rules)
+    return [item("antigravity posting rule", "ok",
+                 f"{count} post_review.py {'rule points' if count == 1 else 'rules point'} to this install")]
+
+
 def collect(payload=False):
     # A local copy keeps this skill usable when installed alone, including under -I.
     sys.dont_write_bytecode = True
@@ -1255,6 +1288,7 @@ def collect(payload=False):
             *compaction_evidence(claude_home, root),
             *other_claude_homes(home, claude_home),
             *claude_plugin_enablement(home, claude_home),
+            *posting_rule_evidence(home),
             retired_evidence([*user_context, *context], reader=context_read),
             *renamed_evidence([*user_context, *context], reader=context_read),
             item("effective settings", "ok", "delegation mode=" + settings["delegation_mode"] +

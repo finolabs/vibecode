@@ -27,7 +27,11 @@ class ConstantsTest(unittest.TestCase):
     def test_closed_lists(self):
         self.assertEqual(A.HEADING, '## Assignment matrix')
         self.assertEqual(A.TYPES, ('frontend', 'design', 'video', 'three-d', 'image-generation', 'transcription'))
-        self.assertEqual(A.ROLES, ('code-review', 'security-review', 'navigator', 'advisor'))
+        # ui-review joins the roles for ui-review-gate (owner decision, 28/11/2026).
+        self.assertEqual(A.ROLES, ('code-review', 'security-review', 'navigator', 'advisor', 'ui-review'))
+        self.assertIn('ui-review', A.KINDS)
+        m = A.parse(HEAD + '- claude: levels 1-5\n- antigravity: levels 1-5; works on design; roles ui-review\n')
+        self.assertEqual((m.state, m.roles), ('valid', {'ui-review': 'antigravity'}))
 
     def test_advisor_role_names_one_agent_at_most(self):
         m = A.parse(HEAD + '- claude: levels 1-5\n- codex: levels 1-5; roles security-review, advisor\n')

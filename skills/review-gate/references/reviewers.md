@@ -21,6 +21,7 @@ Delegated runs follow `delegate` for ledger, brief and hard cap (advisory, agent
 ## Who reviews
 
 - **Independent**: `review_route.py` chooses an assigned present family with quota before the capability fallback, among the families the assignment matrix lists when it is usable; posting `yes` breaks ties only after independence and a valid assignment. A role or a present CLI grants no permission, reachability or model access.
+- **UI reviews**: `review_route.py --kind ui` routes a `ui-review-gate` review (`kind=ui` marker) to the `ui-review` role owner when that family is present, available and not the author, else as a code review (script; owner decision, 28/11/2026). `--kind both` stays code and security.
 - **Both kinds on one family**: one run, one packet, two comments, each with its own marker. The low-risk lane uses the code route for both after the lane check succeeds (rule 7). These are coordinator obligations, advisory (agent judgment).
 - **Tier and effort**: follow `delegate`; at least strong for code and frontier for a triggered security review. The Claude agent files keep `model: inherit`; select the allowed model through the host when supported (advisory, agent judgment).
 

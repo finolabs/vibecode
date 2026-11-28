@@ -378,6 +378,15 @@ def route(author, text, quota_lines, *, lane=False, kinds=("code", "security"), 
         raise ValueError("no present family")
     roles, posting = config.read_roles(text), config.read_posting(text)
     def choose(kind):
+        # A ui review (ui-review-gate) goes to its own role's owner when that family is available, else it is
+        # routed as a code review (owner decision, 28/11/2026).
+        if kind == "ui":
+            owner = roles.get("ui review")
+            if owner is None or owner == author or owner not in present:
+                return choose("code")
+            if owner in review_blocked(text, quota_lines, "ui-review", level):
+                return choose("code")
+            return owner, "assigned"
         blocked = review_blocked(text, quota_lines, kind + "-review", level)
         other = [f for f in ORDER if f in present and f != author and f not in blocked]
         # Posting is only a tie-break between otherwise valid independent fallbacks.
@@ -463,7 +472,8 @@ def build_packet(checkout, base, head, criteria, decisions, known_consumers):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument("--kind", choices=("code", "security", "both"), default="both")
+    parser.add_argument("--kind", choices=("code", "security", "both", "ui"), default="both",
+                        help="ui routes a ui-review-gate review to the ui-review role, else as a code review")
     parser.add_argument("--base", help="reviewed base ref; missing base cannot route")
     parser.add_argument("--lane", action="store_true", help="coordinator must first pass merge_check.py --lane")
     parser.add_argument("--security-trigger", action="store_true")

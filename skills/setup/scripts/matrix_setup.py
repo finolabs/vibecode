@@ -520,7 +520,7 @@ def choices():
     for folder in config_folders():
         helpers.append({'name': 'claude' + folder, 'family': 'claude', 'present': claude,
                         'coordinator': coordinator == 'claude'})
-    result = {'inventory': state, 'coordinator': coordinator, 'helpers': helpers}
+    result = {'inventory': state, 'coordinator': coordinator, 'roles': list(am.ROLES), 'helpers': helpers}
     if state != 'current':
         result['advice'] = SCAN_ADVICE
     return result
