@@ -9,7 +9,7 @@ Delegation leaves a saved session behind for every run. On the owner's machine o
 
 - [ ] AC1 A one-shot run (review, advisor, navigator, a small task without expected rework) is dispatched without a saved session by default: `codex exec --ephemeral` and `claude -p --no-session-persistence` (any Claude Code install, the extra ones included). A task that expects rework rounds keeps its session. Checked in `delegate` `references/agents/codex.md`, `claude-code.md`, `host-template.md`, `loop.md`, `budget-and-liveness.md` and the review command shapes in `review-gate` references.
 - [ ] AC2 A rework round after an ephemeral run is a new run whose brief carries the earlier findings and the diff; nothing tells the coordinator to resume a run that was ephemeral.
-- [ ] AC3 `tidy` (its archiving section and `references/titles.md` "Archiving") and `delegate`'s session-per-task notes say: a coordinator that opens a desktop session with `start_session` for a task ending in a pull request has that session turn on its PR monitor's `auto_archive_on_close` (the switch acts only on the calling session), and archives a linked session that is idle and whose pull request merged, after turning Remote Control off. Marked advisory.
+- [ ] AC3 `tidy` (its archiving section and [`titles.md`](../../skills/tidy/references/titles.md) "Archiving") and `delegate`'s session-per-task notes say: a coordinator that opens a desktop session with `start_session` for a task ending in a pull request has that session turn on its PR monitor's `auto_archive_on_close` (the switch acts only on the calling session), and archives a linked session that is idle and whose pull request merged, after turning Remote Control off. Marked advisory.
 - [ ] AC4 `ledger.py finish` of a Codex dispatch whose `--log-path` log names exactly one Codex session id stores `codex_thread`, the first 16 hex digits of the SHA-256 of that id, never the id itself; any other log stores nothing new.
 - [ ] AC5 `ledger.py codex-threads` lists, for this repository's accepted Codex dispatches that carry `codex_thread`, the `codex archive <id>` command of each saved session it finds by file name, and says how many it did not find; it reads only file names, writes nothing and runs nothing.
 - [ ] AC6 `delegate`'s Antigravity notes say that conversations made by `agy -p` and by the agybird desktop transport are agybird's to archive; vibecode only reports that the run finished.
@@ -58,7 +58,7 @@ The plugin runs no Codex program for this: the CLI command needs no new scoped e
 - [ ] T2 Rework after an ephemeral run in `loop.md` and `budget-and-liveness.md`
 
 ### US2 Desktop sessions
-- [ ] T3 `tidy` archiving text and `references/titles.md`; `delegate` session-per-task notes
+- [ ] T3 `tidy` archiving text and [`titles.md`](../../skills/tidy/references/titles.md); `delegate` session-per-task notes
 
 ### US3 Codex threads
 - [ ] T4 Red tests for `codex_thread` and `codex-threads`
