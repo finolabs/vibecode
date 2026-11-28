@@ -22,7 +22,7 @@ MAX_CRITERIA = 200
 MAX_LEDGER_IDS = 200
 STATUS_WORDS = ('draft', 'accepted', 'in progress', 'implemented', 'released', 'deferred', 'unknown')
 OUTCOME_WORDS = ('accepted', 'rejected', 'timeout', 'stalled', 'error', 'blocked',
-                 'needs-permission', 'quota', 'cancelled')
+                 'needs-permission', 'quota', 'cancelled', 'deferred')
 # Length alone does not identify a secret: preserve long words and identifiers.
 # Unprefixed base64 candidates need padding to distinguish them from prose.
 PRIVATE = re.compile(r'(?:-----BEGIN[\s\S]*?(?:-----END[^\r\n]*?-----|\Z)|'

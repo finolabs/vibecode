@@ -598,6 +598,12 @@
           "id": "0.3.5/codex-hook-trust",
           "kind": "hook",
           "text": "On Codex, open /hooks in a new session after the refresh and trust the plugin's hooks again; the compaction nudge script changed."
+        },
+        {
+          "id": "0.3.5/antigravity-desktop",
+          "kind": "setup",
+          "text": "Antigravity can work and review again through the agybird 0.4.8 desktop app (macOS). To use it, add it back to your helpers in setup; agy -p is only the fallback.",
+          "setup": "/setup add roles"
         }
       ]
     }

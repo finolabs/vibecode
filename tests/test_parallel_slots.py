@@ -82,7 +82,8 @@ class ParallelSlotsTest(unittest.TestCase):
         state = slots.status()
         self.assertEqual(state, dict(limit=9, open=6, stale=0, free=3, source='project settings', scope=dict(code=self.code, project=self.repo.name), other_projects=0, families={
             'claude': dict(open=3, cap=4, free=1), 'codex': dict(open=1, cap=3, free=2),
-            'antigravity': dict(open=1, cap=None, free=None), 'zcode': dict(open=1, cap=None, free=None)}))
+            'antigravity': dict(open=1, cap=None, free=None, machine=dict(open=1, cap=1, free=0)),
+            'zcode': dict(open=1, cap=None, free=None)}))
         code, output = self.command('status')
         self.assertEqual(code, 0)
         self.assertEqual(json.loads(output), state)
@@ -139,7 +140,8 @@ class ParallelSlotsTest(unittest.TestCase):
         self.host()
         self.ledger(['claude', 'codex', 'codex', 'codex'])
         for family, count, expected in [('codex', 1, False), ('claude', 2, True), ('claude', 3, False),
-                                         ('antigravity', 2, True), ('claude', 33, False)]:
+                                         # Antigravity's one machine-wide desktop slot (owner decision, 28/11/2026).
+                                         ('antigravity', 1, True), ('antigravity', 2, False), ('claude', 33, False)]:
             with self.subTest(family=family, count=count):
                 self.assertEqual(self.command('check', '--family', family, '--count', str(count)),
                                  (0, 'Parallel slots: available\n') if expected else (3, 'Parallel slots: full\n'))
@@ -148,6 +150,22 @@ class ParallelSlotsTest(unittest.TestCase):
         self.assertEqual(self.command('check', '--family', 'antigravity'), (3, 'Parallel slots: full\n'))
         self.host(32, None)
         self.assertEqual(slots.status()['limit'], 32)
+
+    def test_antigravity_has_one_machine_wide_slot_across_projects(self):
+        """agybird 0.4.8 holds one desktop lock per machine (owner decision 4, 28/11/2026)."""
+        self.host(6, None)
+        self.assertEqual(slots.ANTIGRAVITY_MACHINE_SLOTS, 1)
+        self.assertEqual(self.command('check', '--family', 'antigravity'), (0, 'Parallel slots: available\n'))
+        self.assertEqual(self.command('check', '--family', 'antigravity', '--count', '2'), (3, 'Parallel slots: full\n'))
+        rows = [dict(event='start', id='a', agent='antigravity', project='another-repository')]
+        self.write('ledger.jsonl', ''.join(json.dumps(r) + '\n' for r in rows))
+        state = slots.status()
+        self.assertEqual(state['families']['antigravity']['open'], 0)
+        self.assertEqual(state['families']['antigravity']['machine'], dict(open=1, cap=1, free=0))
+        self.assertEqual(self.command('check', '--family', 'antigravity'), (3, 'Parallel slots: full\n'))
+        self.assertEqual(self.command('check', '--family', 'codex'), (0, 'Parallel slots: available\n'))
+        self.write('ledger.jsonl', ''.join(json.dumps(r) + '\n' for r in rows + [dict(event='finish', id='a')]))
+        self.assertEqual(self.command('check', '--family', 'antigravity'), (0, 'Parallel slots: available\n'))
 
     def test_missing_and_invalid_totals_default_with_source(self):
         self.assertEqual(slots.status()['limit'], 3)

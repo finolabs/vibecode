@@ -88,7 +88,8 @@ def ledger_metrics(ledger, start, usage_start=None):
     late = getattr(ledger, "closed_late", lambda finish: False)  # closed late as cancelled: no verdict on the run
     for dispatch_id, s in starts.items():
         f = finishes.get(dispatch_id)
-        w = week_of(local_date(s["ts"]), start) if f and not late(f) else None
+        # Deferred runs never started (a desktop `blocked`): no verdict on the run either (owner, 28/11/2026).
+        w = week_of(local_date(s["ts"]), start) if f and not late(f) and f.get("outcome") != "deferred" else None
         if w is not None:
             done[w] += 1
             good[w] += f["outcome"] == "accepted" and f["rework_rounds"] == 0

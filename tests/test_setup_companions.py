@@ -98,7 +98,8 @@ class CompanionQuestionsTest(unittest.TestCase):
             self.assertIn('](' + repo + ')', source)
             self.assertTrue(pin.startswith('v') or pin == 'none (no release/tag)')
             self.assertIn('MIT', source)
-            self.assertEqual(checked, '2026-11-07')
+            # agybird was re-pinned to v0.4.8 for its desktop transport (owner decision, 28/11/2026).
+            self.assertEqual(checked, '2026-11-28' if name == 'agybird' else '2026-11-07')
         # Inspect every setup Markdown consumer, not only the companion procedure.
         documents = [SETUP / 'SKILL.md', *REFS.rglob('*.md')]
         for path in documents:

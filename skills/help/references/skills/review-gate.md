@@ -14,6 +14,6 @@ Typed by the user, or loaded by the agent when the task matches.
 - A push after a review makes that review stale; the reviewers review the new head and post again.
 - `merge_check.py` exits 0 when the merge may go ahead, 1 when something blocks it and 2 when it cannot tell.
 - Rework rounds stop at the `Rework limit` under `## Reviews` of `host.md` (2 by default, 2 to 4); then the work goes back to you.
-- Reviews can route to Codex, Antigravity or ZCode; outside an away lease a same-family security review counts when you recorded that fallback in `/setup add roles` or when you approve it for that pull request.
+- Reviews can route to Codex, Antigravity (through the `agybird` desktop app, which posts its own markers with `post_review.py --body-stdin` under the `Turbo` or `Auto` preset; a relay is only the fallback) or ZCode; outside an away lease a same-family security review counts when you recorded that fallback in `/setup add roles` or when you approve it for that pull request.
 - A relayed review is posted with `post_review.py`'s relay options, so the relay is counted on the `/status` dashboard (metadata only, with metrics consent).
 - Where a repository adopts it, a low-risk lane gives root-document, version-bump, catalog-pin and post-release record pull requests one review pass.

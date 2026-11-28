@@ -45,6 +45,7 @@ A review run posts its own comment when it can; otherwise it returns the comment
   - Offer each item with its own neutral question, "Let Antigravity run `<rule>` without asking?", from the closed list: `posting` (`command(python3 -I <this install's post_review.py>)`, never `gh` itself) and the read-only git prefixes a reviewer needs: `git-show`, `git-diff`, `git-log`, `git-rev-parse`, `git-merge-base`, `git-ls-files`, `git-blame`, `git-grep`.
   - `posting` also removes `post_review.py` rules that point to no script of this install, the case `/setup check` reports as `antigravity posting rule: warn`. Say that a prefix rule allows any arguments: `git diff --output=<file>` and `git log --output=<file>` can write a file.
   - Run `agy_rules_setup.py preview --rule <name> ...` with the items the user said yes to and show its output (only those rules and a count of the others). Ask "Save these Antigravity allow-rules?"; on a yes run `apply --digest <digest> --yes`, which keeps a backup and refuses a changed file or a preview older than an hour. Record the posting state as `unverified` like every family.
+  - On the `agybird` desktop transport the app's `Turbo` or `Auto` preset (the user's) runs the same `posting` command; the coordinator relays only when posting fails.
 
 Record `- <family>: unverified` in `## Review posting`; `yes` is written only after the coordinator sees that family's own marker on a pull request from the expected identity, and enabling a setting does not count. Before `yes`, no family's posting is promised.
 

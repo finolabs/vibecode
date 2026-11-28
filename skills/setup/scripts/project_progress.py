@@ -32,7 +32,8 @@ TOKEN = re.compile(r'[A-Za-z0-9._-]{1,40}')
 IDENT = re.compile(r'[A-Za-z0-9_-]{1,80}')
 AGENTS = ('claude', 'claude-session', 'codex', 'antigravity', 'zcode', 'subagent')
 HOSTS = ('claude', 'codex', 'antigravity', 'zcode')
-OUTCOMES = ('accepted', 'rejected', 'timeout', 'stalled', 'error', 'blocked', 'needs-permission', 'quota', 'cancelled')
+OUTCOMES = ('accepted', 'rejected', 'timeout', 'stalled', 'error', 'blocked', 'needs-permission', 'quota', 'cancelled',
+            'deferred')
 NOTICE = ('Project progress now reads this repository\'s task list and the ledger; nothing leaves your machine; '
           'turn off with Project progress: off in host.md under ## Project progress, or FNL_PROGRESS=off.')
 
@@ -832,7 +833,7 @@ def ledger_items(project, starts, finishes):
         finish = finishes.get(ident)
         outcome = finish.get('outcome') if isinstance(finish, dict) else 'open'
         state = ('done' if outcome == 'accepted' else 'active' if outcome == 'open' else
-                 'deferred' if outcome == 'cancelled' else 'needs-attention' if outcome in
+                 'deferred' if outcome in ('cancelled', 'deferred') else 'needs-attention' if outcome in
                  ('rejected', 'timeout', 'stalled', 'needs-permission', 'blocked', 'error', 'quota') else 'unknown')
         item.update(state=state, done=int(state == 'done'), stages=[stage('work', state, int(state == 'done'), 1)])
     return list(groups.values())

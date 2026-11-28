@@ -181,7 +181,8 @@ class RouteTest(unittest.TestCase):
 
     def test_assigned_family(self):
         rows = self.pick(host() + matrix(code="antigravity", security="codex"))
-        self.assertEqual(rows, [("antigravity", "headless", "assigned"), ("codex", "headless", "assigned")])
+        # Antigravity reviews through agybird's desktop transport (owner decision 2, 28/11/2026).
+        self.assertEqual(rows, [("antigravity", "desktop", "assigned"), ("codex", "headless", "assigned")])
 
     def test_ui_review_goes_to_its_role_owner_else_the_code_route(self):
         """A `kind=ui` review (ui-review-gate) routes to the ui-review role, else as a code review (28/11/2026)."""
