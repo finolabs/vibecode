@@ -80,7 +80,7 @@ class CheckupTest(unittest.TestCase):
         [row] = self.posting_rows()
         self.assertEqual(row["status"], "warn")
         self.assertEqual(row["reason"], "1 post_review.py rule points to no script of this install; "
-                         "/setup add roles, Review posting, replaces it")
+                         "/setup roles, Review posting, replaces it")
         text = self.run_check()
         for leaked in (str(stale), "fnl-review-gate", "/synthetic/private", "git status"):
             self.assertNotIn(leaked, text)
@@ -93,7 +93,7 @@ class CheckupTest(unittest.TestCase):
         [row] = self.posting_rows()
         self.assertEqual((row["status"], row["reason"]),
                          ("warn", "1 post_review.py rule points to no script of this install; "
-                                  "/setup add roles, Review posting, replaces it"))
+                                  "/setup roles, Review posting, replaces it"))
         self.agy_rules(f"command(python3 -I {current})")
         [row] = self.posting_rows()
         self.assertEqual((row["status"], row["reason"]), ("ok", "1 post_review.py rule points to this install"))
@@ -456,7 +456,7 @@ class CheckupTest(unittest.TestCase):
         self.write(config, "## Delegation mode\n- suggest\n\n## Routing\n- on\n")
         row = self.setup_item("host config")
         self.assertEqual(row["status"], "ok")
-        self.assertTrue(row["reason"].startswith("delegation not set up; /setup add delegation sets it up"))
+        self.assertTrue(row["reason"].startswith("delegation not set up; /setup delegation sets it up"))
         self.assertNotIn("required headings absent", row["reason"])
         # Set up, then a section lost: missing, naming the heading.
         self.write(config, "\n".join("## " + h for h in sorted(checkup.HEADINGS - {"Codex"})) + "\n")
@@ -470,7 +470,7 @@ class CheckupTest(unittest.TestCase):
         row = self.setup_item("legacy host settings")
         self.assertEqual(row["status"], "missing")
         self.assertEqual(row["reason"], "no longer read: ## Checks, Ledger project:/Task file: lines; set again per "
-                         "repository (/setup add project, /setup add checks), then delete by hand")
+                         "repository (/setup project, /setup checks), then delete by hand")
         self.assertNotIn("zq-", json.dumps(self.data()))
         self.write(config, "## Routing\n- on\n")
         self.assertFalse([r for r in self.data()["setup"] if r["check"] == "legacy host settings"])
@@ -486,7 +486,7 @@ class CheckupTest(unittest.TestCase):
         self.write(config, "## Checks\n- repo: zq-check\n\n## Agent roles\n- judge: jev\n\n" + matrix)
         self.assertEqual(self.setup_item("legacy host settings")["reason"],
                          "no longer read: ## Checks, ## Agent roles beside the matrix; set again per repository "
-                         "(/setup add project, /setup add checks), then delete by hand; the matrix holds roles and "
+                         "(/setup project, /setup checks), then delete by hand; the matrix holds roles and "
                          "the judge, so delete Agent roles by hand")
         self.assertNotIn("zq-", json.dumps(self.data()))
         # Without a matrix the host config row reports it with the conversion, not this row.
@@ -513,7 +513,7 @@ class CheckupTest(unittest.TestCase):
         self.write(config, "## Route judgment\n- Judge: zq-judge\n- Instruction check: on\n")
         row = self.setup_item("legacy host settings")
         self.assertEqual(row, {"check": "legacy host settings", "status": "missing", "reason":
-                               "no longer read: ## Route judgment; /setup add delegation (migrate) moves its "
+                               "no longer read: ## Route judgment; /setup delegation (migrate) moves its "
                                "Instruction check line and removes it"})
         self.assertNotIn("zq-", json.dumps(self.data()))
         self.write(config, "```\n## Route judgment\n```\n## Instruction check\n- Instruction check: on\n")
@@ -549,7 +549,7 @@ class CheckupTest(unittest.TestCase):
                 mock.patch.object(quota_probe.subprocess, "run") as run, \
                 mock.patch.object(quota_probe.subprocess, "Popen") as popen:
             self.assertEqual(checkup.quota_config(), (
-                "config: agy confirmation missing, codex executable gone; run /setup add quota again", True))
+                "config: agy confirmation missing, codex executable gone; run /setup quota again", True))
         run.assert_not_called()
         popen.assert_not_called()
         self.assertEqual([c.args[0] for c in checked.call_args_list], ["codex"])
@@ -586,7 +586,7 @@ class CheckupTest(unittest.TestCase):
             reason, broken = checkup.quota_config()
         self.assertEqual((reason, broken), (
             "config: codex: program changed since setup (0.57.1 to 0.58.0); "
-            "run /setup add quota to re-confirm the new path", True))
+            "run /setup quota to re-confirm the new path", True))
         self.assertNotIn(str(self.home), reason)
         checked.assert_not_called()
         run.assert_not_called()
@@ -647,7 +647,7 @@ class CheckupTest(unittest.TestCase):
         self.write(config, legacy + "## Agent roles\n- code review: codex\n- judge: jev\n")
         self.assertEqual(self.setup_item("host config"), {"check": "host config", "status": "missing", "reason": present +
                          "roles: missing; matrix absent and Agent roles no longer read, so roles are unset and the "
-                         "judge is host; /setup add delegation (migrate) converts it"})
+                         "judge is host; /setup delegation (migrate) converts it"})
         self.write(config, legacy + matrix)
         self.assertEqual(self.setup_item("host config"), {"check": "host config", "status": "ok", "reason": present +
                          "matrix valid; 2 agents; judge host (jev retired); roles assigned: code-review, navigator"})
@@ -658,7 +658,7 @@ class CheckupTest(unittest.TestCase):
         self.write(config, legacy + "## Agent levels\n- Consent: yes (2026-10-01)\n- codex: levels 1-4\n")
         self.assertEqual(self.setup_item("host config"), {"check": "host config", "status": "missing", "reason": present +
                          "levels: missing; matrix absent and Agent levels no longer read, so levels are unset and the "
-                         "judge is host; /setup add delegation (migrate) converts it"})
+                         "judge is host; /setup delegation (migrate) converts it"})
         self.write(config, legacy + "## Agent roles\n- judge: jev\n## Agent levels\n- Consent: no\n")
         self.assertIn("matrix absent and Agent roles and Agent levels no longer read, so roles and levels are unset",
                       self.setup_item("host config")["reason"])
@@ -1420,7 +1420,7 @@ class CheckupTest(unittest.TestCase):
 
 
 class NativeWindowsMessageTest(unittest.TestCase):
-    """Issue 193: without pwd, setup check and scan print one plain line and exit 1, no traceback."""
+    """Issue 193: without pwd, setup doctor and scan print one plain line and exit 1, no traceback."""
 
     def test_check_and_scan_print_one_line_without_pwd(self):
         for script in (SCRIPT, ROOT / "skills/setup/scripts/agent_scan.py"):

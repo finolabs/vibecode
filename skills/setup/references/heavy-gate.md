@@ -1,6 +1,6 @@
 # Heavy-job gate (Claude Code only)
 
-Offered from `setup add delegation` as its own consent; design in the plugin's heavy-jobs spec, part D.
+Offered from `setup delegation` as its own consent; design in the plugin's heavy-jobs spec, part D.
 
 First run `python3 -I <this skill folder>/scripts/heavy_gate_setup.py preview --on [--folder <config folder>]...` and the same with `--remove` instead of `--on` (default `~/.claude`; name each config folder the user runs Claude Code with, such as a `CLAUDE_CONFIG_DIR`, at most four, the same in both). Each is a dry run that writes only its private plan. Show both outputs, the Yes change and the No change with their `Digest:` lines, then ask:
 "Turn on the heavy-job gate, which stops a heavy command in Claude Code unless it runs through heavy_run.py?"

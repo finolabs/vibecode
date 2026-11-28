@@ -37,7 +37,7 @@ HEADER = ('afk overlay in force (AGENTS.afk.md, approved by the owner): while th
           'replace those rules of this repository; every other rule still holds, and afk check stays the last gate.')
 FOOTER = 'End of the afk overlay.'
 NOT_IN_FORCE = ('An afk overlay is here but not in force (changed since setup or unsafe): ask before the actions it '
-                'names, or run /setup add afk.')
+                'names, or run /setup afk.')
 STOPPED = "The afk overlay is no longer in force: the repository's normal instructions apply again."
 
 
@@ -276,7 +276,7 @@ def backup(data):
 
 
 if __name__ == '__main__':
-    # `status`: one word for `/setup check` (none, in-force or not-in-force); prints no file text or path.
+    # `status`: one word for `/setup doctor` (none, in-force or not-in-force); prints no file text or path.
     if sys.argv[1:] != ['status']:
         print('usage: afk_overlay.py status', file=sys.stderr)
         raise SystemExit(2)

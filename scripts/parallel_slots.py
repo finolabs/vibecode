@@ -256,7 +256,7 @@ def summary(repo=None, families=FAMILIES):
     try:
         state = status(repo)
     except store.SettingsNeedSetup:
-        return 'unknown (project settings need setup again: run /setup add delegation)'
+        return 'unknown (project settings need setup again: run /setup delegation)'
     except (OSError, ValueError, TypeError, KeyError, RecursionError):
         return 'unknown'
     try:

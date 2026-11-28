@@ -11,7 +11,7 @@ Ask one scope question, recommendation first: user for a bare invocation or pref
 - **Conflict scan with this plugin.** In every existing instruction file of the chosen scope, look for lines that would stop `afk` or `delegate` from doing what the user set up, because instruction files win over skills. List each one with its file and line and propose its replacement for the interview; nothing changes without that file's own yes in step 5. Look for:
   - a merge, tag, release or deploy that only the user may run, or only in the session where the user approved it, with no exception for an `afk` lease (which may merge, tag, release and deploy, except what the credential floor, the guards that are on and the host's own deny rules refuse): propose "except under an `afk` lease, which decides as its setup records";
   - an away rule of its own (ask an advisor, wait, stop) that duplicates or narrows `afk` "Decide": propose pointing to `afk`;
-  - machine facts (load thresholds, one run at a time per family, heavy-job lists, which agent takes which work): propose moving them to the host config (`## Machine rules`, `## Heavy jobs`, the assignment matrix) through `/setup add delegation`, and keeping one line in the contract;
+  - machine facts (load thresholds, one run at a time per family, heavy-job lists, which agent takes which work): propose moving them to the host config (`## Machine rules`, `## Heavy jobs`, the assignment matrix) through `/setup delegation`, and keeping one line in the contract;
   - a rule that a hook or the host now owns (a blocking rule restated as text): propose naming its enforcer or dropping it.
 - Something that cannot be checked here is listed as unverified in one line, with a request that the user paste its contents; missing permissions are not a reason to stop.
 
@@ -29,7 +29,7 @@ Where the repository adopts `review-gate` and a reviewer family cannot post (for
 
 ## 3. The standard
 
-Enforcers: agent judgment while drafting (advisory), then `/setup check` measures the written files.
+Enforcers: agent judgment while drafting (advisory), then `/setup doctor` measures the written files.
 
 - **Add only what the agent cannot infer from the repository**: exact build, test and lint commands (with the single-test form), misleading spots, decisions made outside the repository, anything the user corrected twice. A controlled study found context files raise cost by over 20% without raising task success. Add a line after an observed failure, not in advance.
 - **Make each line verifiable** and give the reason behind a rule that is not obvious. Plain wording over capitals.
@@ -61,4 +61,4 @@ Enforcers: the script. It writes only the closed list of targets (the user-level
 
 ## 6. Report
 
-List files written by scope, backups made, files left unchanged and why, pending `/setup` items and anything unverified. Remind the user to keep local context and backups out of git. To check the result, start a fresh session on each host in the repository and ask the agent to summarize its instruction sources and rules; docs checks alone do not prove runtime loading. Keep agent inventory and host settings out of instruction files: `/setup scan` and `/setup mode` own them and ask before writing. For work tracking dashboard settings, point to `/setup add project`.
+List files written by scope, backups made, files left unchanged and why, pending `/setup` items and anything unverified. Remind the user to keep local context and backups out of git. To check the result, start a fresh session on each host in the repository and ask the agent to summarize its instruction sources and rules; docs checks alone do not prove runtime loading. Keep agent inventory and host settings out of instruction files: `/setup scan` and `/setup mode` own them and ask before writing. For work tracking dashboard settings, point to `/setup project`.

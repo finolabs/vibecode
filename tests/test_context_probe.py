@@ -168,7 +168,7 @@ class ContextProbeTest(unittest.TestCase):
         code, out, err = self.cli("probe", "--host", "claude", "--session", SESSION)
         self.assertEqual((code, out), (3, ""))
         self.assertEqual(err, "Context probe claude: program changed since setup (2.1.318 to 2.1.319); "
-                              "run /setup add quota to re-confirm the new path\n")
+                              "run /setup quota to re-confirm the new path\n")
         self.assertNotIn(str(self.base), err)
         self.assertFalse(self.seen.exists())
         self.assertFalse((self.root / "state/context" / ctx.filename(SESSION, "claude")).exists())

@@ -365,7 +365,7 @@ class StateBlockTest(SyntheticStateTest):
         settings = repo / '.finolabs/vibecode/settings.json'
         settings.write_bytes(settings.read_bytes() + b' ')
         with mock.patch('os.getcwd', return_value=str(nested)):
-            self.assertIn("Parallel slots: unknown (project settings need setup again: run /setup add delegation)\n",
+            self.assertIn("Parallel slots: unknown (project settings need setup again: run /setup delegation)\n",
                           self.state())
 
     def test_no_metrics_consent_still_reads_recorded_roles(self):

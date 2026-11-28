@@ -31,7 +31,7 @@ Documented on 2026-11-05, read through a page summarizer and not run on any host
 | Antigravity | 24,000 bytes per file after includes; about 20,000 tokens shared by global and always-on rules | The file is truncated; past the token budget the largest rule files are replaced by pointers | Rules are cumulative with no stated order | No rules load from subfolders below the workspace folder. A file in `.agents/rules/` needs a valid `trigger` in its frontmatter or it is ignored, and files nested in its subfolders are ignored unless registered. |
 | Gemini CLI | none stated | | Hierarchical, `@file.md` imports | Superseded by the Antigravity CLI on 2026-06-18 per its own page; treat its paths as legacy. |
 
-The 150-line figure in `procedure.md` is a house rule with no vendor source; 200 lines is Anthropic's documented target for Claude Code. `/setup check` measures these limits after a write.
+The 150-line figure in `procedure.md` is a house rule with no vendor source; 200 lines is Anthropic's documented target for Claude Code. `/setup doctor` measures these limits after a write.
 
 Use `AGENTS.md` as the sole repository source, with only the include and Claude-specific lines in `CLAUDE.md`; do not generate a parallel `GEMINI.md`. Keep committed content generic: no personal, customer or organization names or machine paths. Tell the user to keep `CLAUDE.local.md` and backups out of git. The `## Agent skills` block and review-gate adoption line belong to the core path of `/setup`; preserve them once in the source, and point to `/setup` for missing entries.
 

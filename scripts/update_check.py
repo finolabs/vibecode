@@ -118,7 +118,7 @@ def stable(value):
 NOTES_LIMIT = 65536
 KINDS = {"rename", "setup", "migration", "hook", "removed", "info"}
 ITEM_ID = re.compile(r"([0-9]+\.[0-9]+\.[0-9]+)/([a-z0-9-]{1,40})", re.ASCII)
-SETUP = re.compile(r"/setup add [a-z][a-z0-9-]{0,39}", re.ASCII)
+SETUP = re.compile(r"/setup [a-z][a-z0-9-]{0,39}", re.ASCII)
 CHECK_SCRIPT = re.compile(r"(?:scripts|skills/[a-z][a-z0-9-]{0,39}/scripts)/[a-z0-9_]{1,64}\.py", re.ASCII)
 CHECK_ARG = re.compile(r"[A-Za-z0-9._=-]{1,64}", re.ASCII)
 TEXT = re.compile(r"[ -~]{1,200}", re.ASCII)

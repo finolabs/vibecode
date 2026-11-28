@@ -1,8 +1,8 @@
 # Running a repository's stored checks
 
 `setup`'s `checks_setup.py` stores each repository's checks in the main checkout's `.finolabs/vibecode/checks.json`: an ordered list of short names and JSON argument arrays, never shell strings.
-Apply records the SHA-256 of the exact file in the private state folder; a file that differs from it (edited, or committed or checked out on a branch) or has none runs nothing, turns the local receipt off, and says to run `/setup add checks` again, so a repository cannot change which commands run.
-The project file is the only store: a missing file runs nothing, and a list saved with 0.2.4 in `## Checks` of the canonical host config is never read, so run `/setup add checks` again and delete that section by hand. Undo is `checks_setup.py remove` for this repository. `scripts/checks.py` in this skill runs the list.
+Apply records the SHA-256 of the exact file in the private state folder; a file that differs from it (edited, or committed or checked out on a branch) or has none runs nothing, turns the local receipt off, and says to run `/setup checks` again, so a repository cannot change which commands run.
+The project file is the only store: a missing file runs nothing, and a list saved with 0.2.4 in `## Checks` of the canonical host config is never read, so run `/setup checks` again and delete that section by hand. Undo is `checks_setup.py remove` for this repository. `scripts/checks.py` in this skill runs the list.
 
 ## Commands
 
@@ -21,11 +21,11 @@ Exits: 0 passed, 1 a check failed, 2 refused (no list, unknown base, outside a r
 
 A heavy check (the default) is launched through this skill's copy of `heavy_run.py` in its canonical form, `python3 -I <path>/heavy_run.py run --label "check <name>" -- <argument array>`. That form waits for the machine-wide heavy-job lock, the load and free memory, so heavy checks never run beside another heavy job.
 
-A light check, one the approved `checks.json` marks `"heavy": false`, runs directly: it never waits for the lock, the load or free memory, refuses during a pause (exit 77, checked again while it waits), waits only while macOS memory pressure is critical (up to `Wait cap minutes`, then exit 75), runs in its own process group until every member is gone, and stops that whole group after `Max job minutes` (exit 124); the output names it `(light, outside the heavy-job lock)`. `/setup add checks` saves checks that name test modules (`python3 -m unittest tests.test_x`) light and every other check heavy; the mark is part of the approved bytes, so a hand-added one runs nothing. No shell is involved, and the environment is the allowlist from `run_env.py`. `checks.py` edits no repository file and makes no network call. The checks themselves run the repository's own code, as cloud CI does (advisory: run them only on code you are willing to run).
+A light check, one the approved `checks.json` marks `"heavy": false`, runs directly: it never waits for the lock, the load or free memory, refuses during a pause (exit 77, checked again while it waits), waits only while macOS memory pressure is critical (up to `Wait cap minutes`, then exit 75), runs in its own process group until every member is gone, and stops that whole group after `Max job minutes` (exit 124); the output names it `(light, outside the heavy-job lock)`. `/setup checks` saves checks that name test modules (`python3 -m unittest tests.test_x`) light and every other check heavy; the mark is part of the approved bytes, so a hand-added one runs nothing. No shell is involved, and the environment is the allowlist from `run_env.py`. `checks.py` edits no repository file and makes no network call. The checks themselves run the repository's own code, as cloud CI does (advisory: run them only on code you are willing to run).
 
 ## The local receipt
 
-The local receipt is off by default. The user turns it on per repository through `checks_setup.py receipt on`, which asks its own question in `/setup add checks`. When the mode is on, `checks.py run` writes a receipt only when all of these hold (script-enforced):
+The local receipt is off by default. The user turns it on per repository through `checks_setup.py receipt on`, which asks its own question in `/setup checks`. When the mode is on, `checks.py run` writes a receipt only when all of these hold (script-enforced):
 
 - the run covered the whole stored list (never `--changed`) and every check passed;
 - the working tree was clean (no changed or untracked file) before and after the run;

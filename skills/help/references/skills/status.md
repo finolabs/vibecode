@@ -10,7 +10,7 @@ Typed by the user only.
 
 ## Tips
 
-- Recording starts only after you consent in `/setup add metrics`; it holds metadata only, never prompts, code, command text or paths, and sends nothing anywhere.
+- Recording starts only after you consent in `/setup metrics`; it holds metadata only, never prompts, code, command text or paths, and sends nothing anywhere.
 - Leave the page open: while its tab is visible it reloads its data every 5 seconds.
 - Run it inside a repository to add that repository to the page by name.
 - `purge` asks before deleting; stopping the recording is a second, separate question.

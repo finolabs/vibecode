@@ -9,7 +9,7 @@ Works beside `review-gate`, which holds the pull request protocol, reviewer inde
 
 Enforcer: agent judgment, advisory, for every rule below. Where a repository's `## Agent skills` section names `ui-review-gate` (its opt-in, asked in `setup`), the run's result is also posted through `post_review.py` as a `kind=ui` marker, and `merge_check.py` blocks a pull request whose router marker says `ui=yes` until that marker approves the head (script); elsewhere `merge_check.py` does not read this gate or its receipt.
 
-Who runs it: `review_route.py --kind ui` names the family that owns the `ui-review` role of the assignment matrix, when that family is present, available and not the author; otherwise it routes the UI review as a code review (script; owner decision, 28/11/2026). The user assigns the role in `/setup add roles`. A `models` rule `for ui-review` chooses that family's model, and `route_pick.py --kind ui-review` takes it too.
+Who runs it: `review_route.py --kind ui` names the family that owns the `ui-review` role of the assignment matrix, when that family is present, available and not the author; otherwise it routes the UI review as a code review (script; owner decision, 28/11/2026). The user assigns the role in `/setup roles`. A `models` rule `for ui-review` chooses that family's model, and `route_pick.py --kind ui-review` takes it too.
 
 **Advisory (agent judgment):** Talk to the user in the language they are using, including questions and option labels; keep command names, flags, file paths, skill names and other technical names unchanged.
 

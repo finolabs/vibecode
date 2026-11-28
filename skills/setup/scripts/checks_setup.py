@@ -46,7 +46,7 @@ EXCLUDE_LINE = b'.finolabs/\n'
 EXCLUDE_FORMS = {'.finolabs/', '.finolabs', '/.finolabs/', '/.finolabs', '.finolabs/*', '/.finolabs/*'}
 APPROVAL_NOTICE = ("Apply records the SHA-256 of these exact bytes as approved in your private state folder. A file "
                    "that differs from it (edited by hand, committed or checked out on a branch) or has no approval "
-                   "reads as unset: nothing runs and the local receipt is off until you run /setup add checks "
+                   "reads as unset: nothing runs and the local receipt is off until you run /setup checks "
                    "again.")
 HOOK_KEYS = {'action', 'repo', 'hooks', 'content', 'existing', 'ours', 'backup', 'root', 'created'}
 HOOK_MARK = '# fnl-checks pre-push hook'  # kept: hooks installed before 0.2.5 carry it

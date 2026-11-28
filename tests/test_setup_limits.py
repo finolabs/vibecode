@@ -146,7 +146,9 @@ class SizeLimitTests(unittest.TestCase):
         total = sum(len(p.read_bytes()) for p in loaded)
         # 15050: the beginner path and Quick also ask the compaction threshold (owner decision, 17/11/2026).
         # +50 bytes in 0.3.3 for the UI review option of the Agent skills block.
-        self.assertLessEqual(total, 15100, {str(p.relative_to(SKILL)): p.stat().st_size for p in loaded})
+        # +200 bytes in 0.3.5: every feature named in argument-hint and the one-line answer to a stray `add`
+        # (owner decision, 28/11/2026).
+        self.assertLessEqual(total, 15300, {str(p.relative_to(SKILL)): p.stat().st_size for p in loaded})
 
 
     def test_beginner_threshold_step_budget(self):
@@ -196,7 +198,7 @@ class ConsentInventoryTests(unittest.TestCase):
             self.assertNotIn("add autopilot", text, path.name)
             self.assertNotIn("autopilot_setup.py", text, path.name)
         feature = (REFS / "features" / "afk.md").read_text()
-        self.assertIn("/setup add afk", feature)
+        self.assertIn("/setup afk", feature)
         self.assertIn("Only the `## afk` section changes", feature)
 
     def test_afk_settings_are_separate_and_ask_no_mode(self):
@@ -324,7 +326,7 @@ class PrerequisiteTests(unittest.TestCase):
     def test_declined_is_recorded_distinctly_and_add_asks_again(self):
         skill = (REFS / "menu.md").read_text()
         for words in ("setup_features.py decline <feature> --yes", "a bare run does not offer it again",
-                      "that record is not a consent", "`add <feature>` always asks again"):
+                      "that record is not a consent", "`/setup <feature>` always asks again"):
             self.assertIn(words, skill)
 
     def test_judge_defaults_to_host_when_roles_is_never_run(self):
@@ -338,9 +340,14 @@ class EntryAndVocabularyTests(unittest.TestCase):
         description = meta["description"].lower()
         for group in ("host configuration", "instruction files"):
             self.assertIn(group, description)
-        self.assertNotIn("(", meta["argument-hint"].replace('"', "")[:0])
-        for word in ("add <feature>", "instructions", "check", "scan", "mode"):
-            self.assertIn(word, meta["argument-hint"])
+        hint = meta["argument-hint"].strip('"')[1:-1]
+        words = [part.strip() for part in hint.split("|")]
+        self.assertEqual(words, ["afk", "checks", "companions", "compaction", "delegation", "metrics", "project",
+                                 "quota", "roles", "instructions", "doctor", "scan", "mode [args]"])
+        self.assertEqual(sorted(words[:9]), sorted(path.stem for path in FEATURES))
+        self.assertNotIn("add", hint.split())
+        self.assertNotRegex(meta["description"], r"\badd\b|\bcheck\b")
+        self.assertIn("doctor", meta["description"])
         policy = (SKILL / "agents/openai.yaml").read_text()
         self.assertEqual(policy, "policy:\n  allow_implicit_invocation: false\n")
 
@@ -348,8 +355,29 @@ class EntryAndVocabularyTests(unittest.TestCase):
         skill = (SKILL / "SKILL.md").read_text()
         for words in ("Codex: `$setup <word>`", "| none |", "A plain sentence", "never answers a consent question",
                       "one clarifying question", "never several features at once", "is unverified",
-                      "`add <feature>`", "`instructions`", "`check`", "`scan` / `mode [args]`"):
+                      "`<feature>`", "`instructions`", "`doctor`", "`scan` / `mode [args]`"):
             self.assertIn(words, skill)
+        for old in ("`add <feature>`", "| `check` |", "`/setup check`"):
+            self.assertNotIn(old, skill)
+
+    def test_stray_add_gets_one_line_and_stops(self):
+        skill = (SKILL / "SKILL.md").read_text()
+        row = next(line for line in skill.splitlines() if line.startswith("| `add <x>`"))
+        self.assertIn("say: \"The syntax is now `/setup <x>`.\"", row)
+        self.assertIn("; stop", row)
+        self.assertIn("`check`: `/setup doctor`", row)
+        self.assertIn("no alias", row)
+
+    def test_no_live_surface_names_the_retired_commands(self):
+        roots = [ROOT / "skills", ROOT / "scripts", ROOT / "agents", ROOT / "README.md", ROOT / "PRIVACY.md",
+                 ROOT / "docs/how-it-compares.md", ROOT / "docs/diagrams"]
+        files = [f for r in roots for f in ([r] if r.is_file() else r.rglob("*")) if f.is_file()
+                 and f.suffix in {".md", ".py", ".js", ".json", ".yaml", ".html", ".svg", ".mmd"}]
+        retired = re.compile(r"setup`? add\b|setup`? check\b|\$setup add\b|\$setup check\b|`add <feature>`")
+        for path in files:
+            # Only a line that says the old form is gone, with no alias, may still name it.
+            text = "\n".join(line for line in path.read_text(errors="ignore").splitlines() if "no alias" not in line)
+            self.assertNotRegex(text, retired, str(path.relative_to(ROOT)))
 
     def test_removed_skills_are_gone_and_scripts_moved(self):
         for name in ("fnl-setup-instructions", "fnl-scan-agents", "fnl-set-mode"):

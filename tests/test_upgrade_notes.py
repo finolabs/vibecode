@@ -16,7 +16,7 @@ spec.loader.exec_module(u)
 
 VALID = {'versions': [{'version': '0.3.1', 'items': [
     {'id': '0.3.1/new-thing', 'kind': 'setup', 'text': 'A synthetic feature needs its own setup.',
-     'setup': '/setup add thing', 'check': ['scripts/thing_check.py', 'state']},
+     'setup': '/setup thing', 'check': ['scripts/thing_check.py', 'state']},
     {'id': '0.3.1/old-name', 'kind': 'rename', 'text': 'The old command is renamed.', 'until': '0.4.0'},
 ]}]}
 
@@ -50,8 +50,8 @@ class NotesSchemaTest(unittest.TestCase):
             lambda d: item(d).update(text='x' * 201),
             lambda d: item(d).update(text='two\nlines'),
             lambda d: item(d).update(text=''),
-            lambda d: item(d).update(setup='/setup add thing; rm'),
-            lambda d: item(d).update(setup='setup add thing'),
+            lambda d: item(d).update(setup='/setup thing; rm'),
+            lambda d: item(d).update(setup='setup thing'),
             lambda d: item(d).update(check='scripts/thing_check.py'),
             lambda d: item(d).update(check=[]),
             lambda d: item(d).update(check=['/abs/thing.py']),
@@ -82,40 +82,40 @@ class NotesSchemaTest(unittest.TestCase):
         state = 'skills/setup/scripts/upgrade_state.py'
         expected = {
             '0.2.0/codex-hook-trust': ('hook', None, None),
-            '0.2.0/context-reading': ('setup', '/setup add compaction', None),
+            '0.2.0/context-reading': ('setup', '/setup compaction', None),
             '0.2.0/removed-skills': ('removed', None, None),
             '0.2.1/codex-hook-trust': ('hook', None, None),
-            '0.2.1/parallel-limits': ('setup', '/setup add delegation', [state, 'no-parallel-lines']),
-            '0.2.1/away-setup': ('setup', '/setup add afk', [state, 'afk']),
-            '0.2.2/agent-levels': ('setup', '/setup add delegation', [state, 'levels']),
-            '0.2.3/matrix-migrate': ('migration', '/setup add delegation', [state, 'matrix']),
+            '0.2.1/parallel-limits': ('setup', '/setup delegation', [state, 'no-parallel-lines']),
+            '0.2.1/away-setup': ('setup', '/setup afk', [state, 'afk']),
+            '0.2.2/agent-levels': ('setup', '/setup delegation', [state, 'levels']),
+            '0.2.3/matrix-migrate': ('migration', '/setup delegation', [state, 'matrix']),
             '0.2.3/help-rename': ('rename', None, None),
-            '0.2.3/away-decisions': ('setup', '/setup add afk', [state, 'afk-decisions']),
+            '0.2.3/away-decisions': ('setup', '/setup afk', [state, 'afk-decisions']),
             '0.2.3/question-gate-trust': ('hook', None, None),
             '0.2.3/codex-hook-trust': ('hook', None, None),
-            '0.2.4/checks-setup': ('setup', '/setup add checks', [state, 'repo-checks']),
-            '0.2.5/checks-store': ('setup', '/setup add checks', [state, 'no-checks-section']),
-            '0.2.5/parallel-settings': ('setup', '/setup add delegation', [state, 'no-project-settings']),
-            '0.2.5/project-settings': ('setup', '/setup add project', [state, 'no-project-settings', 'no-global-lines']),
-            '0.2.5/project-labels': ('setup', '/setup add project', [state, 'no-project-labels']),
+            '0.2.4/checks-setup': ('setup', '/setup checks', [state, 'repo-checks']),
+            '0.2.5/checks-store': ('setup', '/setup checks', [state, 'no-checks-section']),
+            '0.2.5/parallel-settings': ('setup', '/setup delegation', [state, 'no-project-settings']),
+            '0.2.5/project-settings': ('setup', '/setup project', [state, 'no-project-settings', 'no-global-lines']),
+            '0.2.5/project-labels': ('setup', '/setup project', [state, 'no-project-labels']),
             '0.2.5/codex-hook-trust': ('hook', None, None),
-            '0.2.5/quota-repin': ('setup', '/setup add quota', None),
-            '0.2.5/context-probe': ('setup', '/setup add quota', None),
+            '0.2.5/quota-repin': ('setup', '/setup quota', None),
+            '0.2.5/context-probe': ('setup', '/setup quota', None),
             '0.2.5/worktree-sweep': ('info', None, None),
             '0.2.5/afk-goal': ('info', None, None),
             '0.2.5/main-checkout': ('info', None, None),
             '0.2.5/full-names': ('info', None, None),
-            '0.2.5/afk-section': ('setup', '/setup add afk', [state, 'afk-section']),
+            '0.2.5/afk-section': ('setup', '/setup afk', [state, 'afk-section']),
             '0.2.5/tidy-rename': ('info', None, None),
-            '0.2.5/afk-project': ('setup', '/setup add afk', None),
-            '0.2.5/compaction-nudge': ('setup', '/setup add compaction', None),
+            '0.2.5/afk-project': ('setup', '/setup afk', None),
+            '0.2.5/compaction-nudge': ('setup', '/setup compaction', None),
             '0.2.5/shape': ('info', None, None),
             '0.2.5/zcode': ('info', None, None),
             '0.2.5/ledger-closure': ('info', None, None),
             '0.2.5/dispatch-nudge': ('info', None, None),
             '0.3.2/fnl-aliases-removed': ('removed', None, None),
-            '0.3.3/coordinator-threshold': ('setup', '/setup add compaction', None),
-            '0.3.3/per-model-threshold': ('setup', '/setup add compaction', None),
+            '0.3.3/coordinator-threshold': ('setup', '/setup compaction', None),
+            '0.3.3/per-model-threshold': ('setup', '/setup compaction', None),
         }
         for ident, (kind, setup, check) in expected.items():
             with self.subTest(item=ident):
@@ -138,7 +138,7 @@ class NotesSchemaTest(unittest.TestCase):
         self.assertIn('/finolabs-vibecode:status', items['0.2.5/full-names']['text'])
         self.assertIn('/goal', items['0.2.5/afk-goal']['text'])
         self.assertIn('/loop', items['0.2.5/afk-goal']['text'])
-        self.assertIn('/setup add afk inside it', items['0.2.5/afk-project']['text'])
+        self.assertIn('/setup afk inside it', items['0.2.5/afk-project']['text'])
         self.assertIn('FNL_COMPACT_NUDGE=off', items['0.2.5/compaction-nudge']['text'])
         self.assertIn('FNL_DISPATCH_NUDGE=off', items['0.2.5/dispatch-nudge']['text'])
         self.assertIn('--all-projects', items['0.2.5/ledger-closure']['text'])
@@ -160,7 +160,7 @@ class NotesSchemaTest(unittest.TestCase):
         self.assertEqual([item['kind'] for item in parsed[1]['items']][:5], ['setup', 'setup', 'setup', 'setup', 'rename'])
         store = parsed[1]['items'][0]
         self.assertEqual(store['id'], '0.2.5/checks-store')
-        self.assertEqual(store['setup'], '/setup add checks')
+        self.assertEqual(store['setup'], '/setup checks')
         for phrase in ('0.2.4', 'no longer read', 'each repository', '## Checks', 'host.md', 'by hand'):
             self.assertIn(phrase, store['text'])
         # Parallel limits and caps are set again before the old section is deleted.
@@ -169,10 +169,10 @@ class NotesSchemaTest(unittest.TestCase):
         # invoke an old name no longer loads it: typed names work, files need the new names.
         self.assertEqual(names['id'], '0.2.5/skill-names')
         self.assertNotIn('setup', names)
-        for phrase in ('fnl- prefix', 'typed', 'instruction files', 'new names', '/setup check'):
+        for phrase in ('fnl- prefix', 'typed', 'instruction files', 'new names', '/setup doctor'):
             self.assertIn(phrase, names['text'])
         self.assertNotIn('keep working through the aliases', names['text'])
-        self.assertEqual((parallel['id'], parallel['setup']), ('0.2.5/parallel-settings', '/setup add delegation'))
+        self.assertEqual((parallel['id'], parallel['setup']), ('0.2.5/parallel-settings', '/setup delegation'))
         for phrase in ('no longer read', 'host.md', 'each repository', 'parallel', 'caps', 'before', '## Project settings'):
             self.assertIn(phrase, parallel['text'])
         self.assertEqual((settings['id'], labels['id']), ('0.2.5/project-settings', '0.2.5/project-labels'))
@@ -189,7 +189,7 @@ class NotesSchemaTest(unittest.TestCase):
                  for item in entry['items']}
         retired = items['0.2.6/agent-roles-retired']
         self.assertEqual((retired['kind'], retired['setup'], retired['check']),
-                         ('migration', '/setup add delegation', ['skills/setup/scripts/upgrade_state.py', 'roles-retired']))
+                         ('migration', '/setup delegation', ['skills/setup/scripts/upgrade_state.py', 'roles-retired']))
         self.assertTrue((ROOT / retired['check'][0]).is_file())
         for phrase in ('Breaking', '## Agent roles', 'no longer read', 'host', 'Jev', 'migrate', 'consent'):
             self.assertIn(phrase, retired['text'])
@@ -203,9 +203,9 @@ class NotesSchemaTest(unittest.TestCase):
             self.assertNotIn('check', items[ident])
         for phrase in ('exhausted', 'limit', 'end line', 'stop its loop'):
             self.assertIn(phrase, items['0.2.6/afk-end']['text'])
-        for phrase in ('beginner', 'later run', '/setup add <feature>'):
+        for phrase in ('beginner', 'later run', '/setup <feature>'):
             self.assertIn(phrase, items['0.2.6/setup-beginner']['text'])
-        for phrase in ('/setup add afk', 'account', 'this repository', 'want different'):
+        for phrase in ('/setup afk', 'account', 'this repository', 'want different'):
             self.assertIn(phrase, items['0.2.6/afk-scope']['text'])
 
     def test_031_names_the_agent_levels_retirement_and_its_conversion(self):
@@ -213,7 +213,7 @@ class NotesSchemaTest(unittest.TestCase):
                  for item in entry['items']}
         retired = items['0.3.1/agent-levels-retired']
         self.assertEqual((retired['kind'], retired['setup'], retired['check']),
-                         ('migration', '/setup add delegation', ['skills/setup/scripts/upgrade_state.py', 'levels-retired']))
+                         ('migration', '/setup delegation', ['skills/setup/scripts/upgrade_state.py', 'levels-retired']))
         self.assertTrue((ROOT / retired['check'][0]).is_file())
         self.assertTrue(retired['text'].startswith('Breaking:'))
         self.assertTrue(retired['text'].isascii() and len(retired['text']) <= 200)
@@ -223,9 +223,9 @@ class NotesSchemaTest(unittest.TestCase):
     def test_030_names_the_afk_setup_steps_and_the_breaking_away_changes(self):
         items = {item['id']: item for entry in u.parse_notes(json.loads(NOTES.read_text()))
                  for item in entry['items']}
-        steps = {'0.3.0/afk-project-rules': '/setup add afk', '0.3.0/afk-test-commands': '/setup add afk',
-                 '0.3.0/afk-release-targets': '/setup add afk', '0.3.0/afk-account-lists': '/setup add afk',
-                 '0.3.0/advisor-repin': '/setup add quota', '0.3.0/matrix-models': '/setup add delegation'}
+        steps = {'0.3.0/afk-project-rules': '/setup afk', '0.3.0/afk-test-commands': '/setup afk',
+                 '0.3.0/afk-release-targets': '/setup afk', '0.3.0/afk-account-lists': '/setup afk',
+                 '0.3.0/advisor-repin': '/setup quota', '0.3.0/matrix-models': '/setup delegation'}
         for ident, step in steps.items():
             self.assertEqual((items[ident]['kind'], items[ident]['setup']), ('setup', step))
         for ident in ('0.3.0/afk-lease-restart', '0.3.0/afk-table', '0.3.0/afk-release-repo',
@@ -245,15 +245,22 @@ class NotesSchemaTest(unittest.TestCase):
         afk = items['0.2.5/afk-section']
         # Modeled on checks-store: the old section is not read, setup runs again, the user deletes it by hand.
         self.assertEqual((afk['kind'], afk['setup'], afk['check']),
-                         ('setup', '/setup add afk', ['skills/setup/scripts/upgrade_state.py', 'afk-section']))
+                         ('setup', '/setup afk', ['skills/setup/scripts/upgrade_state.py', 'afk-section']))
         self.assertTrue((ROOT / afk['check'][0]).is_file())
-        for phrase in ('/afk', '## Autopilot', 'host.md', 'no longer read', '/setup add afk', 'by hand'):
+        for phrase in ('/afk', '## Autopilot', 'host.md', 'no longer read', '/setup afk', 'by hand'):
             self.assertIn(phrase, afk['text'])
         tidy = items['0.2.5/tidy-rename']
         self.assertEqual(tidy['kind'], 'info')
         self.assertNotIn('setup', tidy)
-        for phrase in ('session-hygiene', 'tidy', 'typed', 'instruction files', '/setup check'):
+        for phrase in ('session-hygiene', 'tidy', 'typed', 'instruction files', '/setup doctor'):
             self.assertIn(phrase, tidy['text'])
+
+    def test_035_names_the_new_setup_commands(self):
+        items = {item['id']: item for entry in u.parse_notes(json.loads(NOTES.read_text())) for item in entry['items']}
+        note = items['0.3.5/setup-commands']
+        self.assertEqual(note['kind'], 'rename')
+        for phrase in ('no alias', '/setup <feature>', '/setup <feature>', '/setup doctor', '/setup doctor'):
+            self.assertIn(phrase, note['text'])
 
     def test_release_version_needs_an_entry(self):
         notes = u.parse_notes(json.loads(NOTES.read_text()))
