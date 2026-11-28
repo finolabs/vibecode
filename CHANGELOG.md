@@ -4,6 +4,10 @@ All notable changes to this plugin are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Added
+
+- A `ui-review` role in `## Assignment matrix`, beside `code-review`, `security-review`, `navigator` and `advisor` (owner decision, 28/11/2026). `review_route.py --kind ui` sends a `ui-review-gate` review to its owner when that family is present, available and not the author, and otherwise routes it as a code review; `route_pick.py --kind ui-review` and `models` rules `for ui-review` choose its model. `/setup add roles` asks for it in a second question call, `matrix_setup.py choices` lists the roles, and the session-start `Roles:` line shows `ui review <family>` only when it is assigned. Assign it through `/setup add roles`; nothing changes until you do.
+
 ### Fixed
 
 - The recorded same-family security fallback no longer asks for quota evidence about a family that never reviews: `merge_check.py --independent --fallback-family` counts only the present families `review_route.py` could pick (`review_config.review_families`: with a usable `## Assignment matrix`, only the families it lists). Before, a present Antigravity with no matrix line blocked the fallback with `no evidence that antigravity, codex is out` while Codex was out of quota.
