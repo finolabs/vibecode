@@ -54,6 +54,18 @@ def rules():
 RULES = rules()
 
 
+def backup_name(folder, name):
+    base = name + '.bak-' + time.strftime('%Y%m%d-%H%M%S')
+    number = 1
+    while True:
+        candidate = base + f'-{number}'
+        try:
+            os.lstat(candidate, dir_fd=folder)
+        except FileNotFoundError:
+            return candidate
+        number += 1
+
+
 def settings_path():
     return dr.account_home() / '.gemini/antigravity-cli/settings.json'
 
@@ -94,7 +106,7 @@ def preview(names):
     path = settings_path()
     with dr.relocated_folder(path.parent) as folder:
         raw, mode = cs.read_target(folder, path.name)
-        backup = cs.backup_name(folder, path.name)
+        backup = backup_name(folder, path.name)
     new, added, removed, kept = change(raw, names)
     plan = {'names': names, 'rules': [RULES[name] for name in names], 'created': time.time(), 'path': str(path),
             'sha256': cs.content_hash(raw), 'mode': mode, 'backup': backup}
