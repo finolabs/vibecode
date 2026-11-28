@@ -193,6 +193,37 @@ class FloorCorpusTest(OpenBase):
                 self.check(paths=[path], tier=3, code='floor')
         self.check(paths=['src/auth/token.ts', '.github/workflows/ci.yml', 'CLAUDE.md', 'skills/afk/SKILL.md'])
 
+    def test_an_existing_repository_path_is_not_a_key_by_its_name(self):
+        # 27/11/2026: `sk-` inside `task-` read as a key and refused the task lifecycle diagram. A path naming an
+        # existing file or folder of the repository is exempt from the key pattern only; its content still counts.
+        diagram = 'docs/diagrams/task-lifecycle-light.html'
+        (self.repo / 'docs/diagrams').mkdir(parents=True)
+        (self.repo / diagram).write_text('<svg/>\n')
+        self.check(paths=[diagram])
+        self.check(paths=[str(self.repo / diagram)])
+        self.check(['cat', diagram])
+        self.check(['git', 'add', diagram])
+        key = 'sk-or-v1-' + '0123456789abcdef' * 4
+        for path in ('docs/diagrams/task-lifecycle-dark.html', key, 'docs/' + key, 'x%3D' + key):
+            with self.subTest(path=path[:24]):
+                self.check(paths=[path], tier=3, code='floor')
+                self.check(['cat', path], tier=3, code='floor')
+        (self.repo / 'notes.md').write_text('token x%3D' + key + '\n')
+        self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file', 'notes.md'], tier=3, code='floor')
+        (self.repo / diagram).write_text('token ' + key + '\n')
+        self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file', diagram], tier=3, code='floor')
+
+    def test_a_path_that_leaves_the_repository_keeps_the_key_pattern(self):
+        outside = self.home / 'outside'
+        (outside / 'diagrams').mkdir(parents=True)
+        (outside / 'diagrams/task-lifecycle-light.html').write_text('<svg/>\n')
+        (self.repo / 'docs').mkdir()
+        (self.repo / 'docs/linked').symlink_to(outside / 'diagrams')
+        for path in ('docs/linked/task-lifecycle-light.html', str(outside / 'diagrams/task-lifecycle-light.html'),
+                     '../outside/diagrams/task-lifecycle-light.html'):
+            with self.subTest(path=path):
+                self.check(paths=[path], tier=3, code='floor')
+
     def test_every_open_case_is_tier_1(self):
         for argv, source in OPEN_TIER1:
             with self.subTest(argv=argv, source=source):

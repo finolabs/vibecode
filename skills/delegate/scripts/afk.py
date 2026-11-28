@@ -903,9 +903,26 @@ def inline_codes(program, words):
     return codes
 
 
+def repository_path(token, cwd=None):
+    """True when the token names an existing file or folder inside the repository holding `cwd`, with no symlink
+    leaving it. Such a name is the repository's own, so a key prefix inside it (`task-lifecycle`) is not a key."""
+    value = strip_token(token)
+    if not value or value.startswith('~') or '\0' in value:
+        return False
+    try:
+        found, ident = store.identity(str(cwd or os.getcwd()))
+        if found != 'found':
+            return False
+        root = os.path.realpath(ident.checkout)
+        real = os.path.realpath(os.path.join(cwd or os.getcwd(), value))
+        return (real == root or real.startswith(root + os.sep)) and os.path.exists(real)
+    except (OSError, ValueError):
+        return False
+
+
 def floor_path(token, cwd=None):
     """True when one path or argv token names a secret, key or credential file, folder or helper (B, obligation 4)."""
-    if secret_patterns.PREFIX.search(token):
+    if secret_patterns.PREFIX.search(token) and not repository_path(token, cwd):
         return True
     raw = token
     for match in DOLLAR_NAME.finditer(raw):
@@ -1785,7 +1802,8 @@ def rules():
             f'- Environment readers anywhere in inline code: {_codes(ENV_WORDS)}; the whole identifiers `ENV`, '
             '`%ENV`, `$ENV` and `ENVIRON` (case-sensitive).',
             '- A `$NAME` or `NAME=value` whose name is sensitive (`secret_patterns.py`), `${!name}`, and a value with '
-            'a known secret prefix.',
+            'a known secret prefix, except in the name of an existing file or folder of the repository (no symlink '
+            'leaving it).',
             f'- Files and folders: {_codes(FLOOR_NAMES)}; names ending in {_codes(FLOOR_SUFFIXES)}; any token holding '
             '`credentials` or `creds`; `.env` and `.env.*` except '
             f'{_codes(ENV_EXCEPTIONS)}; `*.env`; `secrets` and `secrets.*`; `/proc/*/environ`; a `.yarnrc*` that '
