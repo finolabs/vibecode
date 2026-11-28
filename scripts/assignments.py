@@ -9,7 +9,8 @@ import re
 
 HEADING = '## Assignment matrix'
 TYPES = ('frontend', 'design', 'video', 'three-d', 'image-generation', 'transcription')
-ROLES = ('code-review', 'security-review', 'navigator', 'advisor')
+# ui-review owns `ui-review-gate` reviews (owner decision, 28/11/2026).
+ROLES = ('code-review', 'security-review', 'navigator', 'advisor', 'ui-review')
 # Kinds of work a `models` rule can name: the role names plus `implement` (docs/specs/matrix-models.md).
 KINDS = ('implement',) + ROLES
 NAME = re.compile(r'claude|codex|antigravity|zcode|claude[a-z0-9]{1,24}|zcode[a-z0-9]{1,24}')

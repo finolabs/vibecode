@@ -183,6 +183,16 @@ class RouteTest(unittest.TestCase):
         rows = self.pick(host() + matrix(code="antigravity", security="codex"))
         self.assertEqual(rows, [("antigravity", "headless", "assigned"), ("codex", "headless", "assigned")])
 
+    def test_ui_review_goes_to_its_role_owner_else_the_code_route(self):
+        """A `kind=ui` review (ui-review-gate) routes to the ui-review role, else as a code review (28/11/2026)."""
+        text = host() + matrix(code="codex", security="codex", ui="antigravity")
+        self.assertEqual(self.pick(text, kinds=("ui",)), [("antigravity", route.FORMS["antigravity"], "assigned")])
+        self.assertEqual(self.pick(text), [("codex", "headless", "assigned-one-run-two-comments")] * 2)
+        plain = host() + matrix(code="codex", security="codex")
+        self.assertEqual(self.pick(plain, kinds=("ui",)), self.pick(plain, kinds=("code",)))
+        busy = host(present=("claude", "codex")) + matrix(code="codex", security="codex", ui="antigravity")
+        self.assertEqual(self.pick(busy, kinds=("ui",)), self.pick(busy, kinds=("code",)))
+
     def test_same_family_fresh_context_disclosure(self):
         rows = self.pick(host(("claude",)))
         self.assertEqual({r[0] for r in rows}, {"claude"})

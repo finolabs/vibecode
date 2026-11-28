@@ -104,6 +104,10 @@ def roles_words(families=ALL_FAMILIES):
             # Jev was retired (owner decision, 26/11/2026): `judge.py` reads `Judge: jev` as host, and so does this line.
             word = "host (jev retired)" if key == "judge" and word == "jev" else word
             parts.append(f"{key} {word}")
+        # The ui-review role (28/11/2026) prints only when assigned, so the line is unchanged without it.
+        owner = roles.get("ui review")
+        if owner is not None:
+            parts.append("ui review " + (owner if isinstance(owner, str) and owner in ALL_FAMILIES else "unknown"))
         posts = []
         for family in families:
             value = posting.get(family, "unverified")
