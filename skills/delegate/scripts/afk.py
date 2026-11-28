@@ -908,17 +908,27 @@ def repository_path(token, cwd=None):
     inside the repository holding `cwd` with no symlink leaving it: `target` is its resolved path relative to `root`.
     Such a name is the repository's own, so a key prefix inside it (`task-lifecycle`) is not a key; None otherwise."""
     value = strip_token(token)
-    option = re.fullmatch(r'-{1,2}[A-Za-z][A-Za-z0-9-]*=(.+)', value)
-    value = option[1] if option else value
-    if not value or value.startswith('~') or '\0' in value:
+    option = re.fullmatch(r'(-{1,2}[A-Za-z][A-Za-z0-9-]*)=(.+)', value)
+    if option:
+        if secret_patterns.PREFIX.search(option[1]):
+            return None  # a key written as the option name is still a key
+        value = option[2]
+    if not value or value.startswith('~') or '\0' in value or '..' in value.replace('\\', '/').split('/'):
         return None
     try:
         found, ident = store.identity(str(cwd or os.getcwd()))
         if found != 'found':
             return None
-        root = os.path.realpath(ident.checkout)
-        real = os.path.realpath(os.path.join(cwd or os.getcwd(), value))
-        if real != root and not real.startswith(root + os.sep) or not os.path.exists(real):
+        root = os.path.realpath(ident.checkout, strict=True)
+        current = '/' if os.path.isabs(value) else (cwd or os.getcwd())
+        real = os.path.realpath(current, strict=True)
+        # Every component must exist and resolve inside the repository, or to a folder above it on the way in.
+        for part in [p for p in value.split('/') if p not in ('', '.')]:
+            current = os.path.join(current, part)
+            real = os.path.realpath(current, strict=True)
+            if real != root and not real.startswith(root + os.sep) and not root.startswith(real.rstrip(os.sep) + os.sep):
+                return None
+        if real != root and not real.startswith(root + os.sep):
             return None
         return os.path.relpath(real, root), root
     except (OSError, ValueError):

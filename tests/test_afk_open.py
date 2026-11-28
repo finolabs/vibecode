@@ -224,6 +224,24 @@ class FloorCorpusTest(OpenBase):
         self.check(['gh', 'pr', 'create', '--title', 'x', '--body=' + key], tier=3, code='floor')
         self.check(['gh', 'pr', 'create', '--title', 'x', '--body-file=docs/' + key], tier=3, code='floor')
 
+    def test_a_key_that_resolves_away_or_names_an_option_still_floors(self):
+        # Review of 6c767c36 (PR 400, Antigravity): `<key>/..` collapsed into an existing path, and the option name
+        # before `=` went unchecked. Every component must exist, and the option name keeps the key pattern.
+        diagram = 'docs/diagrams/task-lifecycle-light.html'
+        (self.repo / 'docs/diagrams').mkdir(parents=True)
+        (self.repo / diagram).write_text('<svg/>\n')
+        key = 'sk-or-v1-' + '0123456789abcdef' * 4
+        for token in (key + '/..', 'docs/' + key + '/..', 'x%3D' + key + '/..', '--body-file=docs/' + key + '/..',
+                      '--' + key + '=.', '--' + key + '=' + diagram, '-AKIA' + 'B' * 16 + '=' + diagram,
+                      'docs/diagrams/' + key + '/../task-lifecycle-light.html'):
+            with self.subTest(token=token[:24]):
+                self.check(['echo', token], tier=3, code='floor')
+                if not token.startswith('-'):  # `--paths` would read a leading dash as an option
+                    self.check(paths=[token], tier=3, code='floor')
+        self.check(['cat', 'docs/./diagrams/task-lifecycle-light.html'])
+        # A `..` anywhere gives up the exemption, even when every component exists (fails closed).
+        self.check(['cat', 'docs/diagrams/../diagrams/task-lifecycle-light.html'], tier=3, code='floor')
+
     def test_a_repository_link_keeps_the_floor_of_its_target(self):
         # Review of 6e4fc744 (PR 400, S1): a prefix-bearing alias of a credential file is still that file.
         (self.repo / '.env').write_text('TOKEN=dummy\n')
