@@ -64,6 +64,51 @@ class CheckupTest(unittest.TestCase):
     def setup_item(self, name):
         return next(row for row in self.data()["setup"] if row["check"] == name)
 
+    def agy_rules(self, *allow, extra=None):
+        settings = {"permissions": {"allow": list(allow), **(extra or {})}}
+        return self.write(self.home / ".gemini/antigravity-cli/settings.json", json.dumps(settings))
+
+    def posting_rows(self):
+        return [row for row in self.data()["setup"] if row["check"] == "antigravity posting rule"]
+
+    def test_antigravity_posting_rule_to_a_moved_script_is_reported_without_paths(self):
+        """A `post_review.py` allow-rule from before a rename points at nothing (owner, 28/11/2026): report only."""
+        stale = self.base / "old-checkout/skills/fnl-review-gate/scripts/post_review.py"
+        secret_rule = "command(python3 -I /synthetic/private/tool.py)"
+        settings = self.agy_rules(f"command(python3 -I {stale})", secret_rule, "command(git status)")
+        before = settings.read_bytes()
+        [row] = self.posting_rows()
+        self.assertEqual(row["status"], "warn")
+        self.assertEqual(row["reason"], "1 post_review.py rule points to no script of this install; "
+                         "/setup add roles, Review posting, replaces it")
+        text = self.run_check()
+        for leaked in (str(stale), "fnl-review-gate", "/synthetic/private", "git status"):
+            self.assertNotIn(leaked, text)
+        self.assertNotIn("/", row["reason"].replace("/setup", ""))
+        self.assertEqual(settings.read_bytes(), before)
+
+    def test_antigravity_posting_rule_to_this_install_is_ok(self):
+        current = (ROOT / "skills/review-gate/scripts/post_review.py").resolve()
+        self.agy_rules(f"command(python3 -I {current})", f"command(python3 -I {self.base}/gone/post_review.py)")
+        [row] = self.posting_rows()
+        self.assertEqual((row["status"], row["reason"]),
+                         ("warn", "1 post_review.py rule points to no script of this install; "
+                                  "/setup add roles, Review posting, replaces it"))
+        self.agy_rules(f"command(python3 -I {current})")
+        [row] = self.posting_rows()
+        self.assertEqual((row["status"], row["reason"]), ("ok", "1 post_review.py rule points to this install"))
+
+    def test_no_settings_or_no_posting_rule_adds_no_row_and_bad_settings_are_unverified(self):
+        self.assertEqual(self.posting_rows(), [])
+        self.agy_rules("command(git status)", extra={"deny": ["command(python3 post_review.py)"]})
+        self.assertEqual(self.posting_rows(), [])
+        self.write(self.home / ".gemini/antigravity-cli/settings.json", "{not json")
+        [row] = self.posting_rows()
+        self.assertEqual((row["status"], row["reason"]), ("unverified", "Antigravity settings unreadable"))
+        self.write(self.home / ".gemini/antigravity-cli/settings.json", json.dumps({"permissions": {"allow": "x"}}))
+        [row] = self.posting_rows()
+        self.assertEqual(row["status"], "unverified")
+
     def install_claude(self):
         self.write(self.bin / "claude", "#!/bin/sh\nexit 91\n").chmod(0o755)
         root = self.home / ".claude/plugins/cache/example/finolabs-vibecode/1.0.0"

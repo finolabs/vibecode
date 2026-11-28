@@ -48,8 +48,9 @@ TASK_ID = re.compile(r"^T[0-9]{1,4}\Z")
 NAME = re.compile(r"^fnl-[a-z][a-z-]{0,39}\Z")  # skill names stored before 0.2.5, agent names stored before 0.3.2
 # The plugin's skill names: a closed set, so a name from another plugin is never recorded.
 # An older `fnl-` name (an alias until 0.3.2), typed or in a stored line, is recorded under the name here.
-SKILLS = ("advisor", "afk", "ask", "brb", "checks", "coding-router", "commit-messages",
-          "delegate", "gtg", "handoff", "help", "open-source-review", "pause", "plugin-packaging",
+SKILLS = ("advisor", "afk", "ask", "brb", "brief-review", "checks", "coding-router",
+          "commit-messages", "delegate", "gtg", "handoff", "help", "open-source-review", "pause",
+          "plugin-packaging",
           "restore-point", "review-gate", "security-review-gate", "setup", "shape", "status", "tidy",
           "ui-review-gate", "update", "versioning")
 # Skills renamed in 0.2.5 after the prefix drop (and the verification alias removed in 0.3.1): the older name, typed, called or in a stored line, counts as the new one.
