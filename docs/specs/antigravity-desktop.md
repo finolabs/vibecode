@@ -27,11 +27,18 @@ Facts from agybird 0.4.8 (its README "Desktop transport" and `PRIVACY.md`):
 7. Briefs carry the limits the heavy-job gate cannot enforce inside the app: no push, heavy tests only through `heavy_run.py`, edits only inside the given worktree.
 8. Re-adding Antigravity to `## Assignment matrix` in the user's host config happens through `/setup add roles` (or `delegation`) with a preview and the owner's yes; the pull request changes no machine file.
 
+Added by the owner on 28/11/2026, relayed by the coordinator session:
+
+9. Even on the desktop transport, the Antigravity reviewer posts its own markers: the coordinator relay is the fallback, never the design. A pilot through the CLI showed that the agent cannot write the `body.md` that `post_review.py` prepares under the data root (outside its workspace), so `post_review.py` takes the body on stdin (`--body-stdin`).
+10. Setting Antigravity up as a reviewer also sets up the read-only git commands a reviewer needs as Antigravity allow-rules (`git show`, `git diff`, `git log`, `git rev-parse`, `git merge-base`, `git ls-files`, `git blame`, `git grep`), prefix rules only, with a preview, a backup and a yes per item. This shipped in a pull request of its own (`agy_rules_setup.py`).
+11. The CLI is also used when a task needs image work, must choose a model or a reasoning effort, or the user asks for it; otherwise desktop stays the default (the host config records the same rule).
+
 ## Design (implementation choices in this pull request)
 
 - **Not run yet is `deferred`.** `ledger.py finish --outcome deferred` closes a dispatch that a desktop `blocked` envelope never started. `ledger.py summary` leaves `deferred` records out of every row (its `n`, rates, medians and the quota and error counts), as it does records closed late. `project_progress.py` and `nav_state.py` know the word. A retry is a new dispatch. The CLI runner's own `blocked` (a run whose tools were blocked) keeps the `blocked` outcome: it ran. Enforcer: `ledger.py`.
 - **One machine-wide Antigravity slot.** `parallel_slots.py check --family antigravity` also counts open Antigravity dispatches of every project against `ANTIGRAVITY_MACHINE_SLOTS` (1, for agybird 0.4.8). `status` reports it as `families.antigravity.machine`. A release raises the constant after finolabs/agybird#59 ships, in a pull request that says which agybird version it follows. The `agy -p` fallback shares the slot, which is conservative. Enforcer: `parallel_slots.py` reports; honoring it stays advisory. A second run that starts anyway gets `blocked: locked`, which is `deferred`.
 - **Review form `desktop`.** `review_route.py` prints `desktop` as Antigravity's form, so a coordinator starts it through agybird's desktop transport, not `agy -p`.
+- **Self-posting.** `post_review.py <PR> --body-stdin` reads a bounded, marked UTF-8 body from stdin, checks it before creating anything, writes it to a fresh private run and posts it the same way as `--body-file`, deleting that draft after the observed post. It excludes `--body-file` and the relay options. The reviewer writes its report to `.finolabs/briefs/review-body.md` in its worktree and runs `python3 -I <post_review.py> <PR> --body-stdin < .finolabs/briefs/review-body.md`, which keeps the posting allow-rule's prefix. Review briefs list the only commands the reviewer may run. Enforcer: `post_review.py` for the body; the command list is advisory.
 - **Model label `app`.** A desktop dispatch is recorded with `--model app` (decision 5); the matrix line for Antigravity names `app` as its model. `ledger.py` warns, never refuses, when the matrix lists another name.
 - **Docs.** The `delegate` Antigravity page (transport order, the desktop envelope with every `blocked` reason, the fallback rule, the model, the brief limits, the project the app needs), `agents.md`, `host-template.md`, `budget-and-liveness.md`, `parallel-dispatch.md`, `review-gate` `reviewers.md` and `relay-and-posting-setup.md` (posting from the app with `post_review.py`), the setup roles and delegation references, help pages, README, [PRIVACY.md](../../PRIVACY.md) ("Where your data goes": the desktop app), CHANGELOG and `docs/how-it-compares.md`.
 
@@ -44,6 +51,6 @@ Facts from agybird 0.4.8 (its README "Desktop transport" and `PRIVACY.md`):
 
 ## Open
 
-- Decision 6's pilot: one real pull request reviewed by Antigravity that posts both markers with `post_review.py` from the app. Until it passes, the coordinator relays (`--relay-reviewer antigravity`).
+- Decision 6's pilot on the desktop transport: one real pull request whose markers Antigravity posts with `--body-stdin`, proved as the `delegate` Antigravity page says, before `## Review posting` records `antigravity: yes`.
 - The slot constant after finolabs/agybird#59 ships.
 - Whether the app's project for a worktree must be opened by hand for each worktree on 0.4.8 (`no_project`); #59 creates projects on demand.

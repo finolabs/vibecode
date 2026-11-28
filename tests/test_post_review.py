@@ -122,6 +122,33 @@ else:
         self.assertEqual(comments[0]["body"], BODY)
         self.assertTrue(post.posting_verified(comments, "sample-reviewer", MARKER))
 
+    def stdin_main(self, argv, data):
+        with mock.patch.object(post.sys, "stdin", io.TextIOWrapper(io.BytesIO(data), encoding="utf-8")):
+            return self.main(argv)
+
+    def run_folders(self):
+        return sorted(p.name for p in (dr.consent_root() / post.ROOT).iterdir())
+
+    def test_body_on_stdin_posts_through_a_private_run_without_a_file_outside_the_workspace(self):
+        """Antigravity cannot write outside its workspace, so the body may come on stdin (owner, 28/11/2026)."""
+        before = self.run_folders()
+        code, output, _ = self.stdin_main(["31", "--body-stdin"], BODY.encode())
+        self.assertEqual((code, output), (0, "posted\n"))
+        comments = json.loads((self.base / "comments.json").read_text())
+        self.assertEqual(comments[0]["body"], BODY)
+        self.assertEqual(self.run_folders(), before)  # the stdin run's own draft is removed after the observed post
+
+    def test_body_on_stdin_is_bounded_validated_and_exclusive(self):
+        before = self.run_folders()
+        for data in (b"", b"no marker here\n", b"\xff\xfe", BODY.encode() + b"x" * (post.CAP + 1)):
+            with self.subTest(size=len(data)):
+                self.assertEqual(self.stdin_main(["31", "--body-stdin"], data)[0], 2)
+        self.assertEqual(self.run_folders(), before)
+        self.assertEqual(self.stdin_main(["31", "--body-stdin", "--body-file", str(self.body)], BODY.encode())[0], 2)
+        self.assertEqual(self.stdin_main(["31", "--body-stdin", "--relay-reviewer", "codex", "--relayed-by", "claude",
+                                          "--relay-authority", "standing-code"], BODY.encode())[0], 2)
+        self.assertEqual(self.calls(), [])
+
     def test_only_supported_option_and_positive_pr_number(self):
         for args in (["31", "--repo", "other/repo"], ["31", "--web"], ["31", "--edit-last"],
                      ["31", "--help"], ["31", "extra"], ["0"], ["-1"], ["https://github.com/sample-owner/sample-repository/pull/31"],

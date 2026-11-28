@@ -3,7 +3,10 @@
 
 Usage: post_review.py PR creates a private run folder and an empty body.md and
 prints its absolute filename. Fill that file, then run post_review.py PR
---body-file FILE. PR is the only positional argument. A relayed review adds
+--body-file FILE. An agent that cannot write outside its workspace runs
+post_review.py PR --body-stdin < FILE instead: the bounded body is read from
+stdin into a fresh private run and posted the same way. PR is the only
+positional argument. A relayed review adds
 --relay-reviewer FAMILY --relayed-by FAMILY --relay-authority RECORD, all three or
 none; its second line must say it was relayed. No repository argument, browser,
 editing or generic gh command is allowed.
@@ -101,13 +104,13 @@ def checkout_remote(checkout):
     return "github.com/" + match[1] + "/" + match[2]
 
 
-def create_run_folder():
+def create_run_folder(content=b""):
     """Use the canonical data root and atomically create an owner-only body."""
     name = "post-" + secrets.token_hex(16)
     with dr.data_folder(ROOT, create=True, private=True) as parent:
         os.mkdir(name, 0o700, dir_fd=parent)
         with dr.descend(parent, name, private=True) as folder:
-            dr.atomic_write(folder, "body.md", b"")
+            dr.atomic_write(folder, "body.md", content)
     root = dr.consent_root()
     if root is None:
         raise ValueError("invalid root")
@@ -149,6 +152,17 @@ def read_body(path):
     text = body.decode("utf-8")
     marker_line(text)
     return text
+
+
+def body_from_stdin(stream):
+    """A bounded, marked UTF-8 body from stdin, written to a fresh private run (owner decision, 28/11/2026).
+
+    Checked before any folder is created, so a refused body leaves nothing behind."""
+    data = stream.read(CAP + 1)
+    if not data or len(data) > CAP:
+        raise ValueError("bounded body required")
+    marker_line(data.decode("utf-8"))
+    return create_run_folder(data)
 
 
 def sandbox_proxy():
@@ -360,6 +374,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False, add_help=False)
     parser.add_argument("pr", type=positive_pr)
     parser.add_argument("--body-file")
+    parser.add_argument("--body-stdin", action="store_true")
     parser.add_argument("--relay-reviewer")
     parser.add_argument("--relayed-by")
     parser.add_argument("--relay-authority")
@@ -367,8 +382,13 @@ def main(argv=None):
     relay = (args.relay_reviewer, args.relayed_by, args.relay_authority)
     if any(relay) and (not all(relay) or args.body_file is None):
         parser.error("a relay needs --body-file and all three relay options")
+    if args.body_stdin and args.body_file is not None:
+        parser.error("--body-stdin and --body-file exclude each other")
     try:
-        if args.body_file is None:
+        if args.body_stdin:
+            receipt = post(args.pr, body_from_stdin(sys.stdin.buffer), Path.cwd())
+            print("posted" + ("; relay receipt recorded" if receipt else ""))
+        elif args.body_file is None:
             checkout_remote(Path.cwd())
             print(create_run_folder())
         else:
