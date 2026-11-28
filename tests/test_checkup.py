@@ -82,8 +82,9 @@ class CheckupTest(unittest.TestCase):
         self.assertEqual(row["reason"], "1 post_review.py rule points to no script of this install; "
                          "/setup add roles, Review posting, replaces it")
         text = self.run_check()
-        for leaked in (str(stale), "fnl-review-gate", "/synthetic/private", "git status", str(self.home)):
+        for leaked in (str(stale), "fnl-review-gate", "/synthetic/private", "git status"):
             self.assertNotIn(leaked, text)
+        self.assertNotIn("/", row["reason"].replace("/setup", ""))
         self.assertEqual(settings.read_bytes(), before)
 
     def test_antigravity_posting_rule_to_this_install_is_ok(self):
