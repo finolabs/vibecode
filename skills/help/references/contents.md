@@ -1,6 +1,6 @@
 # Contents
 
-The user asks what is in the plugin, or what exists for a purpose. Read [map.md](map.md) and list the skills, agents and scripts grouped by purpose, in three groups: typed by the user only (`restore-point`, `afk` and its older alias `brb`, `session-hygiene` (the older name of `tidy`), `pause` and its short name `gtg`, `setup` (including `add <feature>`, `instructions`, `check`, `scan` and `mode`), `status`, `update`, `help` and its older name `ask`); typed by the user or loaded by the agent (`handoff`, loaded by `delegate` or on session wrap-up; `advisor` (one opinion or a committee), proposed first and waiting for the user's yes; `shape`, the interview for brainstorming, discussing or stress-testing an idea, plan or design); and loaded by the agent when the task matches (the rest). When the installed folder differs from the map, trust the folder: list the skill folders beside this one and the plugin root's `agents/*.md` with each file's one-line description, and fall back to the map when neither can be listed. State a count only after counting it in the folder; when the folder cannot be listed, say the list comes from the map and give no totals.
+The user asks what is in the plugin, or what exists for a purpose. Read [map.md](map.md) and list the skills, agents and scripts grouped by purpose, in three groups: typed by the user only (`restore-point`, `afk` and its older alias `brb`, `session-hygiene` (the older name of `tidy`), `pause` and its short name `gtg`, `setup` (including `add <feature>`, `instructions`, `check`, `scan` and `mode`), `status`, `update`, `help` and its older name `ask`); typed by the user or loaded by the agent (`handoff`, loaded by `delegate` or on session wrap-up; `advisor` (one opinion or a committee), proposed first and waiting for the user's yes; `shape`, the interview for brainstorming, discussing or stress-testing an idea, plan or design; `brief-review`, the tech reading of a brief, PRD, spec or vibebiz package); and loaded by the agent when the task matches (the rest). When the installed folder differs from the map, trust the folder: list the skill folders beside this one and the plugin root's `agents/*.md` with each file's one-line description, and fall back to the map when neither can be listed. State a count only after counting it in the folder; when the folder cannot be listed, say the list comes from the map and give no totals.
 
 The current agent set is `reviewer`, `security-reviewer` and `navigator`. When explaining automation, distinguish fixed session-start state from observed live-host behavior, optional on-demand quota from a background timer, and verification receipts from the coordinator’s acceptance decision.
 
@@ -14,6 +14,7 @@ One short page per skill: what it does, when to use it, the command on each host
 - [`afk`](skills/afk.md)
 - [`ask`](skills/ask.md)
 - [`brb`](skills/brb.md)
+- [`brief-review`](skills/brief-review.md)
 - [`checks`](skills/checks.md)
 - [`coding-router`](skills/coding-router.md)
 - [`commit-messages`](skills/commit-messages.md)
